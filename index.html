@@ -2,7 +2,7 @@
 {
   "name": "Blok 2week Schedule",
   "schemaVersion": 1,
-  "description": "BLOK Clapton &amp; Shoreditch — upcoming Calisthenics / BLOKStrength schedule for the next 2 weeks (Thu 13 Aug 2026 – Tue 25 Aug 2026), scraped live from ClassPass public studio pages. Real booking status per class (bookable / full / books-open-later), filterable by status, class type, and work-hours. Auto-updated every 4 hours."
+  "description": "BLOK Clapton &amp; Shoreditch \u2014 Calisthenics / BLOKStrength over the next 2 weeks, scraped live from ClassPass with real per-class booking status (bookable / full / books-open-later). Filterable by status, class type, and work hours."
 }
 </script>
 <html lang="en">
@@ -10,49 +10,61 @@
 <meta charset="UTF-8">
 <title>BLOK Clapton &amp; Shoreditch schedule</title>
 <style>
-:root{color-scheme:light;--bg:#f7f7f8;--card:#fff;--border:#e3e3e6;--header-bg:#1a1a1f;--header-fg:#f5f5f7;--row-alt:#fafafa;--row-hover:#eef4ff;--text:#1c1c1e;--muted:#6b6b70}
-*{box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:24px}
-h1{font-size:1.4rem;font-weight:700;margin:0 0 4px}
-.stamp{color:var(--muted);font-size:.85rem;margin:0 0 10px}
-.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.82rem;font-weight:600;margin:0 0 14px}
-.filterbar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:#eeeef0;border:1px solid var(--border);border-radius:10px;padding:10px 16px;margin-bottom:16px;font-size:.92rem}
-.filterbar .sep{width:1px;height:20px;background:#cfcfd2}
-.filterbar label.chk{display:inline-flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap}
-.filterbar .typegroup{display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap}
-.filterbar .type-label{font-weight:600;color:var(--muted)}
-.count{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums}
-table{width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-thead th{position:sticky;top:0;background:var(--header-bg);color:var(--header-fg);text-align:left;padding:10px 12px;font-size:.82rem;text-transform:uppercase;letter-spacing:.03em;z-index:2}
-tbody td{padding:9px 12px;border-bottom:1px solid var(--border);font-size:.9rem;vertical-align:middle}
-tbody td a{color:inherit;text-decoration:none;border-bottom:1px dotted #9a9aa0}
-tbody td a:hover{color:#1f7fd1;border-bottom-color:#1f7fd1}
-tbody tr:nth-child(even){background:var(--row-alt)}
-tbody tr:hover{background:var(--row-hover)}
-tbody tr[data-state="full"] td:not(:last-child){opacity:.55}
-tr.day-start td{border-top:2px solid #1a1a1f}
-.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.78rem;font-weight:600;white-space:nowrap}
-.dur{color:var(--muted);font-size:.82rem}
-tr.hidden{display:none}
+  :root {
+    color-scheme: light;
+    --bg: #f7f7f8; --card: #ffffff; --border: #e3e3e6;
+    --header-bg: #1a1a1f; --header-fg: #f5f5f7;
+    --row-alt: #fafafa; --row-hover: #eef4ff;
+    --text: #1c1c1e; --muted: #6b6b70;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--text); margin: 0; padding: 24px; }
+  h1 { font-size: 1.4rem; font-weight: 700; margin: 0 0 4px 0; }
+  .stamp { color: var(--muted); font-size: 0.85rem; margin: 0 0 10px 0; }
+  .legend { display:flex; flex-wrap:wrap; gap:14px; font-size:0.82rem; font-weight:600; margin: 0 0 14px 0; }
+  .filterbar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+    background: #eeeef0; border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 16px; margin-bottom: 16px; font-size: 0.92rem; }
+  .filterbar .sep { width: 1px; height: 20px; background: #cfcfd2; }
+  .filterbar label.chk { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; white-space: nowrap; }
+  .filterbar .typegroup { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .filterbar .type-label { font-weight: 600; color: var(--muted); }
+  .count { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+  table { width: 100%; border-collapse: collapse; background: var(--card);
+    border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  thead th { position: sticky; top: 0; background: var(--header-bg); color: var(--header-fg);
+    text-align: left; padding: 10px 12px; font-size: 0.82rem;
+    text-transform: uppercase; letter-spacing: 0.03em; z-index: 2; }
+  tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; }
+  tbody td a { color: inherit; text-decoration: none; border-bottom: 1px dotted #9a9aa0; }
+  tbody td a:hover { color: #1f7fd1; border-bottom-color: #1f7fd1; }
+  tbody tr:nth-child(even) { background: var(--row-alt); }
+  tbody tr:hover { background: var(--row-hover); }
+  tbody tr[data-state="full"] td:not(:last-child) { opacity: 0.55; }
+  tr.day-start td { border-top: 2px solid #1a1a1f; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
+  .dur { color: var(--muted); font-size: 0.82rem; }
+  tr.hidden { display: none; }
 </style>
 </head>
 <body>
 <h1>BLOK Clapton &amp; Shoreditch &mdash; upcoming Calisthenics / BLOKStrength</h1>
-<p class="stamp">Thu 13 Aug 2026 &ndash; Tue 25 Aug 2026 &middot; 128 classes &middot; snapshot refreshed Thu 13 Aug 2026, 08:14 BST (auto-updated every 4 hours)</p>
-<div class="legend"><span class="lg" style="color:#1f8a3c;">&#9679; Bookable now (95)</span><span class="lg" style="color:#c0392b;">&#9679; Full (10)</span><span class="lg" style="color:#b06a00;">&#9679; Books open later (22)</span><span class="lg" style="color:#1f7fd1;">&#9679; You&rsquo;re booked (1)</span></div>
+<p class="stamp">Fri 14 Aug 2026 &ndash; Wed 26 Aug 2026 &middot; 128 classes &middot; snapshot refreshed Fri 14 Aug 2026, 09:25 BST (auto-updated every 4 hours)</p>
+<div class="legend"><span class="lg" style="color:#1f8a3c;">&#9679; Bookable now (95)</span><span class="lg" style="color:#c0392b;">&#9679; Full (9)</span><span class="lg" style="color:#b06a00;">&#9679; Books open later (23)</span><span class="lg" style="color:#1f7fd1;">&#9679; You’re booked (1)</span><span class="lg" style="color:#8a8a8f;">&#9679; Booking closed (0)</span></div>
 
 <div class="filterbar">
   <label class="chk"><input type="checkbox" id="availOnly"> Bookable now only (95)</label>
-  <label class="chk"><input type="checkbox" id="hideFull"> Hide full (10)</label>
+  <label class="chk"><input type="checkbox" id="hideFull"> Hide full (9)</label>
   <div class="sep"></div>
   <div class="typegroup"><span class="type-label">Type</span>
     <label class="chk"><input type="checkbox" class="typeFilter" data-cat="Calisthenics" checked> Calisthenics (34)</label>
-<label class="chk"><input type="checkbox" class="typeFilter" data-cat="Strength (Upper)" checked> Strength (Upper) (32)</label>
-<label class="chk"><input type="checkbox" class="typeFilter" data-cat="Strength (Lower)" checked> Strength (Lower) (20)</label>
-<label class="chk"><input type="checkbox" class="typeFilter" data-cat="Strength (Full Body)" checked> Strength (Full Body) (42)</label>
+    <label class="chk"><input type="checkbox" class="typeFilter" data-cat="Strength (Upper)" checked> Strength (Upper) (30)</label>
+    <label class="chk"><input type="checkbox" class="typeFilter" data-cat="Strength (Lower)" checked> Strength (Lower) (28)</label>
+    <label class="chk"><input type="checkbox" class="typeFilter" data-cat="Strength (Full Body)" checked> Strength (Full Body) (36)</label>
   </div>
   <div class="sep"></div>
-  <label class="chk"><input type="checkbox" id="hideWorkHours"> Hide weekday 8:00am&ndash;5:25pm classes (54)</label>
+  <label class="chk"><input type="checkbox" id="hideWorkHours"> Hide weekday 8:00am&ndash;5:25pm classes (53)</label>
   <div class="count" id="liveCount">showing 128 of 128</div>
 </div>
 
@@ -63,131 +75,23 @@ tr.hidden{display:none}
 </tr>
 </thead>
 <tbody id="rows">
-<tr class="day-start" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="1" data-mins="510">
-<td>Thu 13 Aug</td>
-<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
-<td>8:30 AM</td>
-<td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
-<td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
-<td>Roksana Piech</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
-</tr>
-<tr class="" data-cat="Calisthenics" data-state="bookable" data-avail="1" data-wd="1" data-mins="650">
-<td>Thu 13 Aug</td>
-<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
-<td>10:50 AM</td>
-<td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
-<td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
-<td>Samuel Deschamps</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (8 credits)</td>
-</tr>
-<tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="1" data-mins="720">
-<td>Thu 13 Aug</td>
-<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
-<td>12:00 PM</td>
-<td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
-<td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
-<td>Sean Paul Jenkinson</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
-</tr>
-<tr class="" data-cat="Calisthenics" data-state="bookable" data-avail="1" data-wd="1" data-mins="725">
-<td>Thu 13 Aug</td>
-<td><a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a></td>
-<td>12:05 PM</td>
-<td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
-<td>CALISTHENICS 50 <span class="dur">(50 min)</span></td>
-<td>Guillermo Justel</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (10 credits)</td>
-</tr>
-<tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="1" data-mins="785">
-<td>Thu 13 Aug</td>
-<td><a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a></td>
-<td>1:05 PM</td>
-<td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
-<td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
-<td>Roksana Piech</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (8 credits)</td>
-</tr>
-<tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="1" data-mins="1020">
-<td>Thu 13 Aug</td>
-<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
-<td>5:00 PM</td>
-<td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
-<td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
-<td>Dan Appah</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (11 credits)</td>
-</tr>
-<tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="1" data-mins="1045">
-<td>Thu 13 Aug</td>
-<td><a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a></td>
-<td>5:25 PM</td>
-<td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
-<td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
-<td>Matteo Massaini</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (10 credits)</td>
-</tr>
-<tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="1" data-mins="1140">
-<td>Thu 13 Aug</td>
-<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
-<td>7:00 PM</td>
-<td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
-<td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
-<td>Dan Appah</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
-</tr>
-<tr class="" data-cat="Calisthenics" data-state="bookable" data-avail="1" data-wd="1" data-mins="1190">
-<td>Thu 13 Aug</td>
-<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
-<td>7:50 PM</td>
-<td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
-<td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
-<td>Kwame Hanson</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (11 credits)</td>
-</tr>
-<tr class="day-start" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="390">
-<td>Fri 14 Aug</td>
-<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
-<td>6:30 AM</td>
-<td><span class="pill" style="background:#2e9e5b22;color:#2e9e5b;border:1px solid #2e9e5b55;">Strength (Upper)</span></td>
-<td>BLOKSTRENGTH: UPPER BODY <span class="dur">(50 min)</span></td>
-<td>Lewis Akpata</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (11 credits)</td>
-</tr>
-<tr class="" data-cat="Calisthenics" data-state="bookable" data-avail="1" data-wd="1" data-mins="400">
-<td>Fri 14 Aug</td>
-<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
-<td>6:40 AM</td>
-<td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
-<td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
-<td>Samuel Deschamps</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (11 credits)</td>
-</tr>
-<tr class="" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="410">
-<td>Fri 14 Aug</td>
-<td><a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a></td>
-<td>6:50 AM</td>
-<td><span class="pill" style="background:#2e9e5b22;color:#2e9e5b;border:1px solid #2e9e5b55;">Strength (Upper)</span></td>
-<td>BLOKSTRENGTH: UPPER BODY <span class="dur">(50 min)</span></td>
-<td>Fran Bratke</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (10 credits)</td>
-</tr>
-<tr class="" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="580">
+<tr class="day-start" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="580">
 <td>Fri 14 Aug</td>
 <td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
 <td>9:40 AM</td>
 <td><span class="pill" style="background:#2e9e5b22;color:#2e9e5b;border:1px solid #2e9e5b55;">Strength (Upper)</span></td>
 <td>BLOKSTRENGTH: UPPER BODY <span class="dur">(50 min)</span></td>
 <td>Sean Paul Jenkinson</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (11 credits)</td>
 </tr>
-<tr class="" data-cat="Calisthenics" data-state="full" data-avail="0" data-wd="1" data-mins="590">
+<tr class="" data-cat="Calisthenics" data-state="bookable" data-avail="1" data-wd="1" data-mins="590">
 <td>Fri 14 Aug</td>
 <td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
 <td>9:50 AM</td>
 <td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
 <td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
 <td>Daniel Zivatovic</td>
-<td style="color:#c0392b;font-weight:600;">Full &mdash; no spots left</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
 </tr>
 <tr class="" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="720">
 <td>Fri 14 Aug</td>
@@ -196,7 +100,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#2e9e5b22;color:#2e9e5b;border:1px solid #2e9e5b55;">Strength (Upper)</span></td>
 <td>BLOKSTRENGTH: UPPER BODY <span class="dur">(50 min)</span></td>
 <td>Amaryllis Saunders</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (11 credits)</td>
 </tr>
 <tr class="" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="740">
 <td>Fri 14 Aug</td>
@@ -250,7 +154,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#c77d0a22;color:#c77d0a;border:1px solid #c77d0a55;">Strength (Lower)</span></td>
 <td>BLOKSTRENGTH: LOWER BODY <span class="dur">(50 min)</span></td>
 <td>Ailsa Mullins</td>
-<td style="color:#c0392b;font-weight:600;">Full &mdash; no spots left</td>
+<td style="color:#c0392b;font-weight:600;">Full — no spots left</td>
 </tr>
 <tr class="" data-cat="Strength (Lower)" data-state="bookable" data-avail="1" data-wd="0" data-mins="660">
 <td>Sat 15 Aug</td>
@@ -268,7 +172,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
 <td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
 <td>Daniel Zivatovic</td>
-<td style="color:#c0392b;font-weight:600;">Full &mdash; no spots left</td>
+<td style="color:#c0392b;font-weight:600;">Full — no spots left</td>
 </tr>
 <tr class="" data-cat="Calisthenics" data-state="bookable" data-avail="1" data-wd="0" data-mins="720">
 <td>Sat 15 Aug</td>
@@ -279,14 +183,14 @@ tr.hidden{display:none}
 <td>Autumn Red Bonham-Cox</td>
 <td style="color:#1f8a3c;font-weight:600;">Bookable (8 credits)</td>
 </tr>
-<tr class="" data-cat="Strength (Lower)" data-state="bookable" data-avail="1" data-wd="0" data-mins="765">
+<tr class="" data-cat="Strength (Lower)" data-state="full" data-avail="0" data-wd="0" data-mins="765">
 <td>Sat 15 Aug</td>
 <td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
 <td>12:45 PM</td>
 <td><span class="pill" style="background:#c77d0a22;color:#c77d0a;border:1px solid #c77d0a55;">Strength (Lower)</span></td>
 <td>BLOKSTRENGTH: LOWER BODY <span class="dur">(50 min)</span></td>
 <td>Lewis Akpata</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (9 credits)</td>
+<td style="color:#c0392b;font-weight:600;">Full — no spots left</td>
 </tr>
 <tr class="" data-cat="Strength (Lower)" data-state="bookable" data-avail="1" data-wd="0" data-mins="800">
 <td>Sat 15 Aug</td>
@@ -313,7 +217,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
 <td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
 <td>Samuel Deschamps</td>
-<td style="color:#1f7fd1;font-weight:600;">You&rsquo;re booked</td>
+<td style="color:#1f7fd1;font-weight:600;">You’re booked</td>
 </tr>
 <tr class="day-start" data-cat="Strength (Full Body)" data-state="full" data-avail="0" data-wd="0" data-mins="510">
 <td>Sun 16 Aug</td>
@@ -322,7 +226,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Dan Appah</td>
-<td style="color:#c0392b;font-weight:600;">Full &mdash; no spots left</td>
+<td style="color:#c0392b;font-weight:600;">Full — no spots left</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="0" data-mins="540">
 <td>Sun 16 Aug</td>
@@ -331,7 +235,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Sean Paul Jenkinson</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (13 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="full" data-avail="0" data-wd="0" data-mins="660">
 <td>Sun 16 Aug</td>
@@ -340,7 +244,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Sean Paul Jenkinson</td>
-<td style="color:#c0392b;font-weight:600;">Full &mdash; no spots left</td>
+<td style="color:#c0392b;font-weight:600;">Full — no spots left</td>
 </tr>
 <tr class="" data-cat="Calisthenics" data-state="bookable" data-avail="1" data-wd="0" data-mins="720">
 <td>Sun 16 Aug</td>
@@ -360,14 +264,14 @@ tr.hidden{display:none}
 <td>Samuel Deschamps</td>
 <td style="color:#1f8a3c;font-weight:600;">Bookable (8 credits)</td>
 </tr>
-<tr class="" data-cat="Strength (Full Body)" data-state="full" data-avail="0" data-wd="0" data-mins="830">
+<tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="0" data-mins="830">
 <td>Sun 16 Aug</td>
 <td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
 <td>1:50 PM</td>
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Dan Appah</td>
-<td style="color:#c0392b;font-weight:600;">Full &mdash; no spots left</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (8 credits)</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="0" data-mins="930">
 <td>Sun 16 Aug</td>
@@ -457,7 +361,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
 <td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
 <td>Daniel Zivatovic</td>
-<td style="color:#c0392b;font-weight:600;">Full &mdash; no spots left</td>
+<td style="color:#c0392b;font-weight:600;">Full — no spots left</td>
 </tr>
 <tr class="" data-cat="Strength (Upper)" data-state="full" data-avail="0" data-wd="1" data-mins="1110">
 <td>Mon 17 Aug</td>
@@ -466,7 +370,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#2e9e5b22;color:#2e9e5b;border:1px solid #2e9e5b55;">Strength (Upper)</span></td>
 <td>BLOKSTRENGTH: UPPER BODY <span class="dur">(50 min)</span></td>
 <td>Paige Holbard</td>
-<td style="color:#c0392b;font-weight:600;">Full &mdash; no spots left</td>
+<td style="color:#c0392b;font-weight:600;">Full — no spots left</td>
 </tr>
 <tr class="" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="1130">
 <td>Mon 17 Aug</td>
@@ -493,7 +397,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Roksana Piech</td>
-<td style="color:#c0392b;font-weight:600;">Full &mdash; no spots left</td>
+<td style="color:#c0392b;font-weight:600;">Full — no spots left</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="1" data-mins="460">
 <td>Tue 18 Aug</td>
@@ -502,7 +406,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Karmen Ledgister</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (13 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="1" data-mins="580">
 <td>Tue 18 Aug</td>
@@ -556,7 +460,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Roksana Piech</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (13 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="1" data-mins="1125">
 <td>Tue 18 Aug</td>
@@ -574,7 +478,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
 <td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
 <td>Autumn Red Bonham-Cox</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (13 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
 </tr>
 <tr class="day-start" data-cat="Strength (Lower)" data-state="full" data-avail="0" data-wd="1" data-mins="380">
 <td>Wed 19 Aug</td>
@@ -583,7 +487,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#c77d0a22;color:#c77d0a;border:1px solid #c77d0a55;">Strength (Lower)</span></td>
 <td>BLOKSTRENGTH: LOWER BODY <span class="dur">(50 min)</span></td>
 <td>Declan Taylor</td>
-<td style="color:#c0392b;font-weight:600;">Full &mdash; no spots left</td>
+<td style="color:#c0392b;font-weight:600;">Full — no spots left</td>
 </tr>
 <tr class="" data-cat="Strength (Lower)" data-state="bookable" data-avail="1" data-wd="1" data-mins="400">
 <td>Wed 19 Aug</td>
@@ -700,7 +604,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Lewis Akpata</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (13 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (10 credits)</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="1" data-mins="510">
 <td>Thu 20 Aug</td>
@@ -709,7 +613,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Roksana Piech</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (11 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
 </tr>
 <tr class="" data-cat="Calisthenics" data-state="bookable" data-avail="1" data-wd="1" data-mins="650">
 <td>Thu 20 Aug</td>
@@ -727,7 +631,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Lewis Akpata</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (11 credits)</td>
 </tr>
 <tr class="" data-cat="Calisthenics" data-state="bookable" data-avail="1" data-wd="1" data-mins="725">
 <td>Thu 20 Aug</td>
@@ -754,7 +658,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Dan Appah</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (11 credits)</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="1" data-mins="1045">
 <td>Thu 20 Aug</td>
@@ -763,7 +667,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Matteo Massaini</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (10 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="1" data-mins="1140">
 <td>Thu 20 Aug</td>
@@ -799,7 +703,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
 <td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
 <td>Samuel Deschamps</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (11 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
 </tr>
 <tr class="" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="410">
 <td>Fri 21 Aug</td>
@@ -861,7 +765,7 @@ tr.hidden{display:none}
 <td>6:00 PM</td>
 <td><span class="pill" style="background:#2e9e5b22;color:#2e9e5b;border:1px solid #2e9e5b55;">Strength (Upper)</span></td>
 <td>BLOKSTRENGTH: UPPER BODY <span class="dur">(50 min)</span></td>
-<td>Ellie Williams</td>
+<td>John Aiwone</td>
 <td style="color:#1f8a3c;font-weight:600;">Bookable (11 credits)</td>
 </tr>
 <tr class="" data-cat="Calisthenics" data-state="bookable" data-avail="1" data-wd="1" data-mins="1095">
@@ -898,7 +802,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#c77d0a22;color:#c77d0a;border:1px solid #c77d0a55;">Strength (Lower)</span></td>
 <td>BLOKSTRENGTH: LOWER BODY <span class="dur">(50 min)</span></td>
 <td>Mayoor Jobanputra</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (10 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (9 credits)</td>
 </tr>
 <tr class="" data-cat="Calisthenics" data-state="bookable" data-avail="1" data-wd="0" data-mins="670">
 <td>Sat 22 Aug</td>
@@ -916,7 +820,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
 <td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
 <td>Autumn Red Bonham-Cox</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (8 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (9 credits)</td>
 </tr>
 <tr class="" data-cat="Strength (Lower)" data-state="bookable" data-avail="1" data-wd="0" data-mins="765">
 <td>Sat 22 Aug</td>
@@ -970,7 +874,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Sean Paul Jenkinson</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (13 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="0" data-mins="660">
 <td>Sun 23 Aug</td>
@@ -979,7 +883,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Sean Paul Jenkinson</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (10 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (9 credits)</td>
 </tr>
 <tr class="" data-cat="Calisthenics" data-state="bookable" data-avail="1" data-wd="0" data-mins="720">
 <td>Sun 23 Aug</td>
@@ -1006,7 +910,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Dan Appah</td>
-<td style="color:#1f8a3c;font-weight:600;">Bookable (8 credits)</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (9 credits)</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="bookable" data-avail="1" data-wd="0" data-mins="930">
 <td>Sun 23 Aug</td>
@@ -1017,104 +921,104 @@ tr.hidden{display:none}
 <td>Dan Appah</td>
 <td style="color:#1f8a3c;font-weight:600;">Bookable (8 credits)</td>
 </tr>
-<tr class="day-start" data-cat="Strength (Upper)" data-state="soon" data-avail="0" data-wd="1" data-mins="380">
+<tr class="day-start" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="380">
 <td>Mon 24 Aug</td>
 <td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
 <td>6:20 AM</td>
 <td><span class="pill" style="background:#2e9e5b22;color:#2e9e5b;border:1px solid #2e9e5b55;">Strength (Upper)</span></td>
 <td>BLOKSTRENGTH: UPPER BODY <span class="dur">(50 min)</span></td>
 <td>Ellie Williams</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/14/26, 5:00 AM</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (11 credits)</td>
 </tr>
-<tr class="" data-cat="Strength (Upper)" data-state="soon" data-avail="0" data-wd="1" data-mins="400">
+<tr class="" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="400">
 <td>Mon 24 Aug</td>
 <td><a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a></td>
 <td>6:40 AM</td>
 <td><span class="pill" style="background:#2e9e5b22;color:#2e9e5b;border:1px solid #2e9e5b55;">Strength (Upper)</span></td>
 <td>BLOKSTRENGTH: UPPER BODY <span class="dur">(50 min)</span></td>
 <td>Lewis Akpata</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/14/26, 5:00 AM</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (10 credits)</td>
 </tr>
-<tr class="" data-cat="Calisthenics" data-state="soon" data-avail="0" data-wd="1" data-mins="520">
+<tr class="" data-cat="Calisthenics" data-state="bookable" data-avail="1" data-wd="1" data-mins="520">
 <td>Mon 24 Aug</td>
 <td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
 <td>8:40 AM</td>
 <td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
 <td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
 <td>Manu Beja da Costa</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/14/26, 5:00 AM</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
 </tr>
-<tr class="" data-cat="Strength (Upper)" data-state="soon" data-avail="0" data-wd="1" data-mins="570">
+<tr class="" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="570">
 <td>Mon 24 Aug</td>
 <td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
 <td>9:30 AM</td>
 <td><span class="pill" style="background:#2e9e5b22;color:#2e9e5b;border:1px solid #2e9e5b55;">Strength (Upper)</span></td>
 <td>BLOKSTRENGTH: UPPER BODY <span class="dur">(50 min)</span></td>
 <td>Dan Appah</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/14/26, 5:00 AM</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (11 credits)</td>
 </tr>
-<tr class="" data-cat="Strength (Upper)" data-state="soon" data-avail="0" data-wd="1" data-mins="720">
+<tr class="" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="720">
 <td>Mon 24 Aug</td>
 <td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
 <td>12:00 PM</td>
 <td><span class="pill" style="background:#2e9e5b22;color:#2e9e5b;border:1px solid #2e9e5b55;">Strength (Upper)</span></td>
 <td>BLOKSTRENGTH: UPPER BODY <span class="dur">(50 min)</span></td>
 <td>Lewis Akpata</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/14/26, 5:00 AM</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (11 credits)</td>
 </tr>
-<tr class="" data-cat="Strength (Upper)" data-state="soon" data-avail="0" data-wd="1" data-mins="750">
+<tr class="" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="750">
 <td>Mon 24 Aug</td>
 <td><a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a></td>
 <td>12:30 PM</td>
 <td><span class="pill" style="background:#2e9e5b22;color:#2e9e5b;border:1px solid #2e9e5b55;">Strength (Upper)</span></td>
 <td>BLOKSTRENGTH: UPPER BODY <span class="dur">(50 min)</span></td>
 <td>Mayoor Jobanputra</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/14/26, 5:00 AM</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (10 credits)</td>
 </tr>
-<tr class="" data-cat="Strength (Upper)" data-state="soon" data-avail="0" data-wd="1" data-mins="990">
+<tr class="" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="990">
 <td>Mon 24 Aug</td>
 <td><a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a></td>
 <td>4:30 PM</td>
 <td><span class="pill" style="background:#2e9e5b22;color:#2e9e5b;border:1px solid #2e9e5b55;">Strength (Upper)</span></td>
 <td>BLOKSTRENGTH: UPPER BODY <span class="dur">(50 min)</span></td>
 <td>Paige Holbard</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/14/26, 5:00 AM</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (8 credits)</td>
 </tr>
-<tr class="" data-cat="Strength (Upper)" data-state="soon" data-avail="0" data-wd="1" data-mins="1005">
+<tr class="" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="1005">
 <td>Mon 24 Aug</td>
 <td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
 <td>4:45 PM</td>
 <td><span class="pill" style="background:#2e9e5b22;color:#2e9e5b;border:1px solid #2e9e5b55;">Strength (Upper)</span></td>
 <td>BLOKSTRENGTH: UPPER BODY <span class="dur">(50 min)</span></td>
 <td>Joëlle Brabban</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/14/26, 5:00 AM</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (8 credits)</td>
 </tr>
-<tr class="" data-cat="Calisthenics" data-state="soon" data-avail="0" data-wd="1" data-mins="1050">
+<tr class="" data-cat="Calisthenics" data-state="bookable" data-avail="1" data-wd="1" data-mins="1050">
 <td>Mon 24 Aug</td>
 <td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
 <td>5:30 PM</td>
 <td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
 <td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
 <td>Daniel Zivatovic</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/14/26, 5:00 AM</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
 </tr>
-<tr class="" data-cat="Strength (Upper)" data-state="soon" data-avail="0" data-wd="1" data-mins="1110">
+<tr class="" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="1110">
 <td>Mon 24 Aug</td>
 <td><a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a></td>
 <td>6:30 PM</td>
 <td><span class="pill" style="background:#2e9e5b22;color:#2e9e5b;border:1px solid #2e9e5b55;">Strength (Upper)</span></td>
 <td>BLOKSTRENGTH: UPPER BODY <span class="dur">(50 min)</span></td>
 <td>Paige Holbard</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/14/26, 5:00 AM</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
 </tr>
-<tr class="" data-cat="Strength (Upper)" data-state="soon" data-avail="0" data-wd="1" data-mins="1130">
+<tr class="" data-cat="Strength (Upper)" data-state="bookable" data-avail="1" data-wd="1" data-mins="1130">
 <td>Mon 24 Aug</td>
 <td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
 <td>6:50 PM</td>
 <td><span class="pill" style="background:#2e9e5b22;color:#2e9e5b;border:1px solid #2e9e5b55;">Strength (Upper)</span></td>
 <td>BLOKSTRENGTH: UPPER BODY <span class="dur">(50 min)</span></td>
 <td>Sean Paul Jenkinson</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/14/26, 5:00 AM</td>
+<td style="color:#1f8a3c;font-weight:600;">Bookable (12 credits)</td>
 </tr>
 <tr class="day-start" data-cat="Strength (Full Body)" data-state="soon" data-avail="0" data-wd="1" data-mins="400">
 <td>Tue 25 Aug</td>
@@ -1123,7 +1027,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Karmen Ledgister</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/15/26, 5:00 AM</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sat 15 Aug, 5:00 AM</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="soon" data-avail="0" data-wd="1" data-mins="445">
 <td>Tue 25 Aug</td>
@@ -1132,7 +1036,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Roksana Piech</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/15/26, 5:00 AM</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sat 15 Aug, 5:00 AM</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="soon" data-avail="0" data-wd="1" data-mins="460">
 <td>Tue 25 Aug</td>
@@ -1141,7 +1045,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Karmen Ledgister</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/15/26, 5:00 AM</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sat 15 Aug, 5:00 AM</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="soon" data-avail="0" data-wd="1" data-mins="580">
 <td>Tue 25 Aug</td>
@@ -1150,7 +1054,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Dan Appah</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/15/26, 5:00 AM</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sat 15 Aug, 5:00 AM</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="soon" data-avail="0" data-wd="1" data-mins="660">
 <td>Tue 25 Aug</td>
@@ -1159,7 +1063,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Ruby Tuttlebee</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/15/26, 5:00 AM</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sat 15 Aug, 5:00 AM</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="soon" data-avail="0" data-wd="1" data-mins="750">
 <td>Tue 25 Aug</td>
@@ -1168,7 +1072,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Amaryllis Saunders</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/15/26, 5:00 AM</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sat 15 Aug, 5:00 AM</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="soon" data-avail="0" data-wd="1" data-mins="785">
 <td>Tue 25 Aug</td>
@@ -1177,7 +1081,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Matteo Massaini</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/15/26, 5:00 AM</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sat 15 Aug, 5:00 AM</td>
 </tr>
 <tr class="" data-cat="Calisthenics" data-state="soon" data-avail="0" data-wd="1" data-mins="790">
 <td>Tue 25 Aug</td>
@@ -1186,7 +1090,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
 <td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
 <td>Javi Martinez</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/15/26, 5:00 AM</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sat 15 Aug, 5:00 AM</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="soon" data-avail="0" data-wd="1" data-mins="1045">
 <td>Tue 25 Aug</td>
@@ -1195,7 +1099,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Roksana Piech</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/15/26, 5:00 AM</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sat 15 Aug, 5:00 AM</td>
 </tr>
 <tr class="" data-cat="Strength (Full Body)" data-state="soon" data-avail="0" data-wd="1" data-mins="1125">
 <td>Tue 25 Aug</td>
@@ -1204,7 +1108,7 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#1f7fd122;color:#1f7fd1;border:1px solid #1f7fd155;">Strength (Full Body)</span></td>
 <td>BLOKSTRENGTH: FULL BODY <span class="dur">(50 min)</span></td>
 <td>Dan Appah</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/15/26, 5:00 AM</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sat 15 Aug, 5:00 AM</td>
 </tr>
 <tr class="" data-cat="Calisthenics" data-state="soon" data-avail="0" data-wd="1" data-mins="1170">
 <td>Tue 25 Aug</td>
@@ -1213,17 +1117,187 @@ tr.hidden{display:none}
 <td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
 <td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
 <td>Autumn Red Bonham-Cox</td>
-<td style="color:#b06a00;font-weight:600;">Books open 8/15/26, 5:00 AM</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sat 15 Aug, 5:00 AM</td>
+</tr>
+<tr class="day-start" data-cat="Strength (Lower)" data-state="soon" data-avail="0" data-wd="1" data-mins="380">
+<td>Wed 26 Aug</td>
+<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
+<td>6:20 AM</td>
+<td><span class="pill" style="background:#c77d0a22;color:#c77d0a;border:1px solid #c77d0a55;">Strength (Lower)</span></td>
+<td>BLOKSTRENGTH: LOWER BODY <span class="dur">(50 min)</span></td>
+<td>Declan Taylor</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sun 16 Aug, 5:00 AM</td>
+</tr>
+<tr class="" data-cat="Strength (Lower)" data-state="soon" data-avail="0" data-wd="1" data-mins="400">
+<td>Wed 26 Aug</td>
+<td><a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a></td>
+<td>6:40 AM</td>
+<td><span class="pill" style="background:#c77d0a22;color:#c77d0a;border:1px solid #c77d0a55;">Strength (Lower)</span></td>
+<td>BLOKSTRENGTH: LOWER BODY <span class="dur">(50 min)</span></td>
+<td>Joëlle Brabban</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sun 16 Aug, 5:00 AM</td>
+</tr>
+<tr class="" data-cat="Calisthenics" data-state="soon" data-avail="0" data-wd="1" data-mins="460">
+<td>Wed 26 Aug</td>
+<td><a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a></td>
+<td>7:40 AM</td>
+<td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
+<td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
+<td>Juan Amo</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sun 16 Aug, 5:00 AM</td>
+</tr>
+<tr class="" data-cat="Strength (Lower)" data-state="soon" data-avail="0" data-wd="1" data-mins="510">
+<td>Wed 26 Aug</td>
+<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
+<td>8:30 AM</td>
+<td><span class="pill" style="background:#c77d0a22;color:#c77d0a;border:1px solid #c77d0a55;">Strength (Lower)</span></td>
+<td>BLOKSTRENGTH: LOWER BODY <span class="dur">(50 min)</span></td>
+<td>Declan Taylor</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sun 16 Aug, 5:00 AM</td>
+</tr>
+<tr class="" data-cat="Calisthenics" data-state="soon" data-avail="0" data-wd="1" data-mins="570">
+<td>Wed 26 Aug</td>
+<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
+<td>9:30 AM</td>
+<td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
+<td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
+<td>Juan Amo</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sun 16 Aug, 5:00 AM</td>
+</tr>
+<tr class="" data-cat="Strength (Lower)" data-state="soon" data-avail="0" data-wd="1" data-mins="640">
+<td>Wed 26 Aug</td>
+<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
+<td>10:40 AM</td>
+<td><span class="pill" style="background:#c77d0a22;color:#c77d0a;border:1px solid #c77d0a55;">Strength (Lower)</span></td>
+<td>BLOKSTRENGTH: LOWER BODY <span class="dur">(50 min)</span></td>
+<td>Joëlle Brabban</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sun 16 Aug, 5:00 AM</td>
+</tr>
+<tr class="" data-cat="Strength (Lower)" data-state="soon" data-avail="0" data-wd="1" data-mins="750">
+<td>Wed 26 Aug</td>
+<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
+<td>12:30 PM</td>
+<td><span class="pill" style="background:#c77d0a22;color:#c77d0a;border:1px solid #c77d0a55;">Strength (Lower)</span></td>
+<td>BLOKSTRENGTH: LOWER BODY <span class="dur">(50 min)</span></td>
+<td>&mdash;</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sun 16 Aug, 5:00 AM</td>
+</tr>
+<tr class="" data-cat="Strength (Lower)" data-state="soon" data-avail="0" data-wd="1" data-mins="990">
+<td>Wed 26 Aug</td>
+<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
+<td>4:30 PM</td>
+<td><span class="pill" style="background:#c77d0a22;color:#c77d0a;border:1px solid #c77d0a55;">Strength (Lower)</span></td>
+<td>BLOKSTRENGTH: LOWER BODY <span class="dur">(50 min)</span></td>
+<td>Matteo Massaini</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sun 16 Aug, 5:00 AM</td>
+</tr>
+<tr class="" data-cat="Calisthenics" data-state="soon" data-avail="0" data-wd="1" data-mins="1040">
+<td>Wed 26 Aug</td>
+<td><a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a></td>
+<td>5:20 PM</td>
+<td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
+<td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
+<td>Autumn Red Bonham-Cox</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sun 16 Aug, 5:00 AM</td>
+</tr>
+<tr class="" data-cat="Strength (Lower)" data-state="soon" data-avail="0" data-wd="1" data-mins="1115">
+<td>Wed 26 Aug</td>
+<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
+<td>6:35 PM</td>
+<td><span class="pill" style="background:#c77d0a22;color:#c77d0a;border:1px solid #c77d0a55;">Strength (Lower)</span></td>
+<td>BLOKSTRENGTH: LOWER BODY <span class="dur">(50 min)</span></td>
+<td>Matteo Massaini</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sun 16 Aug, 5:00 AM</td>
+</tr>
+<tr class="" data-cat="Strength (Lower)" data-state="soon" data-avail="0" data-wd="1" data-mins="1170">
+<td>Wed 26 Aug</td>
+<td><a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a></td>
+<td>7:30 PM</td>
+<td><span class="pill" style="background:#c77d0a22;color:#c77d0a;border:1px solid #c77d0a55;">Strength (Lower)</span></td>
+<td>BLOKSTRENGTH: LOWER BODY <span class="dur">(50 min)</span></td>
+<td>Paige Holbard</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sun 16 Aug, 5:00 AM</td>
+</tr>
+<tr class="" data-cat="Calisthenics" data-state="soon" data-avail="0" data-wd="1" data-mins="1180">
+<td>Wed 26 Aug</td>
+<td><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a></td>
+<td>7:40 PM</td>
+<td><span class="pill" style="background:#7c5cff22;color:#7c5cff;border:1px solid #7c5cff55;">Calisthenics</span></td>
+<td>CALISTHENICS 60 <span class="dur">(60 min)</span></td>
+<td>Autumn Red Bonham-Cox</td>
+<td style="color:#b06a00;font-weight:600;">Books open Sun 16 Aug, 5:00 AM</td>
 </tr>
 </tbody>
 </table>
 
 <script>
-(function(){var a=document.getElementById('availOnly'),f=document.getElementById('hideFull'),w=document.getElementById('hideWorkHours'),T=Array.prototype.slice.call(document.querySelectorAll('.typeFilter')),R=Array.prototype.slice.call(document.querySelectorAll('#rows tr')),L=document.getElementById('liveCount');
-function load(){try{var x=localStorage.getItem('blokAvailOnly');if(x!==null)a.checked=x==='1';var y=localStorage.getItem('blokHideFull');if(y!==null)f.checked=y==='1';var z=localStorage.getItem('blokHideWorkHours');if(z!==null)w.checked=z==='1';var t=localStorage.getItem('blokTypes');if(t!==null){var s=new Set(JSON.parse(t));T.forEach(function(c){c.checked=s.has(c.dataset.cat)})}}catch(e){}}
-function save(){localStorage.setItem('blokAvailOnly',a.checked?'1':'0');localStorage.setItem('blokHideFull',f.checked?'1':'0');localStorage.setItem('blokHideWorkHours',w.checked?'1':'0');localStorage.setItem('blokTypes',JSON.stringify(T.filter(function(c){return c.checked}).map(function(c){return c.dataset.cat})))}
-function apply(){var ct=new Set(T.filter(function(c){return c.checked}).map(function(c){return c.dataset.cat})),n=0,ld=null;R.forEach(function(r){r.classList.remove('day-start')});R.forEach(function(r){var ao=!a.checked||r.dataset.avail==='1',fo=!f.checked||r.dataset.state!=='full',to=ct.has(r.dataset.cat),m=parseInt(r.dataset.mins,10),iw=r.dataset.wd==='1'&&m>=480&&m<=1045,wo=!w.checked||!iw,v=ao&&fo&&to&&wo;r.classList.toggle('hidden',!v);if(v){n++;var dc=r.querySelector('td'),dv=dc?dc.textContent:null;if(dv!==ld){r.classList.add('day-start');ld=dv}}});L.textContent='showing '+n+' of '+R.length;save()}
-load();a.addEventListener('change',apply);f.addEventListener('change',apply);w.addEventListener('change',apply);T.forEach(function(c){c.addEventListener('change',apply)});apply();})();
+(function() {
+  const availChk = document.getElementById('availOnly');
+  const fullChk = document.getElementById('hideFull');
+  const workChk = document.getElementById('hideWorkHours');
+  const typeChks = Array.from(document.querySelectorAll('.typeFilter'));
+  const rows = Array.from(document.querySelectorAll('#rows tr'));
+  const liveCount = document.getElementById('liveCount');
+
+  function loadState() {
+    try {
+      const a = localStorage.getItem('blokAvailOnly');
+      if (a !== null) availChk.checked = a === '1';
+      const f = localStorage.getItem('blokHideFull');
+      if (f !== null) fullChk.checked = f === '1';
+      const w = localStorage.getItem('blokHideWorkHours');
+      if (w !== null) workChk.checked = w === '1';
+      const t = localStorage.getItem('blokTypes');
+      if (t !== null) {
+        const set = new Set(JSON.parse(t));
+        typeChks.forEach(c => c.checked = set.has(c.dataset.cat));
+      }
+    } catch(e) {}
+  }
+
+  function saveState() {
+    localStorage.setItem('blokAvailOnly', availChk.checked ? '1' : '0');
+    localStorage.setItem('blokHideFull', fullChk.checked ? '1' : '0');
+    localStorage.setItem('blokHideWorkHours', workChk.checked ? '1' : '0');
+    localStorage.setItem('blokTypes', JSON.stringify(typeChks.filter(c=>c.checked).map(c=>c.dataset.cat)));
+  }
+
+  function applyFilters() {
+    const checkedTypes = new Set(typeChks.filter(c => c.checked).map(c => c.dataset.cat));
+    let shown = 0;
+    let lastDate = null;
+    rows.forEach(r => r.classList.remove('day-start'));
+    rows.forEach(row => {
+      const availOk = !availChk.checked || row.dataset.avail === '1';
+      const fullOk = !fullChk.checked || row.dataset.state !== 'full';
+      const typeOk = checkedTypes.has(row.dataset.cat);
+      const mins = parseInt(row.dataset.mins, 10);
+      const isWd = row.dataset.wd === '1';
+      const inWorkHours = isWd && mins >= 480 && mins <= 1045;
+      const workOk = !workChk.checked || !inWorkHours;
+      const visible = availOk && fullOk && typeOk && workOk;
+      row.classList.toggle('hidden', !visible);
+      if (visible) {
+        shown++;
+        const dateCell = row.querySelector('td');
+        const dateVal = dateCell ? dateCell.textContent : null;
+        if (dateVal !== lastDate) {
+          row.classList.add('day-start');
+          lastDate = dateVal;
+        }
+      }
+    });
+    liveCount.textContent = `showing ${shown} of ${rows.length}`;
+    saveState();
+  }
+
+  loadState();
+  availChk.addEventListener('change', applyFilters);
+  fullChk.addEventListener('change', applyFilters);
+  workChk.addEventListener('change', applyFilters);
+  typeChks.forEach(c => c.addEventListener('change', applyFilters));
+  applyFilters();
+})();
 </script>
 </body>
 </html>
