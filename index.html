@@ -15,6 +15,8 @@ h1{margin:0 0 3px;font-size:18px;font-weight:650}
 .cb{display:inline-flex;align-items:center;gap:5px;cursor:pointer;user-select:none}
 .cb b{font-weight:600;opacity:.5;font-size:11.5px}
 .sep{width:1px;height:17px;background:#e0e0e6}
+.rst{font:inherit;font-size:12.5px;color:#55555f;background:#f2f2f6;border:1px solid #dcdce2;border-radius:6px;padding:3px 10px;cursor:pointer}
+.rst:hover{background:#e8e8ee}
 table{border-collapse:collapse;width:100%}
 td{padding:9px 12px;border-bottom:1px solid #efeff2;vertical-align:middle}
 tr.day td{background:#f0f0f4;font-weight:650;font-size:12.5px;letter-spacing:.03em;text-transform:uppercase;color:#55555f;padding:7px 18px;border-bottom:1px solid #e2e2e8}
@@ -33,7 +35,7 @@ tr.hide{display:none}
 </style></head><body>
 <header>
 <h1>BLOK — Calisthenics &amp; Strength</h1>
-<div class="sub">Clapton &amp; Shoreditch · 16 Aug – 27 Aug 2026 · 117 classes · auto-updated every 4 hours · refreshed Sun 16 Aug 2026, 15:27</div>
+<div class="sub">Clapton &amp; Shoreditch · 16 Aug – 27 Aug 2026 · 117 classes · auto-updated every 4 hours · refreshed Sun 16 Aug 2026, 16:05</div>
 <div class="legend"><span class="lg"><i style="background:#1f8a3c"></i>Bookable <b>94</b></span> <span class="lg"><i style="background:#c0392b"></i>Full <b>10</b></span> <span class="lg"><i style="background:#b06a00"></i>Not yet open <b>11</b></span> <span class="lg"><i style="background:#1f7fd1"></i>Booked <b>1</b></span> <span class="lg"><i style="background:#8a8a8f"></i>Closed <b>1</b></span></div>
 </header>
 <div class="bar">
@@ -42,9 +44,11 @@ tr.hide{display:none}
 <label class="cb"><input type="checkbox" id="hideWork"> Hide weekday 8:00am–5:25pm</label>
 <span class="sep"></span>
 <label class="cb"><input type="checkbox" class="cat" value="cal" checked> <i style="background:#7c5cff"></i>Calisthenics <b>30</b></label><label class="cb"><input type="checkbox" class="cat" value="su" checked> <i style="background:#2e9e5b"></i>Strength: Upper <b>25</b></label><label class="cb"><input type="checkbox" class="cat" value="sl" checked> <i style="background:#c77d0a"></i>Strength: Lower <b>22</b></label><label class="cb"><input type="checkbox" class="cat" value="sf" checked> <i style="background:#1f7fd1"></i>Strength: Full Body <b>40</b></label>
+<span class="sep"></span>
+<button id="reset" class="rst">Reset filters</button>
 </div>
 <table><tbody id="tb"></tbody></table>
-<div class="empty" id="none" style="display:none">No classes match these filters.</div>
+<div class="empty" id="none" style="display:none">No classes match these filters. <button id="reset2" class="rst">Reset filters</button></div>
 <script>
 var DAYS=[["2026-08-16",[["3:30PM",930,50,"sf","Dan Appah","CLOSED",0]]],["2026-08-17",[["6:20AM",380,50,"su","Ellie Williams","C11",0],["6:40AM",400,50,"su","Lewis Akpata","C10",1],["8:40AM",520,60,"cal","Manu Beja da Costa","C11",0],["9:30AM",570,50,"su","Dan Appah","C11",0],["12:00PM",720,50,"su","Lewis Akpata","C11",0],["12:30PM",750,50,"su","Mayoor Jobanputra","C10",1],["4:30PM",990,50,"su","Paige Holbard","C8",1],["4:45PM",1005,50,"su","Ruby Tuttlebee","C8",0],["5:30PM",1050,60,"cal","Daniel Zivatovic","FULL",0],["6:30PM",1110,50,"su","Paige Holbard","FULL",1],["6:50PM",1130,50,"su","Dan Appah","C11",0]]],["2026-08-18",[["6:40AM",400,50,"sf","Karmen Ledgister","C10",1],["7:25AM",445,50,"sf","Roksana Piech","FULL",0],["7:40AM",460,50,"sf","Karmen Ledgister","C12",1],["9:40AM",580,50,"sf","Dan Appah","C11",0],["11:00AM",660,50,"sf","Ruby Tuttlebee","C8",0],["12:30PM",750,50,"sf","Amaryllis Saunders","C10",1],["1:05PM",785,50,"sf","Matteo Massaini","C8",0],["1:10PM",790,60,"cal","Javi Martinez","C8",0],["5:25PM",1045,50,"sf","Roksana Piech","C12",1],["6:45PM",1125,50,"sf","Dan Appah","FULL",0],["7:30PM",1170,60,"cal","Autumn Red Bonham-Cox","C12",1]]],["2026-08-19",[["6:20AM",380,50,"sl","Declan Taylor","FULL",0],["6:40AM",400,50,"sl","Lewis Akpata","C10",1],["7:40AM",460,60,"cal","Juan Amo","C10",1],["8:30AM",510,50,"sl","Declan Taylor","C11",0],["9:30AM",570,60,"cal","Juan Amo","FULL",0],["10:40AM",640,50,"sl","Roksana Piech","C8",0],["12:30PM",750,50,"sl","Roksana Piech","C11",0],["4:30PM",990,50,"sl","Matteo Massaini","C8",0],["5:20PM",1040,60,"cal","Autumn Red Bonham-Cox","C10",1],["6:35PM",1115,50,"sl","Matteo Massaini","BOOKED",0],["7:30PM",1170,50,"sl","Paige Holbard","C10",1],["7:40PM",1180,60,"cal","Samuel Deschamps","C11",0]]],["2026-08-20",[["6:20AM",380,50,"sf","Fran Bratke","FULL",0],["6:40AM",400,50,"sf","Lewis Akpata","C10",1],["8:30AM",510,50,"sf","Roksana Piech","FULL",0],["10:50AM",650,60,"cal","Samuel Deschamps","C8",0],["12:00PM",720,50,"sf","Lewis Akpata","C11",0],["12:05PM",725,50,"cal","Guillermo Justel","C10",1],["1:05PM",785,50,"sf","Roksana Piech","C8",1],["5:00PM",1020,50,"sf","Dan Appah","C11",0],["5:25PM",1045,50,"sf","Matteo Massaini","C12",1],["7:00PM",1140,50,"sf","Ellie Williams","C11",0],["7:50PM",1190,60,"cal","Autumn Red Bonham-Cox","C11",0]]],["2026-08-21",[["6:30AM",390,50,"su","Lewis Akpata","C11",0],["6:40AM",400,60,"cal","Samuel Deschamps","C11",0],["6:50AM",410,50,"su","Fran Bratke","C10",1],["9:40AM",580,50,"su","Dan Appah","C11",0],["9:50AM",590,60,"cal","Daniel Zivatovic","FULL",0],["12:00PM",720,50,"su","Amaryllis Saunders","C11",0],["12:20PM",740,50,"su","Karmen Ledgister","C10",1],["5:15PM",1035,50,"su","Lewis Akpata","C10",1],["6:00PM",1080,50,"su","John Aiwone","C11",0],["6:15PM",1095,60,"cal","Mayoor Jobanputra","C10",1]]],["2026-08-22",[["9:00AM",540,50,"sl","Mayoor Jobanputra","C10",1],["9:30AM",570,50,"sl","Roksana Piech","C11",0],["11:00AM",660,50,"sl","Mayoor Jobanputra","C9",1],["11:10AM",670,60,"cal","Daniel Zivatovic","FULL",0],["12:00PM",720,60,"cal","Autumn Red Bonham-Cox","C9",1],["12:45PM",765,50,"sl","Lewis Akpata","C8",0],["1:20PM",800,50,"sl","John Aiwone","C8",1],["2:20PM",860,50,"sl","John Aiwone","C8",1],["2:25PM",865,60,"cal","Samuel Deschamps","C8",0]]],["2026-08-23",[["8:30AM",510,50,"sf","Dan Appah","C12",0],["9:00AM",540,50,"sf","Sean Paul Jenkinson","C12",1],["11:00AM",660,50,"sf","Sean Paul Jenkinson","C9",1],["12:00PM",720,60,"cal","Mayoor Jobanputra","C8",1],["1:15PM",795,60,"cal","Samuel Deschamps","C9",0],["1:50PM",830,50,"sf","Dan Appah","C9",0],["3:30PM",930,50,"sf","Dan Appah","C8",0]]],["2026-08-24",[["6:20AM",380,50,"su","Ellie Williams","C11",0],["6:40AM",400,50,"su","Lewis Akpata","C10",1],["8:40AM",520,60,"cal","Manu Beja da Costa","C12",0],["9:30AM",570,50,"su","Dan Appah","C11",0],["12:00PM",720,50,"su","Lewis Akpata","C11",0],["12:30PM",750,50,"su","Mayoor Jobanputra","C10",1],["4:30PM",990,50,"su","Paige Holbard","C8",1],["4:45PM",1005,50,"su","Joelle Brabban","C8",0],["5:30PM",1050,60,"cal","Daniel Zivatovic","C12",0],["6:30PM",1110,50,"su","Paige Holbard","C12",1],["6:50PM",1130,50,"su","Sean Paul Jenkinson","C12",0]]],["2026-08-25",[["6:40AM",400,50,"sf","Karmen Ledgister","C10",1],["7:25AM",445,50,"sf","Roksana Piech","C12",0],["7:40AM",460,50,"sf","Karmen Ledgister","C12",1],["9:40AM",580,50,"sf","Dan Appah","C11",0],["11:00AM",660,50,"sf","Ruby Tuttlebee","C8",0],["12:30PM",750,50,"sf","Amaryllis Saunders","C10",1],["1:05PM",785,50,"sf","Matteo Massaini","C8",0],["1:10PM",790,60,"cal","Javi Martinez","C8",0],["5:25PM",1045,50,"sf","Roksana Piech","C12",1],["6:45PM",1125,50,"sf","Dan Appah","C12",0],["7:30PM",1170,60,"cal","Autumn Red Bonham-Cox","C12",1]]],["2026-08-26",[["6:20AM",380,50,"sl","Declan Taylor","C11",0],["6:40AM",400,50,"sl","Joelle Brabban","C10",1],["7:40AM",460,60,"cal","Juan Amo","C10",1],["8:30AM",510,50,"sl","Declan Taylor","C11",0],["9:30AM",570,60,"cal","Juan Amo","C11",0],["10:40AM",640,50,"sl","Joelle Brabban","C8",0],["12:30PM",750,50,"sl","Joelle Brabban","C11",0],["4:30PM",990,50,"sl","Matteo Massaini","C8",0],["5:20PM",1040,60,"cal","Autumn Red Bonham-Cox","C10",1],["6:35PM",1115,50,"sl","Matteo Massaini","C11",0],["7:30PM",1170,50,"sl","Paige Holbard","C10",1],["7:40PM",1180,60,"cal","Autumn Red Bonham-Cox","C11",0]]],["2026-08-27",[["6:20AM",380,50,"sf","Fran Bratke","OPEN:8/17/26, 5:00 AM",0],["6:40AM",400,50,"sf","Sean Paul Jenkinson","OPEN:8/17/26, 5:00 AM",1],["8:30AM",510,50,"sf","Roksana Piech","OPEN:8/17/26, 5:00 AM",0],["10:50AM",650,60,"cal","Autumn Red Bonham-Cox","OPEN:8/17/26, 5:00 AM",0],["12:00PM",720,50,"sf","Sean Paul Jenkinson","OPEN:8/17/26, 5:00 AM",0],["12:05PM",725,50,"cal","Mayoor Jobanputra","OPEN:8/17/26, 5:00 AM",1],["1:05PM",785,50,"sf","Roksana Piech","OPEN:8/17/26, 5:00 AM",1],["5:00PM",1020,50,"sf","Dan Appah","OPEN:8/17/26, 5:00 AM",0],["5:25PM",1045,50,"sf","Matteo Massaini","OPEN:8/17/26, 5:00 AM",1],["7:00PM",1140,50,"sf","Ellie Williams","OPEN:8/17/26, 5:00 AM",0],["7:50PM",1190,60,"cal","Kwame Hanson","OPEN:8/17/26, 5:00 AM",0]]]];
 var CATN={cal:'Calisthenics',su:'Strength: Upper',sl:'Strength: Lower',sf:'Strength: Full Body'};
@@ -86,7 +90,13 @@ try{
   hf.checked=localStorage.getItem(K.f)==='1';
   hw.checked=localStorage.getItem(K.w)==='1';
   var t=localStorage.getItem(K.t);
-  if(t){var sel=JSON.parse(t);cats.forEach(function(c){c.checked=sel.indexOf(c.value)>=0;});}
+  if(t){
+    var sel=JSON.parse(t)||[], known=cats.map(function(c){return c.value;});
+    var ok=sel.filter(function(v){return known.indexOf(v)>=0;});
+    // Stale state from an older build could uncheck everything and hide the
+    // whole table. Only apply it if it names at least one category we know.
+    if(ok.length){cats.forEach(function(c){c.checked=ok.indexOf(c.value)>=0;});}
+  }
 }catch(e){}
 function save(){try{
   localStorage.setItem(K.a,ao.checked?'1':'0');
@@ -114,6 +124,13 @@ function apply(){
   save();
 }
 [ao,hf,hw].concat(cats).forEach(function(el){el.addEventListener('change',apply);});
+function reset(){
+  ao.checked=false;hf.checked=false;hw.checked=false;
+  cats.forEach(function(c){c.checked=true;});
+  apply();
+}
+document.getElementById('reset').addEventListener('click',reset);
+document.getElementById('reset2').addEventListener('click',reset);
 apply();
 </script>
 </body></html>
