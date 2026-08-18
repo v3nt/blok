@@ -26,7 +26,7 @@ tbody tr[data-state="full"] td:not(:last-child){opacity:.55}
 @media(max-width:620px){td,th{padding:7px 6px;font-size:12.5px}.mins{display:none}}
 </style></head><body>
 <header><h1>BLOK — Calisthenics &amp; BLOKStrength</h1>
-<p>Tue 18 Aug – Sun 30 Aug 2026 · <a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> · auto-updated every 4 hours · checked Mon 17 Aug 2026, 20:09</p></header>
+<p>Tue 18 Aug – Sun 30 Aug 2026 · <a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> · auto-updated every 4 hours · checked Tue 18 Aug 2026, 20:23</p></header>
 <div class="wrap">
 <div class="legend" id="lg"></div>
 <div class="bar">
@@ -44,8 +44,11 @@ var LS={a:'blokAvailOnly',f:'blokHideFull',w:'blokHideWorkHours',t:'blokTypes'};
 function g(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}}
 function s(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 var order=Object.keys(CATS).sort();
-var sel=g(LS.t,order);
+var sel=g(LS.t,null);
 if(!Array.isArray(sel))sel=order.slice();
+sel=sel.filter(function(c){return order.indexOf(c)>-1});
+if(!sel.length)sel=order.slice();
+s(LS.t,sel);
 var av=document.getElementById('av'),hf=document.getElementById('hf'),hw=document.getElementById('hw');
 av.checked=!!g(LS.a,false);hf.checked=!!g(LS.f,false);hw.checked=!!g(LS.w,false);
 var cw=document.getElementById('cats');
