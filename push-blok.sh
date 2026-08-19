@@ -125,6 +125,35 @@ if [ -f validate-index.py ]; then
   log "validated: $VALIDATION"
 fi
 
+# ------------------------------------------------------------ baseline test
+# The static validator proves the markers exist. This drives the real page in
+# a browser and proves the behaviour still holds - grouped filters, favourites
+# above non-favourites, four scoped select-alls, defaults reaching a browser
+# that already saved a list. Exit 2 means playwright is missing, i.e. NOT
+# verified: warn, do not pretend it passed.
+if [ -f scraper/test-baseline.py ]; then
+  # NOTE: 'set -e' kills the script on a failing command substitution, so the
+  # exit code must be captured with '|| rc=$?' - not by reading $? afterwards.
+  BASELINE_RC=0
+  BASELINE=$(python3 scraper/test-baseline.py index.html 2>&1) || BASELINE_RC=$?
+  if [ $BASELINE_RC -eq 1 ]; then
+    log "BLOCKED: baseline regression"
+    printf '%s\n' "$BASELINE" | while IFS= read -r line; do log "  $line"; done
+    git checkout -- index.html 2>/dev/null || true
+    write_status
+    git add -A -- ':!index.html'
+    if ! git diff --cached --quiet; then
+      git commit -q -m "Pipeline status: index.html rejected by baseline test"
+      git push origin main 2>/dev/null || true
+    fi
+    exit 1
+  elif [ $BASELINE_RC -eq 2 ]; then
+    log "baseline NOT verified (playwright missing)"
+  else
+    log "baseline: $(printf '%s' "$BASELINE" | head -1)"
+  fi
+fi
+
 # -------------------------------------------------------------------- commit
 
 git add -A

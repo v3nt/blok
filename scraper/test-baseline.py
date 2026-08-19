@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+"""
+test-baseline.py — the agreed schedule UI, asserted in a real browser.
+
+Every check here exists because that exact thing broke at least once:
+
+  * the whole grouped UI was replaced by another generator          (19 Aug)
+  * favouriting a chip silently deselected it and its classes vanished
+  * a favourited chip appeared in both the ★ row and the list below
+  * one select-all per gym instead of one per row
+  * default favourites never reached a browser with a saved list
+  * a regex holding a quote broke the publish-time JS parser check
+
+Run it against a built page:
+
+    python3 test-baseline.py ../index.html
+
+Exit 0 = the baseline holds. Exit 1 = a regression, with the failure named.
+Needs playwright (same dependency as refresh.py). If it is missing this exits
+2 - "could not verify" - which is not the same as passing.
+"""
+import sys, json, pathlib
+
+PATH = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "index.html").resolve()
+GROUPS = [("M", "Mission E1"), ("B", "BLOK")]
+fails, checks = [], 0
+
+def check(name, cond, detail=""):
+    global checks
+    checks += 1
+    if not cond:
+        fails.append(f"{name}{(': ' + detail) if detail else ''}")
+
+def main():
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("SKIP: playwright not installed - baseline NOT verified")
+        print("      /usr/bin/python3 -m pip install playwright")
+        return 2
+    if not PATH.exists():
+        print(f"FAIL: {PATH} does not exist")
+        return 1
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+        errors = []
+        page.on("pageerror", lambda e: errors.append(str(e)))
+        page.goto(PATH.as_uri())
+
+        def state():
+            # Defensive: a page that dropped the UI entirely must produce a
+            # readable failure, not a traceback.
+            return page.evaluate("""() => {
+              const ids = g => ([...document.querySelectorAll(g + ' input[data-c]')].map(e => e.dataset.c));
+              const el = i => document.getElementById(i);
+              const txt = i => (el(i) || {}).textContent || '';
+              return {
+                favM: ids('#favM'), catM: ids('#catsM'),
+                favB: ids('#favB'), catB: ids('#catsB'),
+                toggles: ['allFavM','allCatM','allFavB','allCatB']
+                  .map(i => { const e = document.getElementById(i);
+                              return e ? (e.disabled ? 'disabled' : (e.indeterminate ? 'mixed' : e.checked)) : null; }),
+                rows: document.querySelectorAll('#tb tr:not(.day)').length,
+                total: (typeof D === 'undefined' ? 0 : D.length),
+                shown: txt('shown'),
+                tipped: document.querySelectorAll('#tb .pill[title]').length,
+                saved: JSON.parse(localStorage.getItem('blokFavs') || 'null'),
+                favRowFirst: ['M','B'].every(v => {
+                  const row = el('fav'+v);
+                  if (!row) return false;
+                  const kids = [...row.parentNode.querySelectorAll('.row')];
+                  return kids[0].id === 'fav'+v;    // ★ row must sit above the rest
+                }),
+              };
+            }""")
+
+        s = state()
+
+        # If the grouped UI is absent this is not a subtle regression - it is a
+        # different page. Report it plainly instead of failing 15 ways.
+        missing = [i for i in ("favM", "catsM", "favB", "catsB",
+                               "allFavM", "allCatM", "allFavB", "allCatB")
+                   if not page.query_selector("#" + i)]
+        if missing:
+            print("FAIL: this is not the agreed UI - missing #" + ", #".join(missing))
+            browser.close()
+            return 1
+
+        # --- structure -----------------------------------------------------
+        check("two filter groups, one per gym",
+              len(page.query_selector_all(".grp")) == 2)
+        for gid, label in GROUPS:
+            check(f"{label}: has a favourites row and a list",
+                  page.query_selector(f"#fav{gid}") and page.query_selector(f"#cats{gid}"))
+        check("favourites row sits above the non-favourites", s["favRowFirst"])
+        check("four select-all toggles, one per row",
+              all(t is not None for t in s["toggles"]), str(s["toggles"]))
+
+        # --- every row rendered -------------------------------------------
+        check("every class is rendered", s["rows"] == s["total"], f"{s['rows']} of {s['total']}")
+        check("shown counter agrees", s["shown"].startswith(f"{s['total']} of {s['total']}"), s["shown"])
+
+        # --- default favourites -------------------------------------------
+        check("BLOK starts with calisthenics/strength favourited",
+              {"CALISTHENICS", "BLOKSTRENGTH: FULL BODY", "BLOKSTRENGTH: LOWER BODY",
+               "BLOKSTRENGTH: UPPER BODY"} <= set(s["favB"]), str(s["favB"]))
+        check("Mission starts with its strength stream favourited",
+              {"Reps Kulture", "Squat Kulture", "Statics Kulture"} <= set(s["favM"]), str(s["favM"]))
+
+        # --- no chip in two places ----------------------------------------
+        for gid, label in GROUPS:
+            fav, cat = s["fav" + gid], s["cat" + gid]
+            check(f"{label}: no chip duplicated across rows",
+                  not (set(fav) & set(cat)), str(sorted(set(fav) & set(cat))))
+
+        # --- each toggle drives only its own row ---------------------------
+        page.uncheck("#allCatB")
+        after = state()
+        check("BLOK list toggle leaves BLOK favourites alone",
+              set(after["favB"]) == set(s["favB"]) and after["rows"] < s["total"])
+        page.check("#allCatB")
+
+        # --- favouriting must not deselect (the bug that hid classes) ------
+        before_rows = state()["rows"]
+        page.click("#catsM .chip:nth-child(2) .star")
+        moved = state()
+        check("favouriting a type does not hide its classes",
+              moved["rows"] == before_rows, f"{moved['rows']} vs {before_rows}")
+        check("favouriting moves the chip, not copies it",
+              not (set(moved["favM"]) & set(moved["catM"])))
+        page.click("#favM .star")           # put it back
+
+        # --- defaults reach a browser that already saved a list ------------
+        page.evaluate("() => { localStorage.setItem('blokFavs','[]');"
+                      " localStorage.removeItem('blokFavsSeed'); }")
+        page.reload()
+        seeded = state()
+        check("defaults seed into a browser with a stale saved list",
+              len(seeded["favB"]) >= 4 and len(seeded["favM"]) >= 3,
+              f"favB={seeded['favB']} favM={seeded['favM']}")
+
+        # --- but a deliberate clear must stick -----------------------------
+        page.evaluate("() => document.querySelectorAll('#favB .star,#favM .star')"
+                      ".forEach(b => b.click())")
+        page.reload()
+        cleared = state()
+        check("clearing every favourite stays cleared",
+              not cleared["favB"] and not cleared["favM"],
+              f"favB={cleared['favB']} favM={cleared['favM']}")
+
+        # --- reset gets you back -------------------------------------------
+        page.click("#reset")
+        reset = state()
+        check("Reset filters restores the default favourites",
+              len(reset["favB"]) >= 4 and len(reset["favM"]) >= 3)
+
+        # --- descriptions ---------------------------------------------------
+        check("class descriptions on hover",
+              s["tipped"] > s["total"] * 0.5, f"{s['tipped']} of {s['total']} rows")
+
+        check("no JavaScript errors", not errors, "; ".join(errors[:3]))
+        browser.close()
+
+    if fails:
+        print(f"FAIL: {len(fails)} of {checks} baseline checks failed")
+        for f in fails:
+            print("  x " + f)
+        return 1
+    print(f"OK: {checks} baseline checks passed")
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())
