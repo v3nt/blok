@@ -6,7 +6,7 @@ GitHub (and therefore from a phone) without touching the Mac.
 | Field | Value |
 |---|---|
 | Scrape result | **FAIL** |
-| Last scrape log line | `----- 2026-08-19 07:11:05 refresh exit 0` |
+| Last scrape log line | `----- 2026-08-19 11:11:05 refresh exit 3` |
 | index.html modified | 2026-08-19 08:30:42 BST |
 | Classes in index.html | 1924 |
 
@@ -21,6 +21,10 @@ Traceback (most recent call last):
     from playwright.sync_api import sync_playwright
 ModuleNotFoundError: No module named 'playwright'
 ----- 2026-08-19 07:11:05 refresh exit 0
+----- 2026-08-19 11:11:05 refresh start (python: /usr/bin/python3)
+FATAL: playwright not installed for /usr/bin/python3
+       fix: /usr/bin/python3 -m pip install playwright && /usr/bin/python3 -m playwright install chromium
+----- 2026-08-19 11:11:05 refresh exit 3
 ```
 
 ## Recent push errors
