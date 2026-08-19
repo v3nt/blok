@@ -53,7 +53,7 @@ tbody tr[data-state="full"] td:not(:last-child){opacity:.55}
 @media(max-width:640px){td,th{padding:7px 6px;font-size:12.5px}.mins{display:none}.bar,header,#booked{padding-left:11px;padding-right:11px}}
 </style></head><body>
 <header><h1>Class schedule — BLOK &amp; Mission E1</h1>
-<p><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> &amp; <a href="https://classpass.com/studios/mission-e1-london" target="_blank" rel="noopener">Mission E1</a> · 19 Aug – 1 Sep 2026 · 1943 classes · auto-updated every 4 hours · refreshed Wed 19 Aug 2026, 22:16 UTC</p>
+<p><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> &amp; <a href="https://classpass.com/studios/mission-e1-london" target="_blank" rel="noopener">Mission E1</a> · 19 Aug – 1 Sep 2026 · 1943 classes · auto-updated every 4 hours · refreshed Wed 19 Aug 2026, 22:24 UTC</p>
 <div id="lg"></div></header>
 <div class="bar">
 <div class="top">
@@ -163,6 +163,11 @@ function sync(venue){
 document.getElementById('reset').addEventListener('click',function(){
  av.checked=false;hf.checked=false;hw.checked=false;
  s(LS.a,false);s(LS.f,false);s(LS.w,false);
+ // Reset also restores the default favourites. Without this there is no way
+ // back to them once a saved list exists - which reads as "the defaults are
+ // missing" on any browser that used an older build.
+ favs=DEFAULT_FAVS.slice();s(LS.v,favs);
+ place('M');place('B');
  [].slice.call(document.querySelectorAll('#catsM input,#catsB input')).forEach(function(x){x.checked=true});
  selB=orderB.slice();selM=orderM.slice();s(LS.t,selB);s(LS.m,selM);
  refreshAll();
