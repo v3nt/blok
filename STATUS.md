@@ -9,7 +9,7 @@ GitHub (and therefore from a phone) without touching the Mac.
 | Scrape log line | `----- 2026-08-19 07:11:05 refresh exit 0` |
 | index.html modified | 2026-08-19 07:35:50 BST |
 | Classes in index.html | 1924 |
-| Last commit | `04c1a52 Refresh BLOK schedule Wed 19 Aug 2026, 07:20 BST - 551 classes` |
+| Last commit | `848fce4 Refresh BLOK schedule Wed 19 Aug 2026, 07:40 BST - 1924 classes` |
 
 ## Recent push errors
 
