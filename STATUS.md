@@ -6,7 +6,7 @@ GitHub (and therefore from a phone) without touching the Mac.
 | Field | Value |
 |---|---|
 | Scrape result | **FAIL** |
-| Last scrape log line | `----- 2026-08-19 15:11:05 refresh exit 3` |
+| Last scrape log line | `----- 2026-08-19 19:11:05 refresh exit 3` |
 | index.html modified | 2026-08-19 16:21:00 BST |
 | Classes in index.html | 1977 |
 
@@ -29,6 +29,10 @@ FATAL: playwright not installed for /usr/bin/python3
 FATAL: playwright not installed for /usr/bin/python3
        fix: /usr/bin/python3 -m pip install playwright && /usr/bin/python3 -m playwright install chromium
 ----- 2026-08-19 15:11:05 refresh exit 3
+----- 2026-08-19 19:11:05 refresh start (python: /usr/bin/python3)
+FATAL: playwright not installed for /usr/bin/python3
+       fix: /usr/bin/python3 -m pip install playwright && /usr/bin/python3 -m playwright install chromium
+----- 2026-08-19 19:11:05 refresh exit 3
 ```
 
 ## Recent push errors
