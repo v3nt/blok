@@ -92,6 +92,7 @@ REQUIRED = {
     "orderB":     "BLOK category order",
     "orderM":     "Mission E1 category order",
     "blokFavs":   "saved favourites key",
+    "DEFAULT_FAVS": "default favourites (calisthenics / strength) on first load",
 }
 missing = [what for marker, what in REQUIRED.items() if marker not in html]
 if missing:
