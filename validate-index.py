@@ -75,5 +75,29 @@ if rows < 20:
     print(f"FAIL: only {rows} class rows in D - refusing to publish an empty schedule")
     sys.exit(1)
 
-print(f"OK: script parses, {rows} class rows")
+# --------------------------------------------------------------- UI contract
+# The schedule UI has been silently replaced more than once by a generator that
+# drops features nobody re-described. These markers ARE the agreed UI: two
+# filter groups (Mission E1 and BLOK), each with its own favourites row above
+# its non-favourites, and a select/deselect-all per group. A page missing any
+# of them is a regression, not a refresh - reject it and keep the last good
+# version live.
+REQUIRED = {
+    'id="favM"':  "Mission E1 favourites row",
+    'id="catsM"': "Mission E1 filter list",
+    'id="favB"':  "BLOK favourites row",
+    'id="catsB"': "BLOK filter list",
+    'id="allM"':  "Mission E1 select-all",
+    'id="allB"':  "BLOK select-all",
+    "orderB":     "BLOK category order",
+    "orderM":     "Mission E1 category order",
+    "blokFavs":   "saved favourites key",
+}
+missing = [what for marker, what in REQUIRED.items() if marker not in html]
+if missing:
+    print("FAIL: UI regression - missing " + "; ".join(missing))
+    sys.exit(1)
+
+print(f"OK: script parses, {rows} class rows, UI contract intact")
 sys.exit(0)
+
