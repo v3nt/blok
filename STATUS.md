@@ -7,7 +7,7 @@ GitHub (and therefore from a phone) without touching the Mac.
 |---|---|
 | Scrape result | **FAIL** |
 | Last scrape log line | `----- 2026-08-19 07:11:05 refresh exit 0` |
-| index.html modified | 2026-08-19 07:35:50 BST |
+| index.html modified | 2026-08-19 08:30:42 BST |
 | Classes in index.html | 1924 |
 
 ## Last scrape failure
@@ -26,7 +26,7 @@ ModuleNotFoundError: No module named 'playwright'
 ## Recent push errors
 
 ```
-2026-08-19 01:40:00  REBASE FAILED - manual fix needed
 2026-08-19 04:22:58  REBASE FAILED - manual fix needed
 2026-08-19 07:10:30  REBASE FAILED - manual fix needed
+2026-08-19 08:30:42  BLOCKED: FAIL: 3 unclosed { ( [ - browser will throw 'Unexpected end of input' and render nothing
 ```
