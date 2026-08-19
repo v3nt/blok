@@ -87,12 +87,15 @@ REQUIRED = {
     'id="catsM"': "Mission E1 filter list",
     'id="favB"':  "BLOK favourites row",
     'id="catsB"': "BLOK filter list",
-    'id="allM"':  "Mission E1 select-all",
-    'id="allB"':  "BLOK select-all",
+    'id="allFavM"': "Mission E1 favourites select-all",
+    'id="allCatM"': "Mission E1 non-favourites select-all",
+    'id="allFavB"': "BLOK favourites select-all",
+    'id="allCatB"': "BLOK non-favourites select-all",
     "orderB":     "BLOK category order",
     "orderM":     "Mission E1 category order",
     "blokFavs":   "saved favourites key",
     "DEFAULT_FAVS": "default favourites (calisthenics / strength) on first load",
+    "DESC":         "class descriptions for the hover tooltip",
 }
 missing = [what for marker, what in REQUIRED.items() if marker not in html]
 if missing:
