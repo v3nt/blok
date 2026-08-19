@@ -5,16 +5,28 @@ GitHub (and therefore from a phone) without touching the Mac.
 
 | Field | Value |
 |---|---|
-| Scrape result | **OK** |
-| Scrape log line | `----- 2026-08-19 07:11:05 refresh exit 0` |
+| Scrape result | **FAIL** |
+| Last scrape log line | `----- 2026-08-19 07:11:05 refresh exit 0` |
 | index.html modified | 2026-08-19 07:35:50 BST |
 | Classes in index.html | 1924 |
-| Last commit | `848fce4 Refresh BLOK schedule Wed 19 Aug 2026, 07:40 BST - 1924 classes` |
+
+## Last scrape failure
+
+```
+----- 2026-08-19 07:11:04 refresh start
+Traceback (most recent call last):
+  File "/Users/danielcrabbe14/Sites/jynk/blok/scraper/refresh.py", line 246, in <module>
+    sys.exit(main())
+  File "/Users/danielcrabbe14/Sites/jynk/blok/scraper/refresh.py", line 214, in main
+    from playwright.sync_api import sync_playwright
+ModuleNotFoundError: No module named 'playwright'
+----- 2026-08-19 07:11:05 refresh exit 0
+```
 
 ## Recent push errors
 
 ```
+2026-08-19 01:40:00  REBASE FAILED - manual fix needed
 2026-08-19 04:22:58  REBASE FAILED - manual fix needed
-Rebasing (1/6)Rebasing (2/6)Rebasing (3/6)error: The following untracked working tree files would be overwritten by merge:
 2026-08-19 07:10:30  REBASE FAILED - manual fix needed
 ```

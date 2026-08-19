@@ -46,22 +46,30 @@ fi
 # --------------------------------------------------------------- health report
 
 write_status() {
-  local scrape_line scrape_state idx_mtime rows head_line push_err
+  local scrape_tail scrape_state scrape_line idx_mtime rows push_err
 
-  scrape_line=$(grep -E '^----- .* refresh (OK|FAILED|exit)' scraper/refresh.log 2>/dev/null | tail -1 || true)
-  if echo "$scrape_line" | grep -q 'FAILED\|exit [1-9]'; then
+  # Only ever judge the RECENT tail. Grepping the whole log resurrects errors
+  # that were fixed hours ago and makes STATUS.md permanently look on fire.
+  scrape_tail=$(tail -40 scraper/refresh.log 2>/dev/null || true)
+  scrape_line=$(echo "$scrape_tail" | grep -E '^----- ' | tail -1 || true)
+
+  if echo "$scrape_tail" | grep -q 'FATAL\|Traceback\|refresh FAILED'; then
     scrape_state="FAIL"
-  elif [ -n "$scrape_line" ]; then
+  elif echo "$scrape_tail" | grep -q 'refresh OK'; then
     scrape_state="OK"
   else
+    # Legacy refresh.sh logged "exit 0" even on crash ($(date) reset $?), so an
+    # old-format line proves nothing. Do not call it OK.
     scrape_state="UNKNOWN"
   fi
 
   idx_mtime=$(date -r index.html '+%F %T %Z' 2>/dev/null || echo unknown)
-  rows=$(grep -oE '\["[0-9]{4}-[0-9]{2}-[0-9]{2}"|\["[0-9]*:[0-9]*[AP]M"' index.html 2>/dev/null | wc -l | tr -d ' ' || true)
-  head_line=$(git log --oneline -1 2>/dev/null || echo none)
-  push_err=$(grep -E 'REBASE FAILED|FLATTENED|error:|fatal:' push-blok.log 2>/dev/null | tail -3 || true)
+  rows=$(grep -oE '\["[0-9]{4}-[0-9]{2}-[0-9]{2}"' index.html 2>/dev/null | wc -l | tr -d ' ' || true)
+  push_err=$(tail -200 push-blok.log 2>/dev/null | grep -E 'BLOCKED|FLATTENED|REBASE FAILED|^fatal:' | tail -3 || true)
 
+  # NOTE: deliberately no commit sha and no "generated at" clock here. Anything
+  # that changes on every run makes this file dirty every 10 minutes and floods
+  # the history with empty status commits.
   {
     echo "# BLOK pipeline status"
     echo
@@ -71,16 +79,15 @@ write_status() {
     echo "| Field | Value |"
     echo "|---|---|"
     echo "| Scrape result | **$scrape_state** |"
-    echo "| Scrape log line | \`${scrape_line:-none}\` |"
+    echo "| Last scrape log line | \`${scrape_line:-none}\` |"
     echo "| index.html modified | $idx_mtime |"
     echo "| Classes in index.html | ${rows:-0} |"
-    echo "| Last commit | \`$head_line\` |"
     echo
-    if [ -n "$scrape_line" ] && [ "$scrape_state" = "FAIL" ]; then
+    if [ "$scrape_state" = "FAIL" ]; then
       echo "## Last scrape failure"
       echo
       echo '```'
-      tail -20 scraper/refresh.log 2>/dev/null || true
+      echo "$scrape_tail" | tail -20
       echo '```'
       echo
     fi
