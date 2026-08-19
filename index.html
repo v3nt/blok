@@ -22,6 +22,9 @@ header a{color:#c8c8d4}
 .grp{margin-top:9px;padding-top:8px;border-top:1px dashed var(--bd)}
 .grp h3{margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6b6b76}
 .grp .row{display:flex;flex-wrap:wrap;gap:7px 14px}
+.grp .row.fav{display:none;padding:5px 8px 6px;margin-bottom:6px;background:#fffaeb;border:1px solid #f0dfa8;border-radius:8px}
+.grp .row.fav.on{display:flex}
+.grp .row.fav::before{content:"★";color:#e8a90c;font-size:12px;align-self:center;margin-right:2px}
 .chip{display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
 .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
 .star{border:0;background:none;cursor:pointer;font-size:14px;line-height:1;padding:0 2px;color:#c9c9d1}
@@ -35,13 +38,10 @@ header a{color:#c8c8d4}
 #booked .bt{font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
 #booked .bl{color:#55555f}
 #booked .bn{color:#87878f;font-size:12px}
-#favwrap{display:none;background:#fffdf5;border-bottom:2px solid #f0dfa8}
-#favwrap h2{margin:0;padding:11px 18px 6px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9a7205}
 table{width:100%;border-collapse:collapse;background:transparent}
 th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#6b6b76;padding:9px 10px;border-bottom:1px solid var(--bd)}
 td{padding:8px 10px;border-bottom:1px solid #f0f0f3;font-size:13.5px;vertical-align:middle}
 tr.day td{background:#eeeef1;font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#44444c;padding:7px 10px}
-#favwrap tr.day td{background:#f7eed3;color:#7a5a04}
 tbody tr[data-state="full"] td:not(:last-child){opacity:.55}
 .pill{display:inline-block;padding:2px 8px;border-radius:99px;color:#fff;font-size:11.5px;font-weight:600;white-space:nowrap}
 .t{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
@@ -49,10 +49,10 @@ tbody tr[data-state="full"] td:not(:last-child){opacity:.55}
 .mut{color:#6b6b76}
 .empty{padding:26px;text-align:center;color:#6b6b76}
 #main{background:#fff}
-@media(max-width:640px){td,th{padding:7px 6px;font-size:12.5px}.mins{display:none}.bar,header,#booked,#favwrap h2{padding-left:11px;padding-right:11px}}
+@media(max-width:640px){td,th{padding:7px 6px;font-size:12.5px}.mins{display:none}.bar,header,#booked{padding-left:11px;padding-right:11px}}
 </style></head><body>
 <header><h1>Class schedule — BLOK &amp; Mission E1</h1>
-<p><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> &amp; <a href="https://classpass.com/studios/mission-e1-london" target="_blank" rel="noopener">Mission E1</a> · 19 Aug – 31 Aug 2026 · 551 classes · auto-updated every 4 hours · refreshed Tue 18 Aug 2026, 22:39</p>
+<p><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> &amp; <a href="https://classpass.com/studios/mission-e1-london" target="_blank" rel="noopener">Mission E1</a> · 19 Aug – 31 Aug 2026 · 551 classes · auto-updated every 4 hours · refreshed Wed 19 Aug 2026, 07:11</p>
 <div id="lg"></div></header>
 <div class="bar">
 <div class="top">
@@ -62,11 +62,10 @@ tbody tr[data-state="full"] td:not(:last-child){opacity:.55}
 <span class="sep"></span><button id="reset">Reset filters</button>
 <span id="shown"></span>
 </div>
-<div class="grp"><h3>Mission E1</h3><div class="row" id="catsM"></div></div>
-<div class="grp"><h3>BLOK — Clapton &amp; Shoreditch</h3><div class="row" id="catsB"></div></div>
+<div class="grp"><h3>Mission E1</h3><div class="row fav" id="favM"></div><div class="row" id="catsM"></div></div>
+<div class="grp"><h3>BLOK — Clapton &amp; Shoreditch</h3><div class="row fav" id="favB"></div><div class="row" id="catsB"></div></div>
 </div>
 <div id="booked"></div>
-<div id="favwrap"><h2>★ Favourites</h2><table><tbody id="tbF"></tbody></table></div>
 <div id="main"><table><thead><tr><th>Time</th><th class="mins">Min</th><th>Class</th><th>Instructor</th><th>Studio</th><th>Booking status</th></tr></thead><tbody id="tb"></tbody></table></div>
 <div class="empty" id="none" style="display:none">No classes match these filters.</div>
 <script>
@@ -85,8 +84,8 @@ if(!Array.isArray(favs))favs=[];
 favs=favs.filter(function(k){var p=k.split('|');return (p[0]==='B'&&orderB.indexOf(p[1])>-1)||(p[0]==='M'&&orderM.indexOf(p[1])>-1)});
 var av=document.getElementById('av'),hf=document.getElementById('hf'),hw=document.getElementById('hw');
 av.checked=!!g(LS.a,false);hf.checked=!!g(LS.f,false);hw.checked=!!g(LS.w,false);
+var CHIPS={M:[],B:[]};
 function build(wrapId,order,sel,venue){
- var cw=document.getElementById(wrapId);
  order.forEach(function(c){
   var l=document.createElement('label');l.className='chip';
   var i=document.createElement('input');i.type='checkbox';i.checked=sel.indexOf(c)>-1;i.dataset.c=c;
@@ -96,21 +95,35 @@ function build(wrapId,order,sel,venue){
   var n=document.createElement('span');n.className='n';n.textContent=CATS[c]||0;
   l.appendChild(i);l.appendChild(d);l.appendChild(t);l.appendChild(n);
   var b=document.createElement('button');b.className='star';b.type='button';
-  var key=venue+'|'+c;
-  b.setAttribute('aria-pressed',favs.indexOf(key)>-1?'true':'false');
-  b.title='Favourite '+c+' at '+(venue==='M'?'Mission E1':'BLOK');
-  b.textContent=favs.indexOf(key)>-1?'★':'☆';
+  var key=venue+'|'+c,on=favs.indexOf(key)>-1;
+  b.setAttribute('aria-pressed',on?'true':'false');
+  b.textContent=on?'★':'☆';
+  b.title=(on?'Unfavourite ':'Favourite ')+c;
   b.addEventListener('click',function(){
-   var i=favs.indexOf(key);
-   if(i>-1)favs.splice(i,1);else favs.push(key);
-   b.setAttribute('aria-pressed',i>-1?'false':'true');
-   b.textContent=i>-1?'☆':'★';
-   s(LS.v,favs);draw();
+   var j=favs.indexOf(key);
+   if(j>-1)favs.splice(j,1);else favs.push(key);
+   s(LS.v,favs);
+   place(venue);
   });
   var chip=document.createElement('span');chip.className='chip';
   chip.appendChild(l);chip.appendChild(b);
-  cw.appendChild(chip);
+  CHIPS[venue].push({cat:c,key:key,el:chip,star:b});
  });
+ place(venue);
+}
+function place(venue){
+ var favRow=document.getElementById(venue==='M'?'favM':'favB');
+ var allRow=document.getElementById(venue==='M'?'catsM':'catsB');
+ var nfav=0;
+ CHIPS[venue].forEach(function(ch){
+  var on=favs.indexOf(ch.key)>-1;
+  ch.star.setAttribute('aria-pressed',on?'true':'false');
+  ch.star.textContent=on?'★':'☆';
+  ch.star.title=(on?'Unfavourite ':'Favourite ')+ch.cat;
+  (on?favRow:allRow).appendChild(ch.el);
+  if(on)nfav++;
+ });
+ favRow.className='row fav'+(nfav?' on':'');
 }
 build('catsM',orderM,selM,'M');
 build('catsB',orderB,selB,'B');
@@ -154,9 +167,8 @@ function addRow(tb,r,cur){
  return r[0];
 }
 function draw(){
- var tb=document.getElementById('tb'),tf=document.getElementById('tbF');
- tb.innerHTML='';tf.innerHTML='';
- var curA='',curF='',shown=0,nfav=0,cnt={};
+ var tb=document.getElementById('tb');tb.innerHTML='';
+ var cur='',shown=0,cnt={};
  D.forEach(function(r){
   var sel=r[10]==='M'?selM:selB;
   if(sel.indexOf(r[4])<0)return;
@@ -164,13 +176,10 @@ function draw(){
   if(hf.checked&&r[7]==='full')return;
   if(hw.checked&&r[9]<5&&r[1]>=480&&r[1]<=1045)return;
   cnt[r[7]]=(cnt[r[7]]||0)+1;shown++;
-  if(favs.indexOf(r[10]+'|'+r[4])>-1){curF=addRow(tf,r,curF);nfav++}
-  else{curA=addRow(tb,r,curA)}
+  cur=addRow(tb,r,cur);
  });
- document.getElementById('favwrap').style.display=nfav?'block':'none';
  document.getElementById('none').style.display=shown?'none':'block';
- document.getElementById('main').style.display=(shown-nfav)?'block':'none';
- document.getElementById('shown').textContent=shown+' of '+D.length+' shown'+(nfav?' · '+nfav+' favourite':'');
+ document.getElementById('shown').textContent=shown+' of '+D.length+' shown';
  var lab=[['bookable','Bookable'],['full','Full'],['soon','Not yet open'],['booked','Booked'],['closed','Closed']];
  var lg=document.getElementById('lg');lg.innerHTML='';
  lab.forEach(function(p){

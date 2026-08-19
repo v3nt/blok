@@ -1,0 +1,8 @@
+----- 2026-08-19 07:11:04 refresh start
+Traceback (most recent call last):
+  File "/Users/danielcrabbe14/Sites/jynk/blok/scraper/refresh.py", line 246, in <module>
+    sys.exit(main())
+  File "/Users/danielcrabbe14/Sites/jynk/blok/scraper/refresh.py", line 214, in main
+    from playwright.sync_api import sync_playwright
+ModuleNotFoundError: No module named 'playwright'
+----- 2026-08-19 07:11:05 refresh exit 0
