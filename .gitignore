@@ -1,4 +1,8 @@
-push-blok.sh
+# Churny logs stay out of history; STATUS.md carries the health signal instead.
 push-blok.log
-net.jynk.blokpush.plist
+push-blok.log.tmp
+
+# Finder junk. Also listed in .git/info/exclude, which is what actually
+# protects rebases - .gitignore is versioned, so during a rebase git checks
+# out older commits whose .gitignore predates this line.
 .DS_Store

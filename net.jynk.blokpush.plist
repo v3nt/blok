@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>net.jynk.blokpush</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/danielcrabbe14/Sites/jynk/blok/push-blok.sh</string>
+    </array>
+
+    <!-- Check every 10 minutes; the scheduled scrape runs every 4 hours. -->
+    <key>StartInterval</key>
+    <integer>600</integer>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/danielcrabbe14/Sites/jynk/blok/push-blok.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/danielcrabbe14/Sites/jynk/blok/push-blok.log</string>
+</dict>
+</plist>
