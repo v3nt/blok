@@ -94,8 +94,9 @@ REQUIRED = {
     "orderB":     "BLOK category order",
     "orderM":     "Mission E1 category order",
     "blokFavs":   "saved favourites key",
-    "DEFAULT_FAVS": "default favourites (calisthenics / strength) on first load",
-    "DESC":         "class descriptions for the hover tooltip",
+    "DEFAULT_FAVS=": "default favourites (calisthenics / strength) on first load",
+    "DESC=":        "class descriptions for the hover tooltip",
+    "STUDIO_URL=":  "studio names linking to ClassPass",
 }
 missing = [what for marker, what in REQUIRED.items() if marker not in html]
 if missing:

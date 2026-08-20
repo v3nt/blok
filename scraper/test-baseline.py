@@ -66,6 +66,9 @@ def main():
                 total: (typeof D === 'undefined' ? 0 : D.length),
                 shown: txt('shown'),
                 tipped: document.querySelectorAll('#tb .pill[title]').length,
+                studioCells: document.querySelectorAll('#tb tr:not(.day) td:nth-child(5)').length,
+                studioLinks: [...document.querySelectorAll('#tb tr:not(.day) td:nth-child(5) a')]
+                  .map(a => a.textContent + ' -> ' + a.getAttribute('href')),
                 saved: JSON.parse(localStorage.getItem('blokFavs') || 'null'),
                 favRowFirst: ['M','B'].every(v => {
                   const row = el('fav'+v);
@@ -155,6 +158,23 @@ def main():
         reset = state()
         check("Reset filters restores the default favourites",
               len(reset["favB"]) >= 4 and len(reset["favM"]) >= 3)
+
+        # --- studio links ----------------------------------------------------
+        # Every studio cell links to that studio on ClassPass. Checked as
+        # name -> href pairs, so a link pointing at the wrong studio fails too.
+        EXPECTED = {
+            "Clapton":    "https://classpass.com/studios/blok-clapton-london",
+            "Shoreditch": "https://classpass.com/studios/blok-shoreditch-london",
+            "Mission E1": "https://classpass.com/studios/mission-e1-london",
+        }
+        pairs = set(s["studioLinks"])
+        check("every studio cell is a link",
+              len(s["studioLinks"]) == s["studioCells"],
+              f"{len(s['studioLinks'])} links for {s['studioCells']} cells")
+        seen = {p.split(" -> ")[0] for p in pairs}
+        check("all three studios appear", seen == set(EXPECTED), str(sorted(seen)))
+        wrong = [p for p in pairs if EXPECTED.get(p.split(" -> ")[0]) != p.split(" -> ")[1]]
+        check("each studio links to its own ClassPass page", not wrong, str(wrong[:3]))
 
         # --- descriptions ---------------------------------------------------
         check("class descriptions on hover",
