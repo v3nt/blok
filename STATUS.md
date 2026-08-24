@@ -7,7 +7,7 @@ GitHub (and therefore from a phone) without touching the Mac.
 |---|---|
 | Scrape result | **FAIL** |
 | Last scrape log line | `----- 2026-08-24 11:11:12 refresh exit 3` |
-| index.html modified | 2026-08-24 08:21:49 BST |
+| index.html modified | 2026-08-24 12:31:59 BST |
 | Classes in index.html | 1961 |
 
 ## Last scrape failure
@@ -39,4 +39,5 @@ FATAL: playwright not installed for /usr/bin/python3
 
 ```
 2026-08-20 20:15:11  BLOCKED: FAIL: data array 'var D=[' not found
+2026-08-24 12:31:59  BLOCKED: FAIL: 3 unclosed { ( [ - browser will throw 'Unexpected end of input' and render nothing
 ```
