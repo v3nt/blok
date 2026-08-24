@@ -97,6 +97,9 @@ REQUIRED = {
     "DEFAULT_FAVS=": "default favourites (calisthenics / strength) on first load",
     "DESC=":        "class descriptions for the hover tooltip",
     "STUDIO_URL=":  "studio names linking to ClassPass",
+    'id="colM"':   "Mission E1 collapse toggle",
+    'id="colB"':   "BLOK collapse toggle",
+    "blokCollapse": "remembered collapsed state",
 }
 missing = [what for marker, what in REQUIRED.items() if marker not in html]
 if missing:

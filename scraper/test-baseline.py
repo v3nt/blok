@@ -66,6 +66,11 @@ def main():
                 total: (typeof D === 'undefined' ? 0 : D.length),
                 shown: txt('shown'),
                 tipped: document.querySelectorAll('#tb .pill[title]').length,
+                collapsed: {M: el('catsM').classList.contains('collapsed'),
+                            B: el('catsB').classList.contains('collapsed')},
+                chipVisible: {M: !!(el('catsM').querySelector('.chip') || {}).offsetParent,
+                              B: !!(el('catsB').querySelector('.chip') || {}).offsetParent},
+                favVisible: !!(el('favB').querySelector('.chip') || {}).offsetParent,
                 studioCells: document.querySelectorAll('#tb tr:not(.day) td:nth-child(5)').length,
                 studioLinks: [...document.querySelectorAll('#tb tr:not(.day) td:nth-child(5) a')]
                   .map(a => a.textContent + ' -> ' + a.getAttribute('href')),
@@ -127,13 +132,13 @@ def main():
 
         # --- favouriting must not deselect (the bug that hid classes) ------
         before_rows = state()["rows"]
-        page.click("#catsM .chip:nth-child(2) .star")
+        page.locator("#catsM > .chip").first.locator(".star").click()
         moved = state()
         check("favouriting a type does not hide its classes",
               moved["rows"] == before_rows, f"{moved['rows']} vs {before_rows}")
         check("favouriting moves the chip, not copies it",
               not (set(moved["favM"]) & set(moved["catM"])))
-        page.click("#favM .star")           # put it back
+        page.locator("#favM > .chip").first.locator(".star").click()           # put it back
 
         # --- defaults reach a browser that already saved a list ------------
         page.evaluate("() => { localStorage.setItem('blokFavs','[]');"
@@ -158,6 +163,29 @@ def main():
         reset = state()
         check("Reset filters restores the default favourites",
               len(reset["favB"]) >= 4 and len(reset["favM"]) >= 3)
+
+        # --- collapsible non-favourites --------------------------------------
+        # Collapsing hides chips only. It must not change the selection, so the
+        # table underneath stays exactly as it was.
+        check("non-favourites start expanded",
+              not s["collapsed"]["M"] and s["chipVisible"]["M"])
+        before = state()["rows"]
+        page.click("#colB")
+        col = state()
+        check("collapsing hides the BLOK non-favourite chips",
+              col["collapsed"]["B"] and not col["chipVisible"]["B"])
+        check("collapsing leaves the favourites row visible", col["favVisible"])
+        check("collapsing does not change what is listed",
+              col["rows"] == before, f"{col['rows']} vs {before}")
+        check("the other gym is unaffected", not col["collapsed"]["M"])
+        page.reload()
+        kept = state()
+        check("collapsed state is remembered",
+              kept["collapsed"]["B"] and not kept["collapsed"]["M"])
+        page.click("#colB")
+        page.reload()
+        check("expanding again is remembered",
+              not state()["collapsed"]["B"])
 
         # --- studio links ----------------------------------------------------
         # Every studio cell links to that studio on ClassPass. Checked as
