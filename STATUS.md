@@ -35,8 +35,3 @@ FATAL: playwright not installed for /usr/bin/python3
 ----- 2026-08-25 07:45:44 refresh exit 3
 ```
 
-## Recent push errors
-
-```
-2026-08-24 16:22:22  BLOCKED: FAIL: only 1 class rows in D - refusing to publish an empty schedule
-```
