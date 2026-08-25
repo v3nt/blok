@@ -38,6 +38,5 @@ FATAL: playwright not installed for /usr/bin/python3
 ## Recent push errors
 
 ```
-2026-08-24 12:31:59  BLOCKED: FAIL: 3 unclosed { ( [ - browser will throw 'Unexpected end of input' and render nothing
 2026-08-24 16:22:22  BLOCKED: FAIL: only 1 class rows in D - refusing to publish an empty schedule
 ```
