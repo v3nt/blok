@@ -6,17 +6,13 @@ GitHub (and therefore from a phone) without touching the Mac.
 | Field | Value |
 |---|---|
 | Scrape result | **FAIL** |
-| Last scrape log line | `----- 2026-08-25 19:45:45 refresh exit 3` |
+| Last scrape log line | `----- 2026-08-25 23:45:45 refresh exit 3` |
 | index.html modified | 2026-08-25 20:25:33 BST |
 | Classes in index.html | 1832 |
 
 ## Last scrape failure
 
 ```
------ 2026-08-24 19:11:12 refresh start (python: /usr/bin/python3)
-FATAL: playwright not installed for /usr/bin/python3
-       fix: /usr/bin/python3 -m pip install playwright && /usr/bin/python3 -m playwright install chromium
------ 2026-08-24 19:11:13 refresh exit 3
 ----- 2026-08-25 07:45:44 refresh start (python: /usr/bin/python3)
 FATAL: playwright not installed for /usr/bin/python3
        fix: /usr/bin/python3 -m pip install playwright && /usr/bin/python3 -m playwright install chromium
@@ -33,5 +29,9 @@ FATAL: playwright not installed for /usr/bin/python3
 FATAL: playwright not installed for /usr/bin/python3
        fix: /usr/bin/python3 -m pip install playwright && /usr/bin/python3 -m playwright install chromium
 ----- 2026-08-25 19:45:45 refresh exit 3
+----- 2026-08-25 23:45:45 refresh start (python: /usr/bin/python3)
+FATAL: playwright not installed for /usr/bin/python3
+       fix: /usr/bin/python3 -m pip install playwright && /usr/bin/python3 -m playwright install chromium
+----- 2026-08-25 23:45:45 refresh exit 3
 ```
 
