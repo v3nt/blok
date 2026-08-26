@@ -38,6 +38,5 @@ FATAL: playwright not installed for /usr/bin/python3
 ## Recent push errors
 
 ```
-2026-08-26 08:39:40  BLOCKED: FAIL: data array 'var D=[' not found
 2026-08-26 16:20:26  BLOCKED: FAIL: data array 'var D=[' not found
 ```
