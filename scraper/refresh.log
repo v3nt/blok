@@ -78,3 +78,7 @@ FATAL: playwright not installed for /usr/bin/python3
 FATAL: playwright not installed for /usr/bin/python3
        fix: /usr/bin/python3 -m pip install playwright && /usr/bin/python3 -m playwright install chromium
 ----- 2026-08-26 15:25:36 refresh exit 3
+----- 2026-08-26 19:25:36 refresh start (python: /usr/bin/python3)
+FATAL: playwright not installed for /usr/bin/python3
+       fix: /usr/bin/python3 -m pip install playwright && /usr/bin/python3 -m playwright install chromium
+----- 2026-08-26 19:25:36 refresh exit 3
