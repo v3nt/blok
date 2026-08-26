@@ -31,6 +31,19 @@ def check(name, cond, detail=""):
     if not cond:
         fails.append(f"{name}{(': ' + detail) if detail else ''}")
 
+def act(name, fn):
+    """Run an interaction. A missing element must read as a named failure,
+    not a 30s timeout and a traceback - a test that throws is unreadable."""
+    global checks
+    checks += 1
+    try:
+        fn()
+        return True
+    except Exception as e:
+        first = str(e).strip().splitlines()[0]
+        fails.append(f"{name}: {first}")
+        return False
+
 def main():
     try:
         from playwright.sync_api import sync_playwright
@@ -47,6 +60,7 @@ def main():
         page = browser.new_page()
         errors = []
         page.on("pageerror", lambda e: errors.append(str(e)))
+        page.set_default_timeout(5000)
         page.goto(PATH.as_uri())
 
         def state():
@@ -124,21 +138,24 @@ def main():
                   not (set(fav) & set(cat)), str(sorted(set(fav) & set(cat))))
 
         # --- each toggle drives only its own row ---------------------------
-        page.uncheck("#allCatB")
+        act("BLOK list toggle is operable", lambda: page.uncheck("#allCatB"))
         after = state()
         check("BLOK list toggle leaves BLOK favourites alone",
               set(after["favB"]) == set(s["favB"]) and after["rows"] < s["total"])
-        page.check("#allCatB")
+        act("BLOK list toggle re-checks", lambda: page.check("#allCatB"))
 
         # --- favouriting must not deselect (the bug that hid classes) ------
         before_rows = state()["rows"]
-        page.locator("#catsM > .chip").first.locator(".star").click()
+        starred = act("a Mission chip has a star to click",
+                      lambda: page.locator("#catsM > .chip").first.locator(".star").click())
         moved = state()
         check("favouriting a type does not hide its classes",
               moved["rows"] == before_rows, f"{moved['rows']} vs {before_rows}")
         check("favouriting moves the chip, not copies it",
               not (set(moved["favM"]) & set(moved["catM"])))
-        page.locator("#favM > .chip").first.locator(".star").click()           # put it back
+        if starred:
+            act("the favourited chip can be un-starred",
+                lambda: page.locator("#favM > .chip").first.locator(".star").click())
 
         # --- defaults reach a browser that already saved a list ------------
         page.evaluate("() => { localStorage.setItem('blokFavs','[]');"
@@ -159,7 +176,7 @@ def main():
               f"favB={cleared['favB']} favM={cleared['favM']}")
 
         # --- reset gets you back -------------------------------------------
-        page.click("#reset")
+        act("Reset filters is clickable", lambda: page.click("#reset"))
         reset = state()
         check("Reset filters restores the default favourites",
               len(reset["favB"]) >= 4 and len(reset["favM"]) >= 3)
@@ -170,7 +187,7 @@ def main():
         check("non-favourites start expanded",
               not s["collapsed"]["M"] and s["chipVisible"]["M"])
         before = state()["rows"]
-        page.click("#colB")
+        act("BLOK collapse toggle is clickable", lambda: page.click("#colB"))
         col = state()
         check("collapsing hides the BLOK non-favourite chips",
               col["collapsed"]["B"] and not col["chipVisible"]["B"])
@@ -182,7 +199,7 @@ def main():
         kept = state()
         check("collapsed state is remembered",
               kept["collapsed"]["B"] and not kept["collapsed"]["M"])
-        page.click("#colB")
+        act("BLOK collapse toggle expands again", lambda: page.click("#colB"))
         page.reload()
         check("expanding again is remembered",
               not state()["collapsed"]["B"])
