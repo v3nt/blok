@@ -39,4 +39,5 @@ FATAL: playwright not installed for /usr/bin/python3
 
 ```
 2026-08-26 16:20:26  BLOCKED: FAIL: data array 'var D=[' not found
+2026-08-26 23:21:42  BLOCKED: baseline regression
 ```
