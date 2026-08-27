@@ -57,7 +57,7 @@ tbody tr[data-state="full"] td:not(:last-child){opacity:.55}
 @media(max-width:640px){td,th{padding:7px 6px;font-size:12.5px}.mins{display:none}.bar,header,#booked{padding-left:11px;padding-right:11px}}
 </style></head><body>
 <header><h1>Class schedule — BLOK &amp; Mission E1</h1>
-<p><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> &amp; <a href="https://classpass.com/studios/mission-e1-london" target="_blank" rel="noopener">Mission E1</a> · 19 Aug – 1 Sep 2026 · 1943 classes · auto-updated every 4 hours · refreshed Thu 27 Aug 2026, 19:53 UTC</p>
+<p><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> &amp; <a href="https://classpass.com/studios/mission-e1-london" target="_blank" rel="noopener">Mission E1</a> · 19 Aug – 1 Sep 2026 · 1943 classes · auto-updated every 4 hours · refreshed Thu 27 Aug 2026, 22:10 UTC</p>
 <div id="lg"></div></header>
 <div class="bar">
 <div class="top">
@@ -207,7 +207,17 @@ document.getElementById('reset').addEventListener('click',function(){
 function dl(iso){var d=new Date(iso+'T00:00:00');return d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}
 function sd(iso){var d=new Date(iso+'T00:00:00');return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}
 (function(){
- var mine=D.filter(function(r){return r[7]==='booked'});
+ // Only classes still to come. A booked class stays flagged in the table as
+ // history, but "Your booked classes" is a what's-next panel - listing last
+ // week's sessions in it is noise.
+ var now=new Date(), pad=function(n){return (n<10?'0':'')+n};
+ var todayISO=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+ var nowMins=now.getHours()*60+now.getMinutes();
+ var mine=D.filter(function(r){
+  if(r[7]!=='booked')return false;
+  if(r[0]>todayISO)return true;
+  return r[0]===todayISO&&r[1]>=nowMins;      // today's, not yet started
+ });
  if(!mine.length)return;
  var h='<h2>Your booked classes ('+mine.length+')</h2><ul>';
  mine.forEach(function(r){

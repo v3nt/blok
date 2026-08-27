@@ -88,6 +88,9 @@ def main():
                 booked: [...document.querySelectorAll('#tb tr[data-state="booked"]')]
                   .map(tr => tr.cells[0].textContent + ' ' + tr.cells[4].textContent),
                 bookedPanel: (el('booked') || {}).style ? el('booked').style.display : 'missing',
+                panelDates: [...document.querySelectorAll('#booked li .bt')].map(e => e.textContent),
+                bookedDates: (typeof D === 'undefined' ? [] :
+                  D.filter(r => r[7] === 'booked').map(r => r[0])),
                 studioCells: document.querySelectorAll('#tb tr:not(.day) td:nth-child(5)').length,
                 studioLinks: [...document.querySelectorAll('#tb tr:not(.day) td:nth-child(5) a')]
                   .map(a => a.textContent + ' -> ' + a.getAttribute('href')),
@@ -191,6 +194,16 @@ def main():
         check("booked classes are marked in the table", s["booked"], "none marked")
         check("the booked panel is shown when there are bookings",
               (not s["booked"]) or s["bookedPanel"] == "block", s["bookedPanel"])
+
+        # "Your booked classes" is a what's-next panel: a class you attended last
+        # week must not sit at the top of the page as if it were coming up.
+        import datetime as _dt
+        today = _dt.date.today().isoformat()
+        past = [d for d in s["bookedDates"] if d < today]
+        check("the panel lists only upcoming bookings",
+              len(s["panelDates"]) == len([d for d in s["bookedDates"] if d >= today]),
+              f"panel shows {len(s['panelDates'])}, upcoming are "
+              f"{len([d for d in s['bookedDates'] if d >= today])}, past in data: {len(past)}")
 
         # --- collapsible non-favourites --------------------------------------
         # Collapsing hides chips only. It must not change the selection, so the
