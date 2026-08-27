@@ -91,6 +91,9 @@ def main():
                 panelDates: [...document.querySelectorAll('#booked li .bt')].map(e => e.textContent),
                 bookedDates: (typeof D === 'undefined' ? [] :
                   D.filter(r => r[7] === 'booked').map(r => r[0])),
+                defaults: (typeof DEFAULT_FAVS === 'undefined') ? [] : DEFAULT_FAVS,
+                orderB: (typeof orderB === 'undefined') ? [] : orderB,
+                orderM: (typeof orderM === 'undefined') ? [] : orderM,
                 studioCells: document.querySelectorAll('#tb tr:not(.day) td:nth-child(5)').length,
                 studioLinks: [...document.querySelectorAll('#tb tr:not(.day) td:nth-child(5) a')]
                   .map(a => a.textContent + ' -> ' + a.getAttribute('href')),
@@ -104,6 +107,8 @@ def main():
               };
             }""")
 
+        import datetime as _dt
+        today = _dt.date.today().isoformat()
         s = state()
 
         # If the grouped UI is absent this is not a subtle regression - it is a
@@ -131,11 +136,19 @@ def main():
         check("shown counter agrees", s["shown"].startswith(f"{s['total']} of {s['total']}"), s["shown"])
 
         # --- default favourites -------------------------------------------
-        check("BLOK starts with calisthenics/strength favourited",
-              {"CALISTHENICS", "BLOKSTRENGTH: FULL BODY", "BLOKSTRENGTH: LOWER BODY",
-               "BLOKSTRENGTH: UPPER BODY"} <= set(s["favB"]), str(s["favB"]))
-        check("Mission starts with its strength stream favourited",
-              {"Reps Kulture", "Squat Kulture", "Statics Kulture"} <= set(s["favM"]), str(s["favM"]))
+        # The invariant is "every default that exists on this page is starred" -
+        # not a hardcoded list of names. A shorter date window legitimately
+        # drops whole categories, and the test must not fail for that.
+        for gid, order_key in (("B", "orderB"), ("M", "orderM")):
+            want = {c for v, _, c in (d.partition("|") for d in s["defaults"])
+                    if v == gid} & set(s[order_key])
+            check(f"{'BLOK' if gid == 'B' else 'Mission E1'}: every default that "
+                  f"exists is favourited",
+                  want <= set(s["fav" + gid]),
+                  f"missing {sorted(want - set(s['fav' + gid]))}")
+        check("the defaults are the calisthenics/strength classes",
+              any("CALISTHENICS" in d for d in s["defaults"])
+              and any("Kulture" in d for d in s["defaults"]), str(s["defaults"][:4]))
 
         # --- no chip in two places ----------------------------------------
         for gid, label in GROUPS:
@@ -195,10 +208,14 @@ def main():
         check("the booked panel is shown when there are bookings",
               (not s["booked"]) or s["bookedPanel"] == "block", s["bookedPanel"])
 
+        # No day that has already happened: a past row at the same time as a
+        # future booking is how the wrong row gets read as "not booked".
+        stale = [d for d in s["bookedDates"] if d < today]
+        first = page.evaluate("() => (typeof D === 'undefined' || !D.length) ? '' : D[0][0]")
+        check("the schedule starts today or later", first >= today, f"first day is {first}")
+
         # "Your booked classes" is a what's-next panel: a class you attended last
         # week must not sit at the top of the page as if it were coming up.
-        import datetime as _dt
-        today = _dt.date.today().isoformat()
         past = [d for d in s["bookedDates"] if d < today]
         check("the panel lists only upcoming bookings",
               len(s["panelDates"]) == len([d for d in s["bookedDates"] if d >= today]),

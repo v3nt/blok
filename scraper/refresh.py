@@ -121,7 +121,14 @@ def status(tip, btn):
 
 def scrape(page, url, studio, venue, year, warnings):
     page.goto(url, timeout=60000)
-    page.wait_for_timeout(4000)
+    try:
+        page.wait_for_selector(".Schedule__rows section", timeout=25000)
+    except Exception:
+        warnings.append("%s: no schedule rows rendered - page title %r. "
+                        "ClassPass may be serving a different page to headless "
+                        "Chromium; run login_setup.py so the scrape has a session."
+                        % (studio, page.title()))
+    page.wait_for_timeout(1500)
     rows, seen_days = [], []
     for day in range(MAX_DAYS):
         got = page.evaluate(READ_DAY_JS)
@@ -272,7 +279,15 @@ def descriptions(categories):
                     best[cat] = text
     return {c: best[c] for c in categories if c in best}
 
-def build(rows, template):
+def build(rows, template, today=None):
+    # A schedule is a what's-next list. Days that have already happened only
+    # make it longer and put a past row at the same time as a booked future one
+    # - which is exactly how a 22 Aug class got mistaken for a 29 Aug booking.
+    today = today or datetime.date.today().isoformat()
+    before = len(rows)
+    rows = [r for r in rows if r[0] >= today]
+    if before != len(rows):
+        log("  dropped %d class(es) from days already past" % (before - len(rows)))
     rows.sort(key=lambda r: (r[0], r[1], r[6]))
     states, cats = {}, {}
     for r in rows:
@@ -323,7 +338,12 @@ def main():
             " Run login_setup.py once.")
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=not args.headed)
-        ctx = browser.new_context(storage_state=str(AUTH) if AUTH.exists() else None)
+        ctx = browser.new_context(
+            storage_state=str(AUTH) if AUTH.exists() else None,
+            viewport={"width": 1440, "height": 1000},
+            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                       "AppleWebKit/537.36 (KHTML, like Gecko) "
+                       "Chrome/148.0.0.0 Safari/537.36")
         page = ctx.new_page()
         for name, slug, venue in STUDIOS:
             try:
