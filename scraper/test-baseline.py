@@ -85,6 +85,9 @@ def main():
                 chipVisible: {M: !!(el('catsM').querySelector('.chip') || {}).offsetParent,
                               B: !!(el('catsB').querySelector('.chip') || {}).offsetParent},
                 favVisible: !!(el('favB').querySelector('.chip') || {}).offsetParent,
+                booked: [...document.querySelectorAll('#tb tr[data-state="booked"]')]
+                  .map(tr => tr.cells[0].textContent + ' ' + tr.cells[4].textContent),
+                bookedPanel: (el('booked') || {}).style ? el('booked').style.display : 'missing',
                 studioCells: document.querySelectorAll('#tb tr:not(.day) td:nth-child(5)').length,
                 studioLinks: [...document.querySelectorAll('#tb tr:not(.day) td:nth-child(5) a')]
                   .map(a => a.textContent + ' -> ' + a.getAttribute('href')),
@@ -180,6 +183,14 @@ def main():
         reset = state()
         check("Reset filters restores the default favourites",
               len(reset["favB"]) >= 4 and len(reset["favM"]) >= 3)
+
+        # --- bookings ---------------------------------------------------------
+        # Bookings come from /profile/upcoming, not from a "Cancel" button in the
+        # schedule, which only appears while logged in and silently produced a
+        # page with nothing marked.
+        check("booked classes are marked in the table", s["booked"], "none marked")
+        check("the booked panel is shown when there are bookings",
+              (not s["booked"]) or s["bookedPanel"] == "block", s["bookedPanel"])
 
         # --- collapsible non-favourites --------------------------------------
         # Collapsing hides chips only. It must not change the selection, so the

@@ -167,6 +167,85 @@ def fmt_time(m):
     return "%d:%02d%s" % (h % 12 or 12, mm, "AM" if h < 12 else "PM")
 
 # ---------------------------------------------------------------- build
+UPCOMING_URL = "https://classpass.com/profile/upcoming"
+
+UPCOMING_JS = r"""
+() => {
+  const L = document.body.innerText.split('\n').map(s => s.trim()).filter(Boolean);
+  const out = [];
+  for (let i = 0; i < L.length; i++) {
+    const m = L[i].match(/^([A-Z][a-z]{2}) (\d{1,2}), (\d{1,2}):(\d{2}) (AM|PM)$/);
+    if (!m) continue;
+    out.push({when: L[i], cls: L[i + 1] || '', inst: L[i + 2] || '',
+              studio: L[i + 3] || ''});
+  }
+  return out;
+}
+"""
+
+def upcoming(page, year, warnings):
+    """Read the reservations off /profile/upcoming.
+
+    The schedule rows only say "Cancel" on a class you booked, and only while
+    logged in - which silently produced a page with no bookings marked. The
+    profile page is the authoritative list, so bookings are matched from here
+    instead of inferred per row.
+
+    Returns {(iso, minutes, studio)} - empty if logged out, which is a warning,
+    never a crash.
+    """
+    try:
+        page.goto(UPCOMING_URL, timeout=60000)
+        page.wait_for_timeout(4000)
+        entries = page.evaluate(UPCOMING_JS)
+    except Exception as e:
+        warnings.append("could not read upcoming reservations: %s" % e)
+        return set()
+    if not entries:
+        warnings.append("no upcoming reservations found - logged out? "
+                        "run login_setup.py to refresh auth_state.json")
+        return set()
+    booked = set()
+    for e in entries:
+        m = re.match(r"^([A-Z][a-z]{2}) (\d{1,2}), (\d{1,2}):(\d{2}) (AM|PM)$", e["when"])
+        if not m:
+            warnings.append("unparsed reservation date %r" % e["when"])
+            continue
+        mon, day, hh, mm, ap = m.groups()
+        date = datetime.date(year, MONTHS[mon], int(day))
+        mins = (int(hh) % 12 + (12 if ap == "PM" else 0)) * 60 + int(mm)
+        # "BLOK - Clapton" -> "Clapton"; "Mission E1" stays as it is
+        studio = e["studio"].split(" - ")[-1].strip()
+        booked.add((date.isoformat(), mins, studio))
+    log("  upcoming reservations: %d" % len(booked))
+    return booked
+
+def mark_booked(rows, booked, warnings, today=None):
+    """Stamp booked state from the reservations list, matched on date+time+studio.
+
+    /profile/upcoming is authoritative for anything still to come: a future row
+    flagged booked that is NOT in the list is a class since cancelled, so the
+    flag is cleared. Past rows keep whatever was true at scrape time - they are
+    history, and they never appear in "upcoming".
+    """
+    today = today or datetime.date.today().isoformat()
+    hit = cleared = 0
+    for r in rows:
+        key = (r[0], r[1], r[6])
+        if key in booked:
+            r[7], r[8] = "booked", "You're booked"
+            hit += 1
+        elif r[7] == "booked" and r[0] >= today:
+            r[7], r[8] = "bookable", "Bookable"
+            cleared += 1
+    if cleared:
+        warnings.append("%d future row(s) were marked booked but are not in "
+                        "upcoming - treated as cancelled" % cleared)
+    missed = len(booked) - hit
+    if missed > 0:
+        warnings.append("%d reservation(s) had no matching class in the schedule" % missed)
+    return hit
+
 DESC_FILE = HERE / "class-descriptions.json"
 
 def descriptions(categories):
@@ -254,7 +333,10 @@ def main():
             except Exception as e:
                 warnings.append("%s: scrape failed: %s" % (name, e))
                 log("  ! %s failed: %s" % (name, e))
+        booked = upcoming(page, year, warnings)
         browser.close()
+    if booked:
+        log("  marked %d row(s) as booked" % mark_booked(rows, booked, warnings))
     if not rows:
         log("FATAL: no rows scraped - leaving %s untouched" % args.out)
         return 1
