@@ -376,3 +376,6 @@ Call log:
   Mission E1 -> 0 classes  []
 FATAL: no rows scraped - leaving /Users/danielcrabbe14/Sites/jynk/blok/index.html untouched
 ----- 2026-08-28 15:59:07 refresh FAILED (exit 1)
+----- 2026-08-28 19:59:07 refresh start (python: /usr/bin/python3)
+BLOK refresh 2026-08-28 19:59:08
+  ! no auth_state.json - your booked classes will not be marked. Run login_setup.py once.
