@@ -108,6 +108,34 @@ async () => {
 }
 """
 
+CONSENT_JS = r"""
+() => {
+  // TrustArc's overlay sits above the schedule and swallows every click, so
+  // "See more" never expands and the scrape returns zero rows. Prefer the
+  // decline / reject control - the privacy-preserving choice - and if there
+  // isn't one, just remove the overlay so it stops intercepting pointer
+  // events. We never click "accept".
+  const wanted = /reject all|decline all|reject|decline|do not sell|necessary only|essential only/i;
+  const btn = [...document.querySelectorAll('button, a, [role="button"]')]
+    .find(b => wanted.test((b.textContent || '').trim()) && b.offsetParent);
+  if (btn) { btn.click(); return 'declined: ' + btn.textContent.trim().slice(0, 40); }
+  let removed = 0;
+  for (const sel of ['#trustarc-banner-overlay', '#consent_blackbar', '.truste_overlay',
+                     '.truste_box_overlay', '#truste-consent-track']) {
+    document.querySelectorAll(sel).forEach(e => { e.remove(); removed++; });
+  }
+  return removed ? ('overlay removed x' + removed) : 'no consent banner';
+}
+"""
+
+def dismiss_consent(page, warnings, where):
+    try:
+        result = page.evaluate(CONSENT_JS)
+        if result != "no consent banner":
+            log("  %s: consent banner - %s" % (where, result))
+    except Exception as e:
+        warnings.append("%s: consent banner handling failed: %s" % (where, e))
+
 def status(tip, btn):
     """Read the tooltip, not the label: 'Reserve' is shown for several states."""
     if re.search(r"reserved|cancel", btn, re.I):        return "booked", "You're booked"
@@ -128,6 +156,7 @@ def scrape(page, url, studio, venue, year, warnings):
                         "ClassPass may be serving a different page to headless "
                         "Chromium; run login_setup.py so the scrape has a session."
                         % (studio, page.title()))
+    dismiss_consent(page, warnings, studio)
     page.wait_for_timeout(1500)
     rows, seen_days = [], []
     for day in range(MAX_DAYS):
@@ -203,7 +232,9 @@ def upcoming(page, year, warnings):
     """
     try:
         page.goto(UPCOMING_URL, timeout=60000)
-        page.wait_for_timeout(4000)
+        page.wait_for_timeout(2500)
+        dismiss_consent(page, warnings, "upcoming")
+        page.wait_for_timeout(1500)
         entries = page.evaluate(UPCOMING_JS)
     except Exception as e:
         warnings.append("could not read upcoming reservations: %s" % e)

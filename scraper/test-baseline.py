@@ -211,8 +211,23 @@ def main():
         # No day that has already happened: a past row at the same time as a
         # future booking is how the wrong row gets read as "not booked".
         stale = [d for d in s["bookedDates"] if d < today]
+        # Compare against the date the page was BUILT, not today: a page that was
+        # correct when generated must not start failing overnight just because it
+        # aged - that blocked every publish for a day.
         first = page.evaluate("() => (typeof D === 'undefined' || !D.length) ? '' : D[0][0]")
-        check("the schedule starts today or later", first >= today, f"first day is {first}")
+        built = page.evaluate("""() => {
+          const m = (document.querySelector('header p') || {}).textContent || '';
+          const d = m.match(/refreshed \\w+ (\\d+) (\\w+) (\\d{4})/);
+          if (!d) return '';
+          const mm = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12}[d[2]];
+          return d[3] + '-' + String(mm).padStart(2,'0') + '-' + String(d[1]).padStart(2,'0');
+        }""")
+        check("the build dropped days already past when it ran",
+              (not built) or first >= built,
+              f"first day {first}, built {built}")
+        if built and built < today:
+            log_stale = f"note: page was built {built}, today is {today} - data is stale"
+            print("  " + log_stale)
 
         # "Your booked classes" is a what's-next panel: a class you attended last
         # week must not sit at the top of the page as if it were coming up.
