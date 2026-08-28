@@ -136,6 +136,19 @@ def dismiss_consent(page, warnings, where):
     except Exception as e:
         warnings.append("%s: consent banner handling failed: %s" % (where, e))
 
+NEXT_JS = """() => {
+  const b = document.querySelector('button[aria-label="Next day"]');
+  if (!b) return false;
+  b.click();
+  return true;
+}"""
+
+def click_next(page):
+    try:
+        return bool(page.evaluate(NEXT_JS))
+    except Exception:
+        return False
+
 def status(tip, btn):
     """Read the tooltip, not the label: 'Reserve' is shown for several states."""
     if re.search(r"reserved|cancel", btn, re.I):        return "booked", "You're booked"
@@ -160,40 +173,54 @@ def scrape(page, url, studio, venue, year, warnings):
     page.wait_for_timeout(1500)
     rows, seen_days = [], []
     for day in range(MAX_DAYS):
-        got = page.evaluate(READ_DAY_JS)
-        hdr, raw = got["hdr"], got["rows"]
-        m = DAY_RX.match(hdr)
-        if not m:
-            warnings.append("%s: no day header on day %d" % (studio, day + 1))
+      try:
+          got = page.evaluate(READ_DAY_JS)
+          hdr, raw = got["hdr"], got["rows"]
+          m = DAY_RX.match(hdr)
+          if not m:
+              warnings.append("%s: no day header on day %d" % (studio, day + 1))
+              break
+          date = datetime.date(year, MONTHS[m.group(2)[:3]], int(m.group(3)))
+          if not raw and day > 0:
+              log("  %s: %s empty -> end of published schedule" % (studio, hdr))
+              break
+          kept = 0
+          for r in raw:
+              name = r["name"]
+              cat = categorise(name, venue)
+              if not cat:
+                  warnings.append("%s: unnamed class on %s" % (studio, hdr))
+                  continue
+              tm = TIME_RX.match(r["time"])
+              if not tm:
+                  warnings.append("%s: unparseable time %r" % (studio, r["time"]))
+                  continue
+              mins = (int(tm.group(1)) % 12 + (12 if tm.group(3).upper() == "PM" else 0)) * 60 + int(tm.group(2))
+              st, lab = status(r["tip"], r["btn"])
+              if st is None:
+                  warnings.append("%s: unknown status %r for %r" % (studio, lab, name))
+                  continue
+              dur = int(re.sub(r"\D", "", r["dur"]) or 0)
+              rows.append([date.isoformat(), mins, fmt_time(mins), dur, cat,
+                           r["inst"], studio, st, lab, date.weekday(), venue])
+              kept += 1
+          seen_days.append("%s:%d" % (hdr, kept))
+          # A Playwright click is a real mouse event, so ANYTHING overlapping the
+          # button - cookie bar, promo modal, tooltip - swallows it and the run
+          # dies. Calling .click() inside the page ignores what is painted on
+          # top. Nothing cosmetic should be able to stop a scrape.
+          if not click_next(page):
+              warnings.append("%s: no 'Next day' button after %s" % (studio, hdr))
+              break
+          page.wait_for_timeout(2600)
+      except Exception as e:
+        # Log it, clear anything that may have popped up, step to the next day
+        # and carry on. A single bad day is not a failed scrape.
+        warnings.append("%s: day %d failed (%s) - continuing"
+                        % (studio, day + 1, str(e).strip().splitlines()[0][:90]))
+        dismiss_consent(page, warnings, studio)
+        if not click_next(page):
             break
-        date = datetime.date(year, MONTHS[m.group(2)[:3]], int(m.group(3)))
-        if not raw and day > 0:
-            log("  %s: %s empty -> end of published schedule" % (studio, hdr))
-            break
-        kept = 0
-        for r in raw:
-            name = r["name"]
-            cat = categorise(name, venue)
-            if not cat:
-                warnings.append("%s: unnamed class on %s" % (studio, hdr))
-                continue
-            tm = TIME_RX.match(r["time"])
-            if not tm:
-                warnings.append("%s: unparseable time %r" % (studio, r["time"]))
-                continue
-            mins = (int(tm.group(1)) % 12 + (12 if tm.group(3).upper() == "PM" else 0)) * 60 + int(tm.group(2))
-            st, lab = status(r["tip"], r["btn"])
-            if st is None:
-                warnings.append("%s: unknown status %r for %r" % (studio, lab, name))
-                continue
-            dur = int(re.sub(r"\D", "", r["dur"]) or 0)
-            rows.append([date.isoformat(), mins, fmt_time(mins), dur, cat,
-                         r["inst"], studio, st, lab, date.weekday(), venue])
-            kept += 1
-        seen_days.append("%s:%d" % (hdr, kept))
-        nxt = page.query_selector('button[aria-label="Next day"]')
-        if not nxt: break
-        nxt.click()
         page.wait_for_timeout(2600)
     log("  %s -> %d classes  [%s]" % (studio, len(rows), " ".join(seen_days)))
     return rows
