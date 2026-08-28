@@ -7,19 +7,26 @@
 set -uo pipefail
 cd "$(dirname "$0")"
 
-PY="${BLOK_PYTHON:-$(command -v python3)}"
+# There is more than one python3 on this Mac and only one of them has
+# playwright: launchd runs with a minimal PATH and gets /usr/bin/python3,
+# while an interactive shell gets Homebrew's. Picking "the first python3 on
+# PATH" therefore worked from launchd and failed by hand. Pick the first one
+# that can actually import playwright instead.
+PY=""
+for CANDIDATE in "${BLOK_PYTHON:-}" "$(command -v python3 || true)" \
+                 /usr/bin/python3 /opt/homebrew/bin/python3 /usr/local/bin/python3; do
+  [ -n "$CANDIDATE" ] || continue
+  [ -x "$CANDIDATE" ] || continue
+  if "$CANDIDATE" -c 'import playwright' 2>/dev/null; then PY="$CANDIDATE"; break; fi
+done
 
-echo "----- $(date '+%F %T') refresh start (python: $PY)"
+echo "----- $(date '+%F %T') refresh start (python: ${PY:-none with playwright})"
 
 if [ -z "$PY" ]; then
-  echo "FATAL: no python3 on PATH"
-  echo "----- $(date '+%F %T') refresh exit 127"
-  exit 127
-fi
-
-if ! "$PY" -c 'import playwright' 2>/dev/null; then
-  echo "FATAL: playwright not installed for $PY"
-  echo "       fix: $PY -m pip install playwright && $PY -m playwright install chromium"
+  echo "FATAL: no python3 with playwright. Tried BLOK_PYTHON, PATH, /usr/bin,"
+  echo "       /opt/homebrew/bin, /usr/local/bin."
+  echo "       fix: /usr/bin/python3 -m pip install playwright && \\"
+  echo "            /usr/bin/python3 -m playwright install chromium"
   echo "----- $(date '+%F %T') refresh exit 3"
   exit 3
 fi

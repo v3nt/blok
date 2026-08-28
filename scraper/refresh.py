@@ -246,7 +246,7 @@ UPCOMING_JS = r"""
 }
 """
 
-def upcoming(page, year, warnings):
+def upcoming(page, year, warnings, url=None):
     """Read the reservations off /profile/upcoming.
 
     The schedule rows only say "Cancel" on a class you booked, and only while
@@ -258,7 +258,7 @@ def upcoming(page, year, warnings):
     never a crash.
     """
     try:
-        page.goto(UPCOMING_URL, timeout=60000)
+        page.goto(url or UPCOMING_URL, timeout=60000)
         page.wait_for_timeout(2500)
         dismiss_consent(page, warnings, "upcoming")
         page.wait_for_timeout(1500)
@@ -386,6 +386,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=str(OUT))
     ap.add_argument("--headed", action="store_true")
+    ap.add_argument("--base", default="https://classpass.com/studios/",
+                    help="studio URL prefix; point at a fixture dir to self-test")
+    ap.add_argument("--upcoming", default=UPCOMING_URL,
+                    help="reservations page; overridable for the same reason")
     args = ap.parse_args()
     from playwright.sync_api import sync_playwright
     year = datetime.date.today().year
@@ -405,13 +409,14 @@ def main():
         page = ctx.new_page()
         for name, slug, venue in STUDIOS:
             try:
-                rows += scrape(page, "https://classpass.com/studios/" + slug, name, venue, year, warnings)
+                url = args.base + slug + (".html" if args.base.startswith("file:") else "")
+                rows += scrape(page, url, name, venue, year, warnings)
             except SystemExit:
                 raise
             except Exception as e:
                 warnings.append("%s: scrape failed: %s" % (name, e))
                 log("  ! %s failed: %s" % (name, e))
-        booked = upcoming(page, year, warnings)
+        booked = upcoming(page, year, warnings, url=args.upcoming)
         browser.close()
     if booked:
         log("  marked %d row(s) as booked" % mark_booked(rows, booked, warnings))

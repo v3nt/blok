@@ -181,9 +181,12 @@ def main():
                       " localStorage.removeItem('blokFavsSeed'); }")
         page.reload()
         seeded = state()
+        # Same invariant as the first-load check: whatever defaults this page
+        # actually has must all be starred. Counting them hardcodes a data size.
+        want_all = {(d.split("|")[0], d.split("|")[1]) for d in s["defaults"]}
+        got = {("B", c) for c in seeded["favB"]} | {("M", c) for c in seeded["favM"]}
         check("defaults seed into a browser with a stale saved list",
-              len(seeded["favB"]) >= 4 and len(seeded["favM"]) >= 3,
-              f"favB={seeded['favB']} favM={seeded['favM']}")
+              want_all <= got, f"missing {sorted(want_all - got)}")
 
         # --- but a deliberate clear must stick -----------------------------
         page.evaluate("() => document.querySelectorAll('#favB .star,#favM .star')"
@@ -197,8 +200,9 @@ def main():
         # --- reset gets you back -------------------------------------------
         act("Reset filters is clickable", lambda: page.click("#reset"))
         reset = state()
+        got_reset = {("B", c) for c in reset["favB"]} | {("M", c) for c in reset["favM"]}
         check("Reset filters restores the default favourites",
-              len(reset["favB"]) >= 4 and len(reset["favM"]) >= 3)
+              want_all <= got_reset, f"missing {sorted(want_all - got_reset)}")
 
         # --- bookings ---------------------------------------------------------
         # Bookings come from /profile/upcoming, not from a "Cancel" button in the
