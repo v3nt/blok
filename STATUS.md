@@ -38,7 +38,7 @@ FATAL: no rows scraped - leaving /Users/danielcrabbe14/Sites/jynk/blok/index.htm
 ## Recent push errors
 
 ```
-2026-08-28 10:16:07  BLOCKED: baseline regression
 2026-08-28 10:26:11  BLOCKED: baseline regression
 2026-08-28 10:36:14  BLOCKED: baseline regression
+2026-08-28 10:46:17  BLOCKED: baseline regression
 ```
