@@ -6,39 +6,39 @@ GitHub (and therefore from a phone) without touching the Mac.
 | Field | Value |
 |---|---|
 | Scrape result | **FAIL** |
-| Last scrape log line | `----- 2026-08-27 22:52:07 refresh FAILED (exit 1)` |
+| Last scrape log line | `----- 2026-08-28 03:53:56 refresh FAILED (exit 1)` |
 | index.html modified | 2026-08-27 23:20:32 BST |
 | Classes in index.html | 840 |
 
 ## Last scrape failure
 
 ```
+    - waiting 500ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div id="truste-consent-text" class="truste-messageColumn">…</div> from <div lang="en" id="consent_blackbar">…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting 500ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div id="trustarc-banner-overlay"></div> from <div lang="en" id="consent_blackbar">…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting 500ms
+
   Shoreditch -> 0 classes  []
   Mission E1 -> 0 classes  []
 FATAL: no rows scraped - leaving /Users/danielcrabbe14/Sites/jynk/blok/index.html untouched
------ 2026-08-27 14:51:36 refresh FAILED (exit 1)
------ 2026-08-27 18:51:36 refresh start (python: /usr/bin/python3)
-BLOK refresh 2026-08-27 18:51:36
-  ! no auth_state.json - your booked classes will not be marked. Run login_setup.py once.
-  Clapton -> 0 classes  []
-  Shoreditch -> 0 classes  []
-  Mission E1 -> 0 classes  []
-FATAL: no rows scraped - leaving /Users/danielcrabbe14/Sites/jynk/blok/index.html untouched
------ 2026-08-27 18:51:49 refresh FAILED (exit 1)
------ 2026-08-27 22:51:49 refresh start (python: /usr/bin/python3)
-BLOK refresh 2026-08-27 22:51:49
-  ! no auth_state.json - your booked classes will not be marked. Run login_setup.py once.
-  Clapton -> 0 classes  []
-  Shoreditch -> 0 classes  []
-  Mission E1 -> 0 classes  []
-FATAL: no rows scraped - leaving /Users/danielcrabbe14/Sites/jynk/blok/index.html untouched
------ 2026-08-27 22:52:07 refresh FAILED (exit 1)
+----- 2026-08-28 03:53:56 refresh FAILED (exit 1)
 ```
 
 ## Recent push errors
 
 ```
-2026-08-28 03:23:49  BLOCKED: baseline regression
 2026-08-28 03:33:52  BLOCKED: baseline regression
 2026-08-28 03:43:56  BLOCKED: baseline regression
+2026-08-28 03:53:59  BLOCKED: baseline regression
 ```
