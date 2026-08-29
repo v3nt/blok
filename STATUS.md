@@ -7,8 +7,8 @@ GitHub (and therefore from a phone) without touching the Mac.
 |---|---|
 | Scrape result | **FAIL** |
 | Last scrape log line | `----- 2026-08-29 00:01:43 refresh FAILED (exit 1)` |
-| index.html modified | 2026-08-27 23:20:32 BST |
-| Classes in index.html | 840 |
+| index.html modified | 2026-08-29 11:30:42 BST |
+| Classes in index.html | 1754 |
 
 ## Last scrape failure
 
