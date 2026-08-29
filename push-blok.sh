@@ -35,6 +35,17 @@ fi
 # applies. This was the cause of the repeated "REBASE FAILED" runs.
 grep -qxF '.DS_Store' .git/info/exclude 2>/dev/null || echo '.DS_Store' >> .git/info/exclude
 grep -qxF '.DS_Store' .gitignore 2>/dev/null || echo '.DS_Store' >> .gitignore
+
+# Runtime junk that was committed before .gitignore covered it. Untrack once;
+# the files stay on disk. git rm --cached is a no-op when already untracked.
+for JUNK in scraper/__pycache__ scraper/refresh.log scraper/auth_state.json \
+            scraper/.chrome-profile; do
+  if git ls-files --error-unmatch "$JUNK" >/dev/null 2>&1 || \
+     [ -n "$(git ls-files "$JUNK")" ]; then
+    echo "$(date '+%F %T')  untracking $JUNK"
+    git rm -r --cached -q "$JUNK" 2>/dev/null || true
+  fi
+done
 # Untrack every .DS_Store anywhere in the tree, not just the root one -
 # a tracked _to_delete/.DS_Store collides during rebase exactly the same way.
 TRACKED_DS=$(git ls-files '*.DS_Store' || true)

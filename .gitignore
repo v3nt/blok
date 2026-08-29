@@ -1,6 +1,13 @@
 # Churny logs stay out of history; STATUS.md carries the health signal instead.
 push-blok.log
 push-blok.log.tmp
+scraper/refresh.log
+
+# Build/runtime junk from the scraper.
+scraper/__pycache__/
+scraper/.chrome-profile/
+scraper/auth_state.json
+scraper/debug-*.html
 
 # Finder junk. Also listed in .git/info/exclude, which is what actually
 # protects rebases - .gitignore is versioned, so during a rebase git checks

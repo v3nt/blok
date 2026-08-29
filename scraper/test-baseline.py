@@ -79,7 +79,9 @@ def main():
                 rows: document.querySelectorAll('#tb tr:not(.day)').length,
                 total: (typeof D === 'undefined' ? 0 : D.length),
                 shown: txt('shown'),
-                tipped: document.querySelectorAll('#tb .pill[title]').length,
+                tipped: document.querySelectorAll('#tb .pill[data-desc]').length,
+                nativeTitles: document.querySelectorAll('#tb .pill[title]').length,
+                tipEl: !!el('tip'),
                 collapsed: {M: el('catsM').classList.contains('collapsed'),
                             B: el('catsB').classList.contains('collapsed')},
                 chipVisible: {M: !!(el('catsM').querySelector('.chip') || {}).offsetParent,
@@ -282,6 +284,26 @@ def main():
         check("each studio links to its own ClassPass page", not wrong, str(wrong[:3]))
 
         # --- descriptions ---------------------------------------------------
+        # The description tooltip must actually appear, and must not double up
+        # with the browser's own title= bubble.
+        check("no native title tooltips (they double up with ours)",
+              s["nativeTitles"] == 0,
+              f"{s[chr(39)+chr(39)] if False else s['nativeTitles']} pill(s) still carry title=")
+        check("the tooltip element exists", s["tipEl"])
+        pill = page.locator("#tb .pill[data-desc]").first
+        # Guard the interaction: with no tooltip element there is nothing to
+        # hover into, and the checks above already reported that.
+        if s["tipEl"] and s["tipped"] and act("a described class can be hovered",
+                                              lambda: pill.hover()):
+            tip = page.evaluate("() => { const t = document.getElementById('tip'); return {shown: getComputedStyle(t).display !== 'none', text: t.innerText}; }")
+            want = pill.get_attribute("data-desc") or ""
+            check("hovering shows the description", tip["shown"], "tooltip stayed hidden")
+            check("the tooltip shows that class's description",
+                  want[:40] in tip["text"], f"got {tip['text'][:60]!r}")
+            page.mouse.move(2, 2)
+            hidden = page.evaluate("() => getComputedStyle(document.getElementById('tip')).display === 'none'")
+            check("the tooltip hides again on mouse out", hidden)
+
         check("class descriptions on hover",
               s["tipped"] > s["total"] * 0.5, f"{s['tipped']} of {s['total']} rows")
 
