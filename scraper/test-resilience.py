@@ -72,9 +72,77 @@ check("the broken day is reported", any("continuing" in w for w in warn2), str(w
 check("zero rows leaves index.html alone",
       "no rows scraped" in open(refresh.__file__, encoding="utf-8").read())
 
+# 6/7. the browser must always be closed - a visible window is left on the
+# desktop otherwise, once every four hours, forever.
+import types, sys as _sys
+
+class FakeCtx:
+    def __init__(self, log): self.log = log; self.closed = 0
+    def new_page(self): return FakePage()
+    def close(self): self.closed += 1; self.log.append("ctx")
+
+class FakeBrowser:
+    def __init__(self, log): self.log = log; self.closed = 0; self.ctx = FakeCtx(log)
+    def new_context(self, **k): return self.ctx
+    def close(self): self.closed += 1; self.log.append("browser")
+
+class FakePage:
+    def __init__(self, boom=False): self.boom = boom
+    def goto(self, *a, **k):
+        if self.boom: raise RuntimeError("page exploded")
+    def wait_for_selector(self, *a, **k): pass
+    def wait_for_timeout(self, *a, **k): pass
+    def title(self): return "x"
+    def query_selector(self, s): return None
+    def evaluate(self, js, *a):
+        if "consent" in js.lower() or "trustarc" in js.lower(): return "no consent banner"
+        if "Next day" in js: return False
+        if "when" in js: return []          # the reservations query
+        return {"hdr": "", "rows": []}
+
+def run_main(explode):
+    log = []
+    class Chromium:
+        def launch_persistent_context(self, *a, **k): return FakeCtx(log)
+        def launch(self, *a, **k): return FakeBrowser(log)
+    class PW:
+        chromium = Chromium()
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+    fake = types.ModuleType("playwright.sync_api")
+    fake.sync_playwright = lambda: PW()
+    pkg = types.ModuleType("playwright")
+    saved = {k: _sys.modules.get(k) for k in ("playwright", "playwright.sync_api")}
+    _sys.modules["playwright"] = pkg; _sys.modules["playwright.sync_api"] = fake
+    real_scrape = refresh.scrape
+    if explode:
+        def boom(*a, **k): raise SystemExit("FATAL: page contract changed")
+        refresh.scrape = boom
+    argv = _sys.argv
+    _sys.argv = ["refresh.py", "--out", "/tmp/never-written.html", "--no-profile",
+                 "--base", "file:///tmp/none/", "--upcoming", "file:///tmp/none/x.html"]
+    try:
+        refresh.main()
+    except SystemExit:
+        pass
+    finally:
+        refresh.scrape = real_scrape
+        _sys.argv = argv
+        for k, v in saved.items():
+            if v is None: _sys.modules.pop(k, None)
+            else: _sys.modules[k] = v
+    return log
+
+closed = run_main(explode=False)
+check("the browser is closed after a normal run", closed, "nothing was closed")
+crashed = run_main(explode=True)
+check("the browser is closed even when the scrape blows up", crashed,
+      "window would have been left open")
+
+
 if fails:
     print(f"FAIL: {len(fails)} resilience check(s) failed")
     for f in fails: print("  x " + f)
     sys.exit(1)
-print("OK: 5 resilience checks passed")
+print("OK: 7 resilience checks passed")
 sys.exit(0)

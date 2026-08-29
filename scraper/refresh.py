@@ -305,6 +305,11 @@ def upcoming(page, year, warnings, url=None):
         return set()
     booked = set()
     for e in entries:
+        # A shape change on the profile page must cost the bookings, not the
+        # whole schedule - this used to end the run with a traceback.
+        if not isinstance(e, dict) or "when" not in e:
+            warnings.append("unexpected reservation entry %r" % (e,))
+            continue
         m = re.match(r"^([A-Z][a-z]{2}) (\d{1,2}), (\d{1,2}):(\d{2}) (AM|PM)$", e["when"])
         if not m:
             warnings.append("unparsed reservation date %r" % e["when"])
@@ -477,18 +482,31 @@ def main():
             warnings.append("Chrome unavailable (%s) - fell back to Chromium" % e)
             log("  ! Chrome would not start (%s); using bundled Chromium" % e)
             browser, ctx = start(None)
-        page = ctx.new_page()
-        for name, slug, venue in STUDIOS:
-            try:
-                url = args.base + slug + (".html" if args.base.startswith("file:") else "")
-                rows += scrape(page, url, name, venue, year, warnings)
-            except SystemExit:
-                raise
-            except Exception as e:
-                warnings.append("%s: scrape failed: %s" % (name, e))
-                log("  ! %s failed: %s" % (name, e))
-        booked = upcoming(page, year, warnings, url=args.upcoming)
-        (browser or ctx).close()
+        booked = {}
+        try:
+            page = ctx.new_page()
+            for name, slug, venue in STUDIOS:
+                try:
+                    url = args.base + slug + (".html" if args.base.startswith("file:") else "")
+                    rows += scrape(page, url, name, venue, year, warnings)
+                except SystemExit:
+                    raise
+                except Exception as e:
+                    warnings.append("%s: scrape failed: %s" % (name, e))
+                    log("  ! %s failed: %s" % (name, e))
+            booked = upcoming(page, year, warnings, url=args.upcoming)
+        finally:
+            # ALWAYS close the window - on success, on a broken page, on
+            # Ctrl-C. The run is now visible, so a leaked Chrome is a window
+            # left sitting on the desktop every four hours.
+            for c in (ctx, browser):
+                if c is None:
+                    continue
+                try:
+                    c.close()
+                except Exception as e:
+                    log("  ! could not close the browser: %s" % e)
+            log("  browser closed")
     if booked:
         log("  marked %d row(s) as booked" % mark_booked(rows, booked, warnings))
     if not rows:
