@@ -6,33 +6,33 @@ GitHub (and therefore from a phone) without touching the Mac.
 | Field | Value |
 |---|---|
 | Scrape result | **FAIL** |
-| Last scrape log line | `----- 2026-08-29 16:05:05 refresh FAILED (exit 1)` |
+| Last scrape log line | `----- 2026-08-29 20:08:32 refresh FAILED (exit 1)` |
 | index.html modified | 2026-08-29 12:00:33 BST |
 | Classes in index.html | 1754 |
 
 ## Last scrape failure
 
 ```
-
-  Shoreditch -> 0 classes  []
-  Mission E1 -> 0 classes  []
-FATAL: no rows scraped - leaving /Users/danielcrabbe14/Sites/jynk/blok/index.html untouched
------ 2026-08-28 20:00:40 refresh FAILED (exit 1)
------ 2026-08-29 00:00:40 refresh start (python: /usr/bin/python3)
-BLOK refresh 2026-08-29 00:00:41
-  ! no auth_state.json - your booked classes will not be marked. Run login_setup.py once.
-  Clapton: consent banner - declined: Reject
-  Clapton -> 0 classes  []
-  Shoreditch -> 0 classes  []
-  Mission E1 -> 0 classes  []
-FATAL: no rows scraped - leaving /Users/danielcrabbe14/Sites/jynk/blok/index.html untouched
------ 2026-08-29 00:01:43 refresh FAILED (exit 1)
------ 2026-08-29 12:54:50 refresh start (python: /usr/bin/python3)
-SyntaxError: Non-UTF-8 code starting with '\xe2' in file /Users/danielcrabbe14/Sites/jynk/blok/scraper/refresh.py on line 2, but no encoding declared; see http://python.org/dev/peps/pep-0263/ for details
------ 2026-08-29 12:54:50 refresh FAILED (exit 1)
------ 2026-08-29 16:05:05 refresh start (python: /usr/bin/python3)
-SyntaxError: Non-UTF-8 code starting with '\xe2' in file /Users/danielcrabbe14/Sites/jynk/blok/scraper/refresh.py on line 2, but no encoding declared; see http://python.org/dev/peps/pep-0263/ for details
------ 2026-08-29 16:05:05 refresh FAILED (exit 1)
+  ! Mission E1: unknown status ' | ' for 'Hot Hips: All Levels'
+  ! Mission E1: unknown status ' | ' for 'Yoga: Experienced'
+  ! Mission E1: unknown status ' | ' for 'Reps Kulture: Beginners'
+  ! Mission E1: unknown status ' | ' for 'Iyengar Yoga: All Levels'
+  ! Mission E1: unknown status ' | ' for 'Skills & Reps Kulture: All Levels'
+  ! Mission E1: unknown status ' | ' for 'Hot 26&2: All Levels'
+  ! Mission E1: unknown status ' | ' for 'Rocket: All Levels'
+  ! Mission E1: unknown status ' | ' for 'Vinyasa Flow: Foundation'
+  ! Mission E1: unknown status ' | ' for 'Bambu Bodies: All Levels'
+  ! Mission E1: unknown status ' | ' for 'Hot 4BEAT: All Levels'
+  ! Mission E1: unknown status ' | ' for 'Yin: All Levels'
+  ! Mission E1: unknown status ' | ' for 'Reps Kulture: All Levels'
+  ! Mission E1: unknown status ' | ' for 'Rings: Foundation'
+  ! Mission E1: unknown status ' | ' for '4BEAT: All Levels'
+  ! Mission E1: unknown status ' | ' for 'Bambu Bodies: All Levels'
+  ! Mission E1: unknown status ' | ' for 'Rocket III: Experienced'
+  ! Mission E1: unknown status ' | ' for 'Hot Hips: All Levels'
+  ! Mission E1: unknown status ' | ' for 'Handstands: All Levels'
+  ! no upcoming reservations found - logged out? run login_setup.py to refresh auth_state.json
+----- 2026-08-29 20:08:32 refresh FAILED (exit 1)
 ```
 
 ## Recent push errors
