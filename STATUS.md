@@ -6,16 +6,13 @@ GitHub (and therefore from a phone) without touching the Mac.
 | Field | Value |
 |---|---|
 | Scrape result | **FAIL** |
-| Last scrape log line | `----- 2026-08-29 12:54:50 refresh FAILED (exit 1)` |
+| Last scrape log line | `----- 2026-08-29 16:05:05 refresh FAILED (exit 1)` |
 | index.html modified | 2026-08-29 12:00:33 BST |
 | Classes in index.html | 1754 |
 
 ## Last scrape failure
 
 ```
-       - <div id="trustarc-banner-overlay"></div> from <div lang="en" id="consent_blackbar">…</div> subtree intercepts pointer events
-     - retrying click action
-       - waiting 500ms
 
   Shoreditch -> 0 classes  []
   Mission E1 -> 0 classes  []
@@ -33,12 +30,15 @@ FATAL: no rows scraped - leaving /Users/danielcrabbe14/Sites/jynk/blok/index.htm
 ----- 2026-08-29 12:54:50 refresh start (python: /usr/bin/python3)
 SyntaxError: Non-UTF-8 code starting with '\xe2' in file /Users/danielcrabbe14/Sites/jynk/blok/scraper/refresh.py on line 2, but no encoding declared; see http://python.org/dev/peps/pep-0263/ for details
 ----- 2026-08-29 12:54:50 refresh FAILED (exit 1)
+----- 2026-08-29 16:05:05 refresh start (python: /usr/bin/python3)
+SyntaxError: Non-UTF-8 code starting with '\xe2' in file /Users/danielcrabbe14/Sites/jynk/blok/scraper/refresh.py on line 2, but no encoding declared; see http://python.org/dev/peps/pep-0263/ for details
+----- 2026-08-29 16:05:05 refresh FAILED (exit 1)
 ```
 
 ## Recent push errors
 
 ```
-2026-08-29 15:42:45  BLOCKED: baseline regression
 2026-08-29 15:52:49  BLOCKED: baseline regression
 2026-08-29 16:02:54  BLOCKED: baseline regression
+2026-08-29 16:12:58  BLOCKED: baseline regression
 ```
