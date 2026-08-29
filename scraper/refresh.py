@@ -418,7 +418,15 @@ def build(rows, template, today=None):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=str(OUT))
-    ap.add_argument("--headed", action="store_true")
+    # Headless is the reason this job has never produced a page: ClassPass
+    # serves a real schedule to a normal Chrome window and an empty one to
+    # headless Chrome (every studio came back with 0 classes, no error). So a
+    # visible window is the DEFAULT now; --headless is opt-in for debugging.
+    ap.add_argument("--headless", action="store_true",
+                    help="run with no window - ClassPass returns an empty "
+                         "schedule this way, so it is off by default")
+    ap.add_argument("--headed", action="store_true",
+                    help=argparse.SUPPRESS)   # kept: older callers pass it
     ap.add_argument("--no-profile", dest="profile", action="store_false",
                     default=True, help="use a throwaway context instead of the "
                                        "persistent Chrome profile")
@@ -438,18 +446,37 @@ def main():
         UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
               "AppleWebKit/537.36 (KHTML, like Gecko) "
               "Chrome/148.0.0.0 Safari/537.36")
+        headless = args.headless
+        # Use the Chrome that is actually installed, not Playwright's bundled
+        # Chromium: the schedule renders in one and not the other. Fall back to
+        # Chromium only if Chrome is missing, and say so in the log.
+        chan = "chrome"
+        # Off to one side and modestly sized, so a run you did not ask for does
+        # not land on top of what you are doing. It still needs to be a real
+        # window - that is the whole point.
+        WINDOW = ["--disable-blink-features=AutomationControlled",
+                  "--window-position=40,40", "--window-size=1440,1000"]
+        log("  browser: %s, %s" % (chan, "headless" if headless else "visible window"))
         browser = None
-        if args.profile:
-            PROFILE.mkdir(parents=True, exist_ok=True)
-            ctx = p.chromium.launch_persistent_context(
-                str(PROFILE), headless=not args.headed, user_agent=UA,
-                viewport={"width": 1440, "height": 1000},
-                args=["--disable-blink-features=AutomationControlled"])
-        else:
-            browser = p.chromium.launch(headless=not args.headed)
-            ctx = browser.new_context(
+
+        def start(channel):
+            if args.profile:
+                PROFILE.mkdir(parents=True, exist_ok=True)
+                return None, p.chromium.launch_persistent_context(
+                    str(PROFILE), channel=channel, headless=headless,
+                    user_agent=UA, viewport={"width": 1440, "height": 1000},
+                    args=WINDOW)
+            b = p.chromium.launch(channel=channel, headless=headless, args=WINDOW)
+            return b, b.new_context(
                 storage_state=str(AUTH) if AUTH.exists() else None,
                 viewport={"width": 1440, "height": 1000}, user_agent=UA)
+
+        try:
+            browser, ctx = start(chan)
+        except Exception as e:
+            warnings.append("Chrome unavailable (%s) - fell back to Chromium" % e)
+            log("  ! Chrome would not start (%s); using bundled Chromium" % e)
+            browser, ctx = start(None)
         page = ctx.new_page()
         for name, slug, venue in STUDIOS:
             try:

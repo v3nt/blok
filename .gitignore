@@ -13,3 +13,4 @@ scraper/debug-*.html
 # protects rebases - .gitignore is versioned, so during a rebase git checks
 # out older commits whose .gitignore predates this line.
 .DS_Store
+_to_delete/
