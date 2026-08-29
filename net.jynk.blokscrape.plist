@@ -10,9 +10,22 @@
         <string>/Users/danielcrabbe14/Sites/jynk/blok/scraper/refresh.sh</string>
     </array>
 
-    <!-- Every 4 hours. Runs at load too, so you see the first result straight away. -->
-    <key>StartInterval</key>
-    <integer>14400</integer>
+    <!--
+      Fixed times, not StartInterval. A laptop that sleeps through an interval
+      simply loses it: launchd does not queue up missed StartInterval firings,
+      which is how this job went from 00:00 to midday without running once.
+      StartCalendarInterval fires as soon as the machine is awake past a
+      scheduled time, so a missed slot is picked up rather than skipped.
+    -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict><key>Hour</key><integer>0</integer><key>Minute</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>4</integer><key>Minute</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>8</integer><key>Minute</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>12</integer><key>Minute</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>16</integer><key>Minute</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>20</integer><key>Minute</key><integer>5</integer></dict>
+    </array>
 
     <key>RunAtLoad</key>
     <true/>
