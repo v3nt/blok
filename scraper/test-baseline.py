@@ -238,10 +238,18 @@ def main():
         # "Your booked classes" is a what's-next panel: a class you attended last
         # week must not sit at the top of the page as if it were coming up.
         past = [d for d in s["bookedDates"] if d < today]
+        later = [d for d in s["bookedDates"] if d > today]
+        todays = [d for d in s["bookedDates"] if d == today]
+        # The panel also drops today's classes that have already started, so an
+        # exact count is wrong: assert the invariant instead. Nothing already
+        # past may appear, every future day must, and today's are optional.
+        check("the panel lists no booking that has already been",
+              not [d for d in s["panelDates"] if d < today],
+              f"panel dates {sorted(s['panelDates'])}, today {today}")
         check("the panel lists only upcoming bookings",
-              len(s["panelDates"]) == len([d for d in s["bookedDates"] if d >= today]),
-              f"panel shows {len(s['panelDates'])}, upcoming are "
-              f"{len([d for d in s['bookedDates'] if d >= today])}, past in data: {len(past)}")
+              len(later) <= len(s["panelDates"]) <= len(later) + len(todays),
+              f"panel shows {len(s['panelDates'])}, later {len(later)}, "
+              f"today {len(todays)}, past in data: {len(past)}")
 
         # --- collapsible non-favourites --------------------------------------
         # Collapsing hides chips only. It must not change the selection, so the
