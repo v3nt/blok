@@ -38,7 +38,7 @@ SyntaxError: Non-UTF-8 code starting with '\xe2' in file /Users/danielcrabbe14/S
 ## Recent push errors
 
 ```
-2026-08-29 16:43:12  BLOCKED: baseline regression
 2026-08-29 16:53:16  BLOCKED: baseline regression
 2026-08-29 17:03:21  BLOCKED: baseline regression
+2026-08-29 17:13:25  BLOCKED: baseline regression
 ```
