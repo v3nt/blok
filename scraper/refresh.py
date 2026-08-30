@@ -125,10 +125,15 @@ async () => {
   const rows = [...document.querySelectorAll('.Schedule__rows section')].map(s => {
     const L = s.innerText.split('\n').map(x => x.trim()).filter(Boolean);
     const btn = s.querySelector('button[data-tooltip]') || s.querySelector('button');
+    // Logged out, the booking control is an <a> to /walkthrough saying "See
+    // pricing" - there is no button at all, and every row looks unparseable.
+    const cta = s.querySelector('[data-qa="Schedule.cta"]');
     return {
       time: L[0] || '', dur: L[1] || '', name: L[2] || '', inst: L[3] || '',
       tip: btn ? (btn.getAttribute('data-tooltip') || '') : '',
-      btn: btn ? btn.innerText.replace(/\s+/g, ' ').trim() : ''
+      btn: btn ? btn.innerText.replace(/\s+/g, ' ').trim() : '',
+      cta: cta ? ((cta.getAttribute('href') || '') + ' ' +
+                  (cta.innerText || '').replace(/\s+/g, ' ').trim()) : ''
     };
   });
   return { hdr, rows };
@@ -176,8 +181,16 @@ def click_next(page):
     except Exception:
         return False
 
-def status(tip, btn):
-    """Read the tooltip, not the label: 'Reserve' is shown for several states."""
+LOGGED_OUT = re.compile(r"/walkthrough|see pricing|join classpass", re.I)
+
+def status(tip, btn, cta=""):
+    """Read the tooltip, not the label: 'Reserve' is shown for several states.
+
+    Returns ("logged-out", ...) when the row shows the signed-out CTA, so the
+    caller can say that once instead of rejecting every row individually.
+    """
+    if cta and LOGGED_OUT.search(cta) and not btn:
+        return "logged-out", ""
     if re.search(r"reserved|cancel", btn, re.I):        return "booked", "You're booked"
     if re.search(r"no spots left", tip, re.I):          return "full", "Full \u2014 no spots left"
     if re.search(r"booking window opens on", tip, re.I):
@@ -188,6 +201,10 @@ def status(tip, btn):
     return None, btn + " | " + tip
 
 def scrape(page, url, studio, venue, year, warnings):
+    # Signed out, ClassPass still renders times, names and instructors but
+    # replaces the booking control with a "See pricing" link to /walkthrough.
+    # Every row then looks unparseable; count them and say it once, plainly.
+    logged_out = 0
     page.goto(url, timeout=60000)
     try:
         page.wait_for_selector(".Schedule__rows section", timeout=25000)
@@ -229,7 +246,10 @@ def scrape(page, url, studio, venue, year, warnings):
                   warnings.append("%s: unparseable time %r" % (studio, r["time"]))
                   continue
               mins = (int(tm.group(1)) % 12 + (12 if tm.group(3).upper() == "PM" else 0)) * 60 + int(tm.group(2))
-              st, lab = status(r["tip"], r["btn"])
+              st, lab = status(r["tip"], r["btn"], r.get("cta", ""))
+              if st == "logged-out":
+                  logged_out += 1
+                  continue
               if st is None:
                   warnings.append("%s: unknown status %r for %r" % (studio, lab, name))
                   continue
@@ -255,6 +275,12 @@ def scrape(page, url, studio, venue, year, warnings):
         if not click_next(page):
             break
         page.wait_for_timeout(2600)
+    if logged_out:
+        msg = ("%s: SIGNED OUT of ClassPass - %d rows had a 'See pricing' link "
+               "instead of a booking control. Run: /usr/bin/python3 %s"
+               % (studio, logged_out, HERE / "login_setup.py"))
+        warnings.append(msg)
+        log("  ! " + msg)
     log("  %s -> %d classes  [%s]" % (studio, len(rows), " ".join(seen_days)))
     return rows
 
