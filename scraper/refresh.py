@@ -21,7 +21,7 @@ TEMPLATE = (
     '  +(d?\' tabindex="0" data-desc="\'+d.split(\'"\').join(\'&quot;\')+\'"\':\'\')+\'>\'+r[4]+\'</span></td>\';\n tr.insertCell().textContent=r[5];\n var su=STUDIO_URL[r[6]];\n tr.insertCell().outerHTML=su?(\'<td><a href="\'+su+\'" target="_blank" rel="noopener">\'+r[6]+\'</a></td>\'):(\'<td>\'+r[6]+\'</td>\');\n tr.insertCell().outerHTML=\'<td class="st" style="color:\'+SC[r[7]]+\'">\'+r[8]+\'</td>\';\n return r[0];\n}\n// A native title= tooltip takes about a second to appear, renders in the OS\n// style and is easy to miss - which is why these read as "not working".\n// Show a real one straight away, on hover and on keyboard focus.\n(function(){\n var tip=document.getElementById(\'tip\'), cur=null;\n function show(el,x,y){\n  var d=el.getAttribute(\'data-desc\'); if(!d)return;\n  tip.innerHTML=\'\';\n  var h=document.createElement(\'b\');h.textContent=el.textContent;\n  tip.appendChild(h);tip.appendChild(document.createTextNode(d));\n'
     "  tip.style.display='block';\n  var w=tip.offsetWidth, ht=tip.offsetHeight;\n  tip.style.left=Math.min(Math.max(8,x+14), window.innerWidth-w-8)+'px';\n  var top=y+18; if(top+ht>window.innerHeight-8) top=Math.max(8,y-ht-14);\n  tip.style.top=top+'px'; cur=el;\n }\n function hide(){tip.style.display='none';cur=null;}\n function pill(e){return e.target&&e.target.closest?e.target.closest('.pill[data-desc]'):null;}\n document.addEventListener('mouseover',function(e){var el=pill(e);if(el)show(el,e.clientX,e.clientY);else if(cur)hide();});\n document.addEventListener('mousemove',function(e){var el=pill(e);if(cur&&el===cur)show(cur,e.clientX,e.clientY);});\n document.addEventListener('focusin',function(e){var el=pill(e);if(el){var r=el.getBoundingClientRect();show(el,r.left,r.bottom-8);}});\n document.addEventListener('focusout',hide);\n"
     " // Don't hide on scroll: the pointer is usually still over the pill (trackpad\n // scrolling, or a programmatic scrollIntoView), and hiding leaves the tooltip\n // stuck off until the mouse moves. Reposition to the element instead.\n document.addEventListener('scroll',function(){\n  if(!cur)return;\n  if(!document.body.contains(cur)){hide();return;}\n  var r=cur.getBoundingClientRect();\n  if(r.bottom<0||r.top>window.innerHeight){hide();return;}\n  show(cur,r.left,r.bottom-8);\n },true);\n document.addEventListener('keydown',function(e){if(e.key==='Escape')hide();});\n})();\nfunction draw(){\n var tb=document.getElementById('tb');tb.innerHTML='';\n var cur='',shown=0,cnt={};\n D.forEach(function(r){\n  var sel=r[10]==='M'?selM:selB;\n  if(sel.indexOf(r[4])<0)return;\n  if(av.checked&&r[7]!=='bookable')return;\n  if(hf.checked&&r[7]==='full')return;\n  if(hw.checked&&r[9]<5&&r[1]>=480&&r[1]<=1045)return;\n"
-    '  cnt[r[7]]=(cnt[r[7]]||0)+1;shown++;\n  cur=addRow(tb,r,cur);\n });\n document.getElementById(\'none\').style.display=shown?\'none\':\'block\';\n document.getElementById(\'shown\').textContent=shown+\' of \'+D.length+\' shown\';\n var lab=[[\'bookable\',\'Bookable\'],[\'full\',\'Full\'],[\'soon\',\'Not yet open\'],[\'booked\',\'Booked\'],[\'closed\',\'Closed\']];\n var lg=document.getElementById(\'lg\');lg.innerHTML=\'\';\n lab.forEach(function(p){\n  if(!cnt[p[0]])return;\n  var e=document.createElement(\'span\');\n  e.innerHTML=\'<i style="background:\'+SC[p[0]]+\'"></i>\'+p[1]+\' <b>\'+cnt[p[0]]+\'</b>\';\n  lg.appendChild(e);\n });\n}\nrefreshAll();\ndraw();\n</script></body></html>\n\n'
+    '  cnt[r[7]]=(cnt[r[7]]||0)+1;shown++;\n  cur=addRow(tb,r,cur);\n });\n document.getElementById(\'none\').style.display=shown?\'none\':\'block\';\n document.getElementById(\'shown\').textContent=shown+\' of \'+D.length+\' shown\';\n var lab=[[\'bookable\',\'Bookable\'],[\'full\',\'Full\'],[\'soon\',\'Not yet open\'],[\'booked\',\'Booked\'],[\'closed\',\'Closed\'],[\'unknown\',\'Status unknown\']];\n var lg=document.getElementById(\'lg\');lg.innerHTML=\'\';\n lab.forEach(function(p){\n  if(!cnt[p[0]])return;\n  var e=document.createElement(\'span\');\n  e.innerHTML=\'<i style="background:\'+SC[p[0]]+\'"></i>\'+p[1]+\' <b>\'+cnt[p[0]]+\'</b>\';\n  lg.appendChild(e);\n });\n}\nrefreshAll();\ndraw();\n</script></body></html>\n'
 )
 #!/usr/bin/env python3
 """
@@ -99,7 +99,8 @@ DEFAULT_FAVS = {
     # Mission's ashtanga stream, by request
     "Ashtanga", "Ashtanga Guided Self Practice", "Rocket",
 }
-SC = {"bookable":"#1f8a3c","full":"#c0392b","soon":"#b06a00","booked":"#1f7fd1","closed":"#8a8a8f"}
+SC = {"bookable":"#1f8a3c","full":"#c0392b","soon":"#b06a00","booked":"#1f7fd1",
+      "closed":"#8a8a8f","unknown":"#6b6b76"}
 
 DAY_RX  = re.compile(r"^(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s(\w+)\s(\d+)$")
 TIME_RX = re.compile(r"^(\d+):(\d+)\s*(AM|PM)$", re.I)
@@ -248,8 +249,12 @@ def scrape(page, url, studio, venue, year, warnings):
               mins = (int(tm.group(1)) % 12 + (12 if tm.group(3).upper() == "PM" else 0)) * 60 + int(tm.group(2))
               st, lab = status(r["tip"], r["btn"], r.get("cta", ""))
               if st == "logged-out":
+                  # The SCHEDULE is public; only the booking status needs a
+                  # session. Keep the class - time, name, instructor, duration
+                  # are all right there - and mark the status unknown. Dropping
+                  # the row meant a signed-out profile published nothing at all.
                   logged_out += 1
-                  continue
+                  st, lab = "unknown", "Check on ClassPass"
               if st is None:
                   warnings.append("%s: unknown status %r for %r" % (studio, lab, name))
                   continue
@@ -276,8 +281,9 @@ def scrape(page, url, studio, venue, year, warnings):
             break
         page.wait_for_timeout(2600)
     if logged_out:
-        msg = ("%s: SIGNED OUT of ClassPass - %d rows had a 'See pricing' link "
-               "instead of a booking control. Run: /usr/bin/python3 %s"
+        msg = ("%s: signed out - %d class(es) published without a booking "
+               "status. The schedule itself is unaffected. To get statuses and "
+               "your bookings back: /usr/bin/python3 %s"
                % (studio, logged_out, HERE / "login_setup.py"))
         warnings.append(msg)
         log("  ! " + msg)
@@ -438,8 +444,13 @@ def build(rows, template, today=None):
     now = datetime.datetime.now().astimezone()
     f = lambda iso: datetime.date.fromisoformat(iso).strftime("%-d %b")
     link = '<a href="https://classpass.com/studios/%s" target="_blank" rel="noopener">%s</a>'
+    # Say it on the page when statuses are missing, so a signed-out build is
+    # never mistaken for "everything is bookable".
+    unknown = states.get("unknown", 0)
+    note = (" \u00b7 booking status unavailable (signed out)" if unknown else "")
     sub = ("<p>" + " &amp; ".join(link % (slug, name) for name, slug, _ in STUDIOS) +
-           " \u00b7 %s \u2013 %s %s \u00b7 %d classes \u00b7 auto-updated every 4 hours \u00b7 refreshed %s</p>") % (
+           " \u00b7 %s \u2013 %s %s \u00b7 %d classes" + note +
+           " \u00b7 auto-updated every 4 hours \u00b7 refreshed %s</p>") % (
           f(rows[0][0]), f(rows[-1][0]), rows[-1][0][:4], len(rows),
           now.strftime("%a %-d %b %Y, %H:%M %Z"))
     html = template.replace("@@DATA@@", data).replace("@@SUB@@", sub)
