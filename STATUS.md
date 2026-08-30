@@ -35,8 +35,3 @@ GitHub (and therefore from a phone) without touching the Mac.
 ----- 2026-08-30 04:30:10 refresh FAILED (exit 1)
 ```
 
-## Recent push errors
-
-```
-2026-08-29 17:13:25  BLOCKED: baseline regression
-```
