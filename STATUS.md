@@ -6,7 +6,7 @@ GitHub (and therefore from a phone) without touching the Mac.
 | Field | Value |
 |---|---|
 | Scrape result | **FAIL** |
-| Last scrape log line | `----- 2026-08-30 04:30:10 refresh FAILED (exit 1)` |
+| Last scrape log line | `----- 2026-08-30 08:46:30 refresh FAILED (exit 1)` |
 | index.html modified | 2026-08-29 12:00:33 BST |
 | Classes in index.html | 1754 |
 
@@ -32,6 +32,6 @@ GitHub (and therefore from a phone) without touching the Mac.
   ! Mission E1: unknown status ' | ' for 'Iyengar Yoga + Pranayama: All Levels'
   ! Mission E1: unknown status ' | ' for 'Yoga for Athletes: All Levels'
   ! no upcoming reservations found - logged out? run login_setup.py to refresh auth_state.json
------ 2026-08-30 04:30:10 refresh FAILED (exit 1)
+----- 2026-08-30 08:46:30 refresh FAILED (exit 1)
 ```
 
