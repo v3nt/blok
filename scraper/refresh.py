@@ -471,8 +471,9 @@ def main():
     rows, warnings = [], []
     log("BLOK refresh %s" % datetime.datetime.now().strftime("%F %T"))
     if not AUTH.exists():
-        log("  ! no auth_state.json - your booked classes will not be marked."
-            " Run login_setup.py once.")
+        log("  ! not signed in (no auth_state.json). The schedule will come back"
+            " signed out and nothing will publish. Run: /usr/bin/python3 %s"
+            % (HERE / "login_setup.py"))
     with sync_playwright() as p:
         UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
               "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -493,10 +494,23 @@ def main():
         def start(channel):
             if args.profile:
                 PROFILE.mkdir(parents=True, exist_ok=True)
-                return None, p.chromium.launch_persistent_context(
+                c = p.chromium.launch_persistent_context(
                     str(PROFILE), channel=channel, headless=headless,
                     user_agent=UA, viewport={"width": 1440, "height": 1000},
                     args=WINDOW)
+                # The profile is its own cookie jar. If a saved session exists,
+                # push it in too, so a profile that got signed out can recover
+                # without another manual login.
+                if AUTH.exists():
+                    try:
+                        import json as _json
+                        cookies = _json.loads(AUTH.read_text()).get("cookies", [])
+                        if cookies:
+                            c.add_cookies(cookies)
+                            log("  loaded %d saved cookie(s)" % len(cookies))
+                    except Exception as e:
+                        log("  ! could not load %s: %s" % (AUTH.name, e))
+                return None, c
             b = p.chromium.launch(channel=channel, headless=headless, args=WINDOW)
             return b, b.new_context(
                 storage_state=str(AUTH) if AUTH.exists() else None,
