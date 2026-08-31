@@ -334,6 +334,80 @@ def main():
         check("class descriptions on hover",
               s["tipped"] > s["total"] * 0.5, f"{s['tipped']} of {s['total']} rows")
 
+        # --- mobile: one hamburger, everything else inside it ----------------
+        # The controls are MOVED into the drawer, never copied: two copies of a
+        # checkbox is two sources of truth, and they drift apart silently.
+        page.set_viewport_size({"width": 390, "height": 844})
+        page.wait_for_timeout(400)
+        onscreen = lambda sel: page.eval_on_selector(sel, """e => {
+          const r = e.getBoundingClientRect(), st = getComputedStyle(e);
+          return r.width > 0 && r.height > 0 && st.visibility !== 'hidden'
+                 && st.display !== 'none' && r.left < window.innerWidth && r.right > 0;
+        }""")
+        check("phone: the top bar with the menu button is shown", onscreen("#topbar"))
+        check("phone: the desktop header is hidden", not onscreen("header"))
+        check("phone: the filter bar is parked off-screen", not onscreen(".bar"))
+        check("phone: the schedule is still the page", onscreen("#main table"))
+        check("phone: the page never scrolls sideways",
+              page.evaluate("() => document.documentElement.scrollWidth <= window.innerWidth + 1"),
+              page.evaluate("() => [document.documentElement.scrollWidth, window.innerWidth]"))
+        check("phone: the menu button is a real tap target",
+              page.eval_on_selector("#mnu", "e => {const r = e.getBoundingClientRect();"
+                                    "return r.width >= 44 && r.height >= 44}"))
+        rows_before = state()["rows"]
+        act("phone: the menu opens", lambda: page.click("#mnu"))
+        page.wait_for_timeout(350)
+        check("phone: the menu is open", onscreen("#drawer"))
+        for label, sel in [("the filters", "#dbody .bar #catsB"),
+                           ("the booked panel", "#dbody #booked"),
+                           ("the legend", "#dbody #lg"),
+                           ("the studio links and dates", "#dbody .sub"),
+                           ("the favourites row", "#dbody #favB"),
+                           ("the collapse toggle", "#dbody #colB")]:
+            check("phone: %s is in the menu" % label,
+                  page.evaluate("() => !!document.querySelector('%s')" % sel))
+        check("phone: no control was duplicated",
+              page.evaluate("() => document.querySelectorAll('.bar').length === 1"
+                            " && document.querySelectorAll('#catsB').length === 1"))
+        check("phone: the page behind does not scroll while the menu is open",
+              page.evaluate("() => getComputedStyle(document.body).overflow === 'hidden'"))
+        act("phone: a filter inside the menu is usable", lambda: page.evaluate(
+            "() => {const x = document.getElementById('allCatB'); x.checked = false;"
+            " x.dispatchEvent(new Event('change', {bubbles: true}))}"))
+        page.wait_for_timeout(300)
+        rows_filtered = state()["rows"]
+        check("phone: filtering from the menu still filters the table",
+              rows_filtered < rows_before, f"{rows_before} -> {rows_filtered}")
+        act("phone: restore the filter", lambda: page.evaluate(
+            "() => {const x = document.getElementById('allCatB'); x.checked = true;"
+            " x.dispatchEvent(new Event('change', {bubbles: true}))}"))
+        page.wait_for_timeout(250)
+        act("phone: tapping outside closes the menu", lambda: page.mouse.click(8, 500))
+        page.wait_for_timeout(350)
+        closed = "() => !document.getElementById('drawer').classList.contains('open')"
+        check("phone: tapping outside closed it", page.evaluate(closed))
+        act("phone: reopen", lambda: page.click("#mnu")); page.wait_for_timeout(300)
+        act("phone: Done closes it", lambda: page.click("#dclose")); page.wait_for_timeout(350)
+        check("phone: Done closed it", page.evaluate(closed))
+        act("phone: reopen again", lambda: page.click("#mnu")); page.wait_for_timeout(300)
+        page.keyboard.press("Escape"); page.wait_for_timeout(350)
+        check("phone: Escape closed it", page.evaluate(closed))
+        check("phone: scrolling is restored after closing",
+              page.evaluate("() => getComputedStyle(document.body).overflow !== 'hidden'"))
+
+        # Back to desktop: every block must return to where it was.
+        page.set_viewport_size({"width": 1280, "height": 900})
+        page.wait_for_timeout(450)
+        check("desktop: the top bar is gone", not onscreen("#topbar"))
+        check("desktop: the header is back", onscreen("header"))
+        check("desktop: the filter bar is back in the page", onscreen(".bar"))
+        check("desktop: the booked panel sits above the table again",
+              page.evaluate("() => !!(document.getElementById('booked')"
+                            ".compareDocumentPosition(document.getElementById('main'))"
+                            " & Node.DOCUMENT_POSITION_FOLLOWING)"))
+        check("desktop: still one copy of every control",
+              page.evaluate("() => document.querySelectorAll('#catsB').length === 1"))
+
         check("no JavaScript errors", not errors, "; ".join(errors[:3]))
         browser.close()
 

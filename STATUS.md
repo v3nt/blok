@@ -14,4 +14,5 @@ GitHub (and therefore from a phone) without touching the Mac.
 
 ```
 2026-08-31 06:24:17  BLOCKED: baseline regression
+2026-08-31 15:16:06  BLOCKED: FAIL: UI regression - missing mobile top bar; mobile hamburger button; mobile menu drawer; mobile menu contents; mobile menu backdrop; header line the drawer moves into the menu
 ```

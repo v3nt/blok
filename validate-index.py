@@ -100,6 +100,13 @@ REQUIRED = {
     'id="colM"':   "Mission E1 collapse toggle",
     'id="colB"':   "BLOK collapse toggle",
     "blokCollapse": "remembered collapsed state",
+    # mobile: the hamburger and the drawer it fills must survive every rebuild
+    'id="topbar"': "mobile top bar",
+    'id="mnu"':    "mobile hamburger button",
+    'id="drawer"': "mobile menu drawer",
+    'id="dbody"':  "mobile menu contents",
+    'id="scrim"':  "mobile menu backdrop",
+    'class="sub"': "header line the drawer moves into the menu",
 }
 missing = [what for marker, what in REQUIRED.items() if marker not in html]
 if missing:
