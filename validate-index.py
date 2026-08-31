@@ -107,6 +107,8 @@ REQUIRED = {
     'id="dbody"':  "mobile menu contents",
     'id="scrim"':  "mobile menu backdrop",
     'class="sub"': "header line the drawer moves into the menu",
+    'id="bkt"':      "booked panel minimise toggle",
+    "blokBookedCol": "remembered booked-panel state",
 }
 missing = [what for marker, what in REQUIRED.items() if marker not in html]
 if missing:

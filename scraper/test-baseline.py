@@ -334,6 +334,29 @@ def main():
         check("class descriptions on hover",
               s["tipped"] > s["total"] * 0.5, f"{s['tipped']} of {s['total']} rows")
 
+        # --- the booked panel minimises, and stays that way -------------------
+        if s["booked"]:
+            check("the booked panel has a minimise toggle",
+                  page.evaluate("() => !!document.getElementById('bkt')"))
+            listed = "() => {const u = document.getElementById('bkl');" \
+                     " return !!u && u.getBoundingClientRect().height > 0}"
+            check("the booked list starts open", page.evaluate(listed))
+            act("the booked panel minimises", lambda: page.click("#bkt"))
+            page.wait_for_timeout(200)
+            check("minimising hides the list", not page.evaluate(listed))
+            check("minimised, the heading and count still show",
+                  page.evaluate("() => /booked classes \\(\\d+\\)/i.test("
+                                "document.getElementById('bkt').textContent)"))
+            check("the panel itself is still visible when minimised",
+                  page.eval_on_selector("#booked", "e => e.getBoundingClientRect().height > 0"))
+            page.reload(); page.wait_for_timeout(400)
+            check("minimised is remembered across a reload", not page.evaluate(listed))
+            act("the booked panel opens again", lambda: page.click("#bkt"))
+            page.wait_for_timeout(200)
+            check("opening it again works", page.evaluate(listed))
+            page.reload(); page.wait_for_timeout(400)
+            check("open is remembered too", page.evaluate(listed))
+
         # --- mobile: one hamburger, everything else inside it ----------------
         # The controls are MOVED into the drawer, never copied: two copies of a
         # checkbox is two sources of truth, and they drift apart silently.
