@@ -7,7 +7,7 @@ GitHub (and therefore from a phone) without touching the Mac.
 |---|---|
 | Scrape result | **OK** |
 | Last scrape log line | `----- 2026-08-31 12:07:26 refresh OK (exit 0)` |
-| index.html modified | 2026-08-31 12:07:26 BST |
+| index.html modified | 2026-08-31 15:26:08 BST |
 | Classes in index.html | 2061 |
 
 ## Recent push errors
@@ -15,4 +15,5 @@ GitHub (and therefore from a phone) without touching the Mac.
 ```
 2026-08-31 06:24:17  BLOCKED: baseline regression
 2026-08-31 15:16:06  BLOCKED: FAIL: UI regression - missing mobile top bar; mobile hamburger button; mobile menu drawer; mobile menu contents; mobile menu backdrop; header line the drawer moves into the menu
+2026-08-31 15:26:08  BLOCKED: FAIL: UI regression - missing mobile top bar; mobile hamburger button; mobile menu drawer; mobile menu contents; mobile menu backdrop; header line the drawer moves into the menu
 ```
