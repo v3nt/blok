@@ -362,6 +362,50 @@ def main():
             page.reload(); page.wait_for_timeout(400)
             check("open is remembered too", page.evaluate(listed))
 
+        # --- desktop: the filters scroll away and leave a strip ---------------
+        # They used to be sticky, holding the top of the window for 2000 rows.
+        if page.evaluate("() => !!document.getElementById('minibar')"):
+            strip = "() => document.getElementById('minibar').classList.contains('on')"
+            floating = "() => document.getElementById('filters').classList.contains('float')"
+            page.evaluate("() => window.scrollTo(0, 0)"); page.wait_for_timeout(250)
+            check("desktop: no filter strip at the top of the page",
+                  not page.evaluate(strip))
+            check("desktop: the filter bar is not sticky",
+                  page.eval_on_selector("#filters",
+                      "e => getComputedStyle(e).position !== 'sticky'"))
+            page.evaluate("() => window.scrollTo(0, 1400)"); page.wait_for_timeout(300)
+            check("desktop: the strip appears once the filters scroll away",
+                  page.evaluate(strip))
+            check("desktop: the filters really did scroll off",
+                  page.eval_on_selector("#filters",
+                      "e => e.getBoundingClientRect().bottom <= 0"))
+            act("desktop: the strip expands", lambda: page.click("#mbt"))
+            page.wait_for_timeout(300)
+            check("desktop: expanding floats the real filter bar", page.evaluate(floating))
+            check("desktop: the expanded panel is on screen",
+                  page.eval_on_selector("#filters", "e => {const r = e.getBoundingClientRect();"
+                                        "return r.top >= 0 && r.top < 120 && r.height > 40}"))
+            rows_before = state()["rows"]
+            act("desktop: filtering from the floating panel", lambda: page.evaluate(
+                "() => {const x = document.getElementById('allCatB'); x.checked = false;"
+                " x.dispatchEvent(new Event('change', {bubbles: true}))}"))
+            page.wait_for_timeout(300)
+            check("desktop: the floating panel still filters the table",
+                  state()["rows"] < rows_before)
+            check("desktop: the strip's count follows the table",
+                  page.evaluate("() => (document.getElementById('mshown').textContent || '')"
+                                ".indexOf(String(document.querySelectorAll("
+                                "'#tb tr:not(.day)').length)) === 0"))
+            act("desktop: restore", lambda: page.evaluate(
+                "() => {const x = document.getElementById('allCatB'); x.checked = true;"
+                " x.dispatchEvent(new Event('change', {bubbles: true}))}"))
+            page.wait_for_timeout(250)
+            page.keyboard.press("Escape"); page.wait_for_timeout(300)
+            check("desktop: Escape closes the panel", not page.evaluate(floating))
+            check("desktop: the strip stays while still scrolled down", page.evaluate(strip))
+            page.evaluate("() => window.scrollTo(0, 0)"); page.wait_for_timeout(300)
+            check("desktop: the strip goes away back at the top", not page.evaluate(strip))
+
         # --- mobile: one hamburger, everything else inside it ----------------
         # The controls are MOVED into the drawer, never copied: two copies of a
         # checkbox is two sources of truth, and they drift apart silently.

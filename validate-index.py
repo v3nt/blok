@@ -109,6 +109,8 @@ REQUIRED = {
     'id="scrim"':  "mobile menu backdrop",
     'class="sub"': "header line the drawer moves into the menu",
     'id="bkt"':      "booked panel minimise toggle",
+    'id="minibar"':  "collapsed filter strip",
+    'id="mbt"':      "filter strip expand button",
     "blokBookedCol": "remembered booked-panel state",
 }
 missing = [(marker, what) for marker, what in REQUIRED.items() if marker not in html]

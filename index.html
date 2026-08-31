@@ -12,7 +12,15 @@ header a{color:#c8c8d4}
 #lg span{display:inline-flex;align-items:center;gap:5px;color:#e6e6ea}
 #lg i{width:8px;height:8px;border-radius:50%;display:inline-block}
 #lg b{font-weight:700}
-.bar{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--bd);padding:10px 18px;font-size:13.5px}
+.bar{background:#fff;border-bottom:1px solid var(--bd);padding:10px 18px;font-size:13.5px}
+#minibar{display:none;position:sticky;top:0;z-index:15;align-items:center;gap:14px;background:#fff;border-bottom:1px solid var(--bd);padding:8px 18px;font-size:13px}
+#minibar.on{display:flex}
+#mbt{border:1px solid var(--bd);background:#f4f4f6;border-radius:7px;font:inherit;font-size:12.5px;padding:6px 12px;cursor:pointer;display:inline-flex;gap:7px;align-items:center}
+#mbt:hover{background:#eaeaee}
+#mshown{color:#55555f;font-size:12.5px;font-variant-numeric:tabular-nums}
+.bar.float{position:fixed;left:0;right:0;z-index:16;max-height:72vh;overflow:auto;box-shadow:0 12px 34px rgba(0,0,0,.20)}
+#fscrim{display:none;position:fixed;inset:0;z-index:14;background:rgba(0,0,0,.16)}
+#fscrim.on{display:block}
 .bar .top{display:flex;flex-wrap:wrap;gap:9px 18px;align-items:center}
 .bar label{display:inline-flex;gap:6px;align-items:center;cursor:pointer;white-space:nowrap}
 .bar .sep{width:1px;height:18px;background:var(--bd)}
@@ -110,9 +118,9 @@ body.locked{overflow:hidden}
 </style></head><body>
 <div id="topbar"><h1>Class schedule</h1><button id="mnu" type="button" aria-label="Filters and details" aria-expanded="false" aria-controls="drawer">&#9776;</button></div>
 <header><h1>Class schedule — BLOK &amp; Mission E1</h1>
-<p class="sub"><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> &amp; <a href="https://classpass.com/studios/mission-e1-london" target="_blank" rel="noopener">Mission E1</a> · 31 Aug – 13 Sep 2026 · 2021 classes · auto-updated every 2 hours · refreshed Mon 31 Aug 2026, 16:35 BST</p>
+<p class="sub"><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> &amp; <a href="https://classpass.com/studios/mission-e1-london" target="_blank" rel="noopener">Mission E1</a> · 31 Aug – 13 Sep 2026 · 2021 classes · auto-updated every 2 hours · refreshed Mon 31 Aug 2026, 15:59 UTC</p>
 <div id="lg"></div></header>
-<div class="bar">
+<div class="bar" id="filters">
 <div class="top">
 <label><input type="checkbox" id="av"> Bookable now only</label>
 <label><input type="checkbox" id="hf"> Hide full</label>
@@ -123,6 +131,8 @@ body.locked{overflow:hidden}
 <div class="grp"><h3>Mission E1</h3><div class="row fav" id="favM"><label class="all"><input type="checkbox" id="allFavM" checked> all</label></div><div class="row" id="catsM"><button type="button" class="col" id="colM" aria-expanded="true"></button><label class="all"><input type="checkbox" id="allCatM" checked> all</label></div></div>
 <div class="grp"><h3>BLOK — Clapton &amp; Shoreditch</h3><div class="row fav" id="favB"><label class="all"><input type="checkbox" id="allFavB" checked> all</label></div><div class="row" id="catsB"><button type="button" class="col" id="colB" aria-expanded="true"></button><label class="all"><input type="checkbox" id="allCatB" checked> all</label></div></div>
 </div>
+<div id="minibar"><button id="mbt" type="button" aria-expanded="false" aria-controls="filters"><span id="mbc">▾</span>Filters</button><span id="mshown"></span></div>
+<div id="fscrim"></div>
 <div id="booked"></div>
 <div id="scrim"></div>
 <aside id="drawer" aria-label="Filters and details"><div id="dhead"><b>Filters</b><button id="dclose" type="button">Done</button></div><div id="dbody"></div></aside>
@@ -359,6 +369,7 @@ function draw(){
  });
  document.getElementById('none').style.display=shown?'none':'block';
  document.getElementById('shown').textContent=shown+' of '+D.length+' shown';
+ var ms=document.getElementById('mshown');if(ms)ms.textContent=shown+' of '+D.length+' shown';
  var lab=[['bookable','Bookable'],['full','Full'],['soon','Not yet open'],['booked','Booked'],['closed','Closed'],['unknown','Status unknown']];
  var lg=document.getElementById('lg');lg.innerHTML='';
  lab.forEach(function(p){
@@ -370,6 +381,35 @@ function draw(){
 }
 refreshAll();
 draw();
+// The filters were sticky, so they held the top of the window all the way down
+// a 2000-row schedule. Let them scroll away like anything else, and leave a
+// slim strip in their place that expands over the page when you need them.
+(function(){
+ var bar=document.getElementById('filters'),mb=document.getElementById('minibar'),
+     mbt=document.getElementById('mbt'),mbc=document.getElementById('mbc'),
+     fs=document.getElementById('fscrim'),mq=window.matchMedia('(max-width:640px)');
+ if(!bar||!mb)return;
+ function open(){return bar.classList.contains('float')}
+ function float(on){
+  bar.classList.toggle('float',on);
+  bar.style.top=on?(mb.offsetHeight+'px'):'';
+  fs.classList.toggle('on',on);
+  mbt.setAttribute('aria-expanded',on?'true':'false');
+  mbc.textContent=on?'\u25b4':'\u25be';
+  if(on)mb.classList.add('on');
+ }
+ function update(){
+  if(mq.matches){float(false);mb.classList.remove('on');return;}   // phones use the hamburger
+  if(open()){mb.classList.add('on');return;}
+  mb.classList.toggle('on', bar.getBoundingClientRect().bottom<=0);
+ }
+ mbt.addEventListener('click',function(){float(!open())});
+ fs.addEventListener('click',function(){float(false)});
+ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&open())float(false)});
+ window.addEventListener('scroll',update,{passive:true});
+ window.addEventListener('resize',update);
+ update();
+})();
 // Mobile: one hamburger holds everything that is not the schedule itself.
 // The controls are MOVED, not duplicated - a second copy of a checkbox is a
 // second source of truth, and they drift. Every listener above still applies
