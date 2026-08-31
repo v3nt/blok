@@ -6,14 +6,14 @@ GitHub (and therefore from a phone) without touching the Mac.
 | Field | Value |
 |---|---|
 | Scrape result | **OK** |
-| Last scrape log line | `----- 2026-08-31 16:05:05 refresh start (python: /usr/bin/python3)` |
-| index.html modified | 2026-08-31 15:26:08 BST |
-| Classes in index.html | 2061 |
+| Last scrape log line | `----- 2026-08-31 16:12:10 refresh OK (exit 0)` |
+| index.html modified | 2026-08-31 16:16:27 BST |
+| Classes in index.html | 2020 |
 
 ## Recent push errors
 
 ```
-2026-08-31 15:46:12  BLOCKED: FAIL: UI regression - missing mobile top bar; mobile hamburger button; mobile menu drawer; mobile menu contents; mobile menu backdrop; header line the drawer moves into the menu
 2026-08-31 15:56:14  BLOCKED: FAIL: UI regression - missing mobile top bar; mobile hamburger button; mobile menu drawer; mobile menu contents; mobile menu backdrop; header line the drawer moves into the menu
 2026-08-31 16:06:16  BLOCKED: FAIL: UI regression - missing mobile top bar; mobile hamburger button; mobile menu drawer; mobile menu contents; mobile menu backdrop; header line the drawer moves into the menu
+2026-08-31 16:16:27  BLOCKED: baseline regression
 ```

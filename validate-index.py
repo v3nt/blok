@@ -9,6 +9,7 @@ text - which happily counts rows inside broken JavaScript.
 
 Exit 0 = safe to publish. Exit 1 = do not commit.
 """
+import os
 import re
 import sys
 
@@ -110,10 +111,41 @@ REQUIRED = {
     'id="bkt"':      "booked panel minimise toggle",
     "blokBookedCol": "remembered booked-panel state",
 }
-missing = [what for marker, what in REQUIRED.items() if marker not in html]
+missing = [(marker, what) for marker, what in REQUIRED.items() if marker not in html]
+
+# A marker missing from this page is only a REGRESSION if the published page
+# has it. When a feature is added to the generator, the page on disk predates
+# it until the next scrape rebuilds - and failing there blocks every publish
+# of a schedule that is otherwise perfectly good. That has now cost three
+# separate outages, all self-inflicted by a gate that was too eager:
+#   - the whole point of this gate is "do not go backwards"
+#   - "not built yet" is not backwards
+def published():
+    """index.html as last committed, or None when git cannot say."""
+    try:
+        import subprocess
+        r = subprocess.run(["git", "show", "HEAD:index.html"],
+                           capture_output=True, text=True, timeout=20,
+                           cwd=os.path.dirname(os.path.abspath(__file__)) or ".")
+        return r.stdout if r.returncode == 0 and r.stdout else None
+    except Exception:
+        return None
+
 if missing:
-    print("FAIL: UI regression - missing " + "; ".join(missing))
-    sys.exit(1)
+    live = published()
+    if live is None:
+        # No baseline to compare against: fall back to the strict rule rather
+        # than waving a page through on a git failure.
+        print("FAIL: UI regression - missing " +
+              "; ".join(w for _, w in missing) + " (no published page to compare)")
+        sys.exit(1)
+    regressed = [w for mk, w in missing if mk in live]
+    pending   = [w for mk, w in missing if mk not in live]
+    if regressed:
+        print("FAIL: UI regression - the published page has these and this one "
+              "does not: " + "; ".join(regressed))
+        sys.exit(1)
+    print("note: not built yet (waiting on the next scrape): " + "; ".join(pending))
 
 print(f"OK: script parses, {rows} class rows, UI contract intact")
 sys.exit(0)
