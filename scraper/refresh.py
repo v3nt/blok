@@ -361,12 +361,23 @@ def upcoming(page, year, warnings, url=None):
         mins = (int(hh) % 12 + (12 if ap == "PM" else 0)) * 60 + int(mm)
         # "BLOK - Clapton" -> "Clapton"; "Mission E1" stays as it is
         studio = e["studio"].split(" - ")[-1].strip()
-        booked.add((date.isoformat(), mins, studio))
+        # Date + time + studio is NOT unique: BLOK runs several classes in one
+        # building at 7:40PM, and matching on those three alone flagged every
+        # one of them as booked. The class itself has to be part of the key,
+        # collapsed the same way the schedule collapses it ("CALISTHENICS 60"
+        # and "CALISTHENICS" are the same class).
+        venue = "M" if studio.lower().startswith("mission") else "B"
+        cat = categorise(e.get("cls", ""), venue)
+        if not cat:
+            warnings.append("reservation with an unrecognised class %r at %s"
+                            % (e.get("cls", ""), e["when"]))
+            continue
+        booked.add((date.isoformat(), mins, studio, cat))
     log("  upcoming reservations: %d" % len(booked))
     return booked
 
 def mark_booked(rows, booked, warnings, today=None):
-    """Stamp booked state from the reservations list, matched on date+time+studio.
+    """Stamp booked state from the reservations list, matched on date+time+studio+class.
 
     /profile/upcoming is authoritative for anything still to come: a future row
     flagged booked that is NOT in the list is a class since cancelled, so the
@@ -376,7 +387,7 @@ def mark_booked(rows, booked, warnings, today=None):
     today = today or datetime.date.today().isoformat()
     hit = cleared = 0
     for r in rows:
-        key = (r[0], r[1], r[6])
+        key = (r[0], r[1], r[6], r[4])
         if key in booked:
             r[7], r[8] = "booked", "You're booked"
             hit += 1

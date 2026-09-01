@@ -140,9 +140,42 @@ check("the browser is closed even when the scrape blows up", crashed,
       "window would have been left open")
 
 
+# 8/9/10. a booking must match ONE class, not every class in that room at that
+# time. Date+time+studio flagged CALISTHENICS, BOXCON and OPEN GYM all as
+# booked, because BLOK runs them together at 7:40PM in the same building.
+def row(cat, dur=60, studio="Clapton", venue="B"):
+    return ["2026-09-02", 1180, "7:40PM", dur, cat, "Someone", studio,
+            "bookable", "Bookable", 2, venue]
+
+rows3 = [row("CALISTHENICS"), row("BOXCON", 50), row("OPEN GYM")]
+w = []
+hit = refresh.mark_booked(rows3, {("2026-09-02", 1180, "Clapton", "CALISTHENICS")},
+                          w, today="2026-09-01")
+check("only the booked class is flagged, not its neighbours",
+      [r[7] for r in rows3] == ["booked", "bookable", "bookable"],
+      str([(r[4], r[7]) for r in rows3]))
+check("the booking is counted once", hit == 1, str(hit))
+
+# the same class name at another studio is a different booking
+pair = [row("CALISTHENICS"), row("CALISTHENICS", studio="Shoreditch")]
+refresh.mark_booked(pair, {("2026-09-02", 1180, "Clapton", "CALISTHENICS")},
+                    [], today="2026-09-01")
+check("a booking does not leak across studios",
+      [r[7] for r in pair] == ["booked", "bookable"],
+      str([(r[6], r[7]) for r in pair]))
+
+# a reservation naming a class that is not in the schedule must be reported
+w2 = []
+refresh.mark_booked([row("CALISTHENICS")],
+                    {("2026-09-02", 1180, "Clapton", "SOMETHING ELSE")},
+                    w2, today="2026-09-01")
+check("a reservation with no matching class is reported",
+      any("no matching class" in x for x in w2), str(w2))
+
+
 if fails:
     print(f"FAIL: {len(fails)} resilience check(s) failed")
     for f in fails: print("  x " + f)
     sys.exit(1)
-print("OK: 7 resilience checks passed")
+print("OK: 11 resilience checks passed")
 sys.exit(0)
