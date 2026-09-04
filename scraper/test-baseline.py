@@ -334,6 +334,30 @@ def main():
         check("class descriptions on hover",
               s["tipped"] > s["total"] * 0.5, f"{s['tipped']} of {s['total']} rows")
 
+        # --- the working-hours filter cuts off at 5:15pm ----------------------
+        # Inclusive: a class starting exactly at 5:15pm is inside the hidden
+        # band, 5:20pm onwards is not.
+        act("the work-hours filter is clickable", lambda: page.check("#hw"))
+        page.wait_for_timeout(300)
+        edges = page.evaluate("""() => {
+          const mins = t => { const m = t.match(/^(\\d+):(\\d+)(AM|PM)$/); if (!m) return -1;
+            return ((+m[1]) % 12 + (m[3] === 'PM' ? 12 : 0)) * 60 + (+m[2]); };
+          const shown = [...document.querySelectorAll('#tb tr[data-wd]')]
+            .filter(r => +r.dataset.wd < 5).map(r => +r.dataset.mins);
+          const all = D.filter(r => r[9] < 5).map(r => r[1]);
+          return {
+            latestHidden: Math.max(...all.filter(m => !shown.includes(m) && m >= 480 && m <= 1200)),
+            earliestEveningShown: Math.min(...shown.filter(m => m > 1000)),
+            any515: all.includes(1035), any520plus: all.some(m => m > 1035 && m < 1100),
+            shown515: shown.includes(1035)};
+        }""")
+        check("a weekday class at 5:15pm is hidden",
+              (not edges["any515"]) or not edges["shown515"], str(edges))
+        check("weekday classes after 5:15pm are still shown",
+              (not edges["any520plus"]) or edges["earliestEveningShown"] > 1035, str(edges))
+        act("restore the work-hours filter", lambda: page.uncheck("#hw"))
+        page.wait_for_timeout(250)
+
         # --- the booked panel minimises, and stays that way -------------------
         # Same rule as the validator: a page built before this feature existed
         # is not a regression, it is just older. Skip rather than fail - and

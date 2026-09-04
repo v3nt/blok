@@ -118,13 +118,13 @@ body.locked{overflow:hidden}
 </style></head><body>
 <div id="topbar"><h1>Class schedule</h1><button id="mnu" type="button" aria-label="Filters and details" aria-expanded="false" aria-controls="drawer">&#9776;</button></div>
 <header><h1>Class schedule — BLOK &amp; Mission E1</h1>
-<p class="sub"><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> &amp; <a href="https://classpass.com/studios/mission-e1-london" target="_blank" rel="noopener">Mission E1</a> · 4 Sep – 16 Sep 2026 · 2005 classes · auto-updated every 2 hours · refreshed Fri 4 Sep 2026, 08:07 BST</p>
+<p class="sub"><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> &amp; <a href="https://classpass.com/studios/mission-e1-london" target="_blank" rel="noopener">Mission E1</a> · 4 Sep – 16 Sep 2026 · 2005 classes · auto-updated every 2 hours · refreshed Fri 4 Sep 2026, 09:04 UTC</p>
 <div id="lg"></div></header>
 <div class="bar" id="filters">
 <div class="top">
 <label><input type="checkbox" id="av"> Bookable now only</label>
 <label><input type="checkbox" id="hf"> Hide full</label>
-<label><input type="checkbox" id="hw"> Hide weekday 8:00am–5:25pm</label>
+<label><input type="checkbox" id="hw"> Hide weekday 8:00am–5:15pm</label>
 <span class="sep"></span><button id="reset">Reset filters</button>
 <span id="shown"></span>
 </div>
@@ -363,7 +363,7 @@ function draw(){
   if(sel.indexOf(r[4])<0)return;
   if(av.checked&&r[7]!=='bookable')return;
   if(hf.checked&&r[7]==='full')return;
-  if(hw.checked&&r[9]<5&&r[1]>=480&&r[1]<=1045)return;
+  if(hw.checked&&r[9]<5&&r[1]>=480&&r[1]<=1035)return;
   cnt[r[7]]=(cnt[r[7]]||0)+1;shown++;
   cur=addRow(tb,r,cur);
  });
