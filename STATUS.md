@@ -6,18 +6,13 @@ GitHub (and therefore from a phone) without touching the Mac.
 | Field | Value |
 |---|---|
 | Scrape result | **FAIL** |
-| Last scrape log line | `----- 2026-09-05 07:09:11 refresh OK (exit 0)` |
+| Last scrape log line | `----- 2026-09-05 08:05:05 refresh start (python: /usr/bin/python3)` |
 | index.html modified | 2026-09-05 07:09:11 BST |
 | Classes in index.html | 1181 |
 
 ## Last scrape failure
 
 ```
-  browser: chrome, visible window
-  loaded 53 saved cookie(s)
-  Clapton: consent banner - overlay removed x1
-  Clapton -> 425 classes  [Sat, Sep 5:79 Sun, Sep 6:85 Mon, Sep 7:50 Tue, Sep 8:103 Wed, Sep 9:108]
-  Shoreditch: consent banner - overlay removed x1
   Shoreditch: Fri, Sep 18 empty -> end of published schedule
   Shoreditch -> 418 classes  [Sat, Sep 5:26 Sun, Sep 6:25 Mon, Sep 7:36 Tue, Sep 8:36 Wed, Sep 9:36 Thu, Sep 10:35 Fri, Sep 11:30 Sat, Sep 12:26 Sun, Sep 13:25 Mon, Sep 14:36 Tue, Sep 15:36 Wed, Sep 16:36 Thu, Sep 17:35]
   Mission E1: consent banner - overlay removed x1
@@ -33,6 +28,11 @@ GitHub (and therefore from a phone) without touching the Mac.
   ! Clapton: no day header on day 6
   ! 1 reservation(s) had no matching class in the schedule
 ----- 2026-09-05 07:09:11 refresh OK (exit 0)
+----- 2026-09-05 08:05:05 refresh start (python: /usr/bin/python3)
+BLOK refresh 2026-09-05 08:05:06
+  browser: chrome, visible window
+  loaded 53 saved cookie(s)
+  Clapton: consent banner - overlay removed x1
 ```
 
 ## Recent push errors
