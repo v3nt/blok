@@ -334,6 +334,40 @@ def main():
         check("class descriptions on hover",
               s["tipped"] > s["total"] * 0.5, f"{s['tipped']} of {s['total']} rows")
 
+        # --- your own bookings survive every convenience filter ---------------
+        # "Bookable now only" hid all of them: a booked class is not bookable.
+        if s["booked"]:
+            seen = "() => document.querySelectorAll('#tb tr[data-state=\"booked\"]').length"
+            all_booked = page.evaluate(seen)
+            for box, name in [("#av", "Bookable now only"), ("#hf", "Hide full"),
+                              ("#hw", "Hide weekday 8:00am-5:15pm")]:
+                act("%s is clickable" % name, lambda b=box: page.check(b))
+                page.wait_for_timeout(300)
+                check("booked classes survive '%s'" % name,
+                      page.evaluate(seen) == all_booked,
+                      "%d of %d still shown" % (page.evaluate(seen), all_booked))
+                act("%s unticks" % name, lambda b=box: page.uncheck(b))
+                page.wait_for_timeout(200)
+            # ...but unticking the class type is a deliberate choice, and wins
+            cat = page.evaluate("() => {const r = document.querySelector("
+                                "'#tb tr[data-state=\"booked\"]'); return r && r.dataset.cat}")
+            if cat:
+                act("untick the booked class's own type", lambda: page.evaluate(
+                    """(c) => {const x = [...document.querySelectorAll('input[data-c]')]
+                         .find(i => i.dataset.c === c);
+                       if (x) {x.checked = false;
+                               x.dispatchEvent(new Event('change', {bubbles: true}))}}""", cat))
+                page.wait_for_timeout(300)
+                check("unticking a class type still hides it, booked or not",
+                      page.evaluate(seen) < all_booked,
+                      "%d of %d" % (page.evaluate(seen), all_booked))
+                act("re-tick it", lambda: page.evaluate(
+                    """(c) => {const x = [...document.querySelectorAll('input[data-c]')]
+                         .find(i => i.dataset.c === c);
+                       if (x) {x.checked = true;
+                               x.dispatchEvent(new Event('change', {bubbles: true}))}}""", cat))
+                page.wait_for_timeout(250)
+
         # --- the working-hours filter cuts off at 5:15pm ----------------------
         # Inclusive: a class starting exactly at 5:15pm is inside the hidden
         # band, 5:20pm onwards is not.

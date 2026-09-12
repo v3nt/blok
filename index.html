@@ -118,7 +118,7 @@ body.locked{overflow:hidden}
 </style></head><body>
 <div id="topbar"><h1>Class schedule</h1><button id="mnu" type="button" aria-label="Filters and details" aria-expanded="false" aria-controls="drawer">&#9776;</button></div>
 <header><h1>Class schedule — BLOK &amp; Mission E1</h1>
-<p class="sub"><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> &amp; <a href="https://classpass.com/studios/mission-e1-london" target="_blank" rel="noopener">Mission E1</a> · 12 Sep – 25 Sep 2026 · 2013 classes · auto-updated every 2 hours · refreshed Sat 12 Sep 2026, 12:07 BST</p>
+<p class="sub"><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> &amp; <a href="https://classpass.com/studios/mission-e1-london" target="_blank" rel="noopener">Mission E1</a> · 12 Sep – 25 Sep 2026 · 2013 classes · auto-updated every 2 hours · refreshed Sat 12 Sep 2026, 11:46 UTC</p>
 <div id="lg"></div></header>
 <div class="bar" id="filters">
 <div class="top">
@@ -361,9 +361,17 @@ function draw(){
  D.forEach(function(r){
   var sel=r[10]==='M'?selM:selB;
   if(sel.indexOf(r[4])<0)return;
-  if(av.checked&&r[7]!=='bookable')return;
-  if(hf.checked&&r[7]==='full')return;
-  if(hw.checked&&r[9]<5&&r[1]>=480&&r[1]<=1035)return;
+  // A class you have BOOKED is never hidden by the convenience
+  // toggles. 'Bookable now only' means 'nothing I cannot take' - and
+  // a booked class is not bookable, so it vanished from the schedule,
+  // which reads as 'my bookings are missing'. Unticking a class type
+  // still hides it: that one is a deliberate choice about content.
+  var mine=r[7]==='booked';
+  if(!mine){
+   if(av.checked&&r[7]!=='bookable')return;
+   if(hf.checked&&r[7]==='full')return;
+   if(hw.checked&&r[9]<5&&r[1]>=480&&r[1]<=1035)return;
+  }
   cnt[r[7]]=(cnt[r[7]]||0)+1;shown++;
   cur=addRow(tb,r,cur);
  });
