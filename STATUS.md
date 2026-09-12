@@ -7,13 +7,12 @@ GitHub (and therefore from a phone) without touching the Mac.
 |---|---|
 | Scrape result | **OK** |
 | Last scrape log line | `----- 2026-09-12 12:07:55 refresh OK (exit 0)` |
-| index.html modified | 2026-09-12 12:07:55 BST |
+| index.html modified | 2026-09-12 12:46:35 BST |
 | Classes in index.html | 2013 |
 
 ## Recent push errors
 
 ```
-2026-09-11 19:58:18  BLOCKED: baseline regression
 2026-09-12 04:53:38  BLOCKED: baseline regression
 2026-09-12 08:44:54  BLOCKED: baseline regression
 ```
