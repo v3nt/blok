@@ -10,8 +10,3 @@ GitHub (and therefore from a phone) without touching the Mac.
 | index.html modified | 2026-09-12 16:07:44 BST |
 | Classes in index.html | 2077 |
 
-## Recent push errors
-
-```
-2026-09-12 08:44:54  BLOCKED: baseline regression
-```
