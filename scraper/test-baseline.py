@@ -334,6 +334,33 @@ def main():
         check("class descriptions on hover",
               s["tipped"] > s["total"] * 0.5, f"{s['tipped']} of {s['total']} rows")
 
+        # --- the panel and the schedule must agree --------------------------
+        # Two views of one fact. If they disagree, one of them is lying, and
+        # until now nothing compared them: the panel was checked against dates
+        # only, so "Bookable now only" could empty every booking out of the
+        # table while the panel still listed six.
+        if s["booked"]:
+            tally = page.evaluate("""() => {
+              const pad = n => (n < 10 ? '0' : '') + n, now = new Date();
+              const today = now.getFullYear() + '-' + pad(now.getMonth() + 1)
+                          + '-' + pad(now.getDate());
+              const mins = now.getHours() * 60 + now.getMinutes();
+              const upcoming = D.filter(r => r[7] === 'booked' &&
+                (r[0] > today || (r[0] === today && r[1] >= mins)));
+              return {
+                inData: D.filter(r => r[7] === 'booked').length,
+                upcoming: upcoming.length,
+                inTable: document.querySelectorAll('#tb tr[data-state="booked"]').length,
+                inPanel: document.querySelectorAll('#booked li').length,
+              };
+            }""")
+            check("every booked class in the data is rendered in the schedule",
+                  tally["inTable"] == tally["inData"], str(tally))
+            check("the panel lists exactly the upcoming booked classes",
+                  tally["inPanel"] == tally["upcoming"], str(tally))
+            check("the panel is never larger than the schedule's booked rows",
+                  tally["inPanel"] <= tally["inTable"], str(tally))
+
         # --- your own bookings survive every convenience filter ---------------
         # "Bookable now only" hid all of them: a booked class is not bookable.
         if s["booked"]:
