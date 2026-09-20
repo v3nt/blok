@@ -266,14 +266,20 @@ def main():
     desc, cat_by_name = descriptions(cats, warnings)
     palette = {c: CAT_COLOUR.get(cat_by_name.get(c, ""), GREY) for c in cats}
 
-    venues = [(code, club, "tsTypes" + code) for code, club, _ in CLUBS]
+    # ONE set of class filters covering all three clubs, with the clubs
+    # switched on and off separately - so a single venue group, and the club
+    # lives on in each row (r[6]) for the location switches to work on.
+    for r in rows:
+        r[10] = "T"
+    venues = [("T", "Class types", "tsTypes")]
     ls_keys = {"a": "tsAvailOnly", "f": "tsHideFull", "w": "tsHideWorkHours",
-               "v": "tsFavs", "vv": "tsFavsSeed", "c": "tsCollapse",
-               "bk": "tsBookedCol"}
+               "lo": "tsLocations", "v": "tsFavs", "vv": "tsFavsSeed",
+               "c": "tsCollapse", "bk": "tsBookedCol"}
     html_out, states, counts = refresh.build(
         rows, refresh.TEMPLATE, venues=venues, ls_keys=ls_keys, palette=palette,
         desc=desc, studio_url={club: BASE + "/timetable/" for _, club, _ in CLUBS},
         title="Class schedule — Third Space",
+        locations=[club for _, club, _ in CLUBS],
         sub_html=('<p class="sub">Third Space · '
                   + " &amp; ".join(club for _, club, _ in CLUBS)
                   + ' · %d classes · auto-updated every 2 hours · '

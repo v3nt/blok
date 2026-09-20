@@ -15,6 +15,17 @@ if not PATH.exists():
     sys.exit(2)
 
 fails, checks = [], 0
+def act(name, fn):
+    """Run an interaction; a failure becomes a named check, not a traceback."""
+    global checks
+    checks += 1
+    try:
+        fn()
+        return True
+    except Exception as e:
+        fails.append("%s: %s" % (name, str(e).splitlines()[0][:120]))
+        return False
+
 def check(name, cond, detail=""):
     global checks
     checks += 1
@@ -31,36 +42,61 @@ with sync_playwright() as p:
 
     rows = lambda: page.evaluate("() => document.querySelectorAll('#tb tr:not(.day)').length")
     codes = page.evaluate("() => VENUES")
-    check("the three clubs each get a filter group", len(codes) == 3, codes)
-    for code in codes:
-        for el in ("fav", "cats", "allFav", "allCat", "col"):
-            check("venue %s has #%s%s" % (code, el, code),
-                  page.evaluate("() => !!document.getElementById('%s%s')" % (el, code)))
+    locs = page.evaluate("() => LOCS")
+    # One list of class types covering every club, and the clubs switched on
+    # and off separately - not a filter group per club.
+    check("one set of class filters", len(codes) == 1, codes)
+    check("a switch for each club", sorted(locs) == ["City", "Islington", "Moorgate"], locs)
+    for el in ("fav", "cats", "allFav", "allCat", "col"):
+        check("the class list has #%s%s" % (el, codes[0]),
+              page.evaluate("() => !!document.getElementById('%s%s')" % (el, codes[0])))
+    check("the location switches are on the page",
+          page.evaluate("() => document.querySelectorAll('#locs input[data-loc]').length") == 3)
     check("classes are listed", rows() > 20, rows())
-    check("every row belongs to one of the clubs",
-          page.evaluate("() => D.every(r => VENUES.indexOf(r[10]) > -1)"))
+    check("all three clubs are in the one list",
+          page.evaluate("() => new Set(D.map(r => r[6])).size === LOCS.length"))
+    check("a class type appears once, not once per club",
+          page.evaluate("() => new Set(ORDER[VENUES[0]]).size === ORDER[VENUES[0]].length"))
+
+    # switching a club off must remove exactly that club's classes
+    all_rows = rows()
+    per_club = page.evaluate("() => {const t = {};"
+                             " D.forEach(r => t[r[6]] = (t[r[6]] || 0) + 1); return t}")
+    toggle = ("(on) => {const x = document.querySelector('#locs input[data-loc=\"Moorgate\"]');"
+              " x.checked = on; x.dispatchEvent(new Event('change', {bubbles: true}))}")
+    act("a club can be switched off", lambda: page.evaluate(toggle, False))
+    page.wait_for_timeout(300)
+    check("switching a club off drops only its classes",
+          rows() == all_rows - per_club["Moorgate"],
+          "%d -> %d, Moorgate has %d" % (all_rows, rows(), per_club["Moorgate"]))
+    check("no Moorgate row is left behind",
+          page.evaluate("() => ![...document.querySelectorAll('#tb tr[data-cat]')]"
+                        ".some(r => r.innerText.indexOf('Moorgate') > -1)"))
+    page.reload(); page.wait_for_timeout(500)
+    check("a club left off stays off", rows() == all_rows - per_club["Moorgate"], rows())
+    act("switch it back on", lambda: page.evaluate(toggle, True))
+    page.wait_for_timeout(300)
+    check("switching it back on restores them", rows() == all_rows, rows())
+
     # The same class runs at more than one club - Just Ride is taught at all
     # three - so names are shared on purpose. What must hold is that the
     # COUNTS are per club, or a chip would claim another club's classes.
-    check("each club counts its own classes",
-          page.evaluate("""() => VENUES.every(v => {
-            const tally = {};
-            D.filter(r => r[10] === v).forEach(r => tally[r[4]] = (tally[r[4]] || 0) + 1);
-            return ORDER[v].every(c => (CATS[v] || {})[c] === tally[c]);
-          })"""))
-    check("a class shared by clubs is counted separately",
+    check("counts match the data",
           page.evaluate("""() => {
-            const shared = ORDER[VENUES[0]].filter(c =>
-              VENUES.slice(1).some(v => ORDER[v].indexOf(c) > -1));
-            return shared.length === 0 || shared.some(c =>
-              new Set(VENUES.map(v => (CATS[v] || {})[c])).size > 1);
+            const v = VENUES[0], tally = {};
+            D.forEach(r => tally[r[4]] = (tally[r[4]] || 0) + 1);
+            return ORDER[v].every(c => (CATS[v] || {})[c] === tally[c]);
           }"""))
-
+    shown = page.evaluate("() => ORDER[VENUES[0]].filter(c => DESC[c]).length")
+    total = page.evaluate("() => ORDER[VENUES[0]].length")
+    check("most class types carry a description for the hover",
+          shown >= total * 0.8, "%d of %d" % (shown, total))
     # storage must not collide with the BLOK page - same origin
     keys = page.evaluate("() => LS")
     check("its own storage keys", all(not str(v).startswith("blok")
           for v in list(keys.values()) if isinstance(v, str)), keys)
-    check("a storage key per club", len(set(keys["t"].values())) == 3, keys["t"])
+    check("the class filters have their own key", len(keys["t"]) == 1, keys["t"])
+    check("the locations have their own key", bool(keys.get("lo")), keys)
 
     # the filters actually filter
     before = rows()
