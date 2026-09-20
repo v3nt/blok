@@ -39,12 +39,22 @@ with sync_playwright() as p:
     check("classes are listed", rows() > 20, rows())
     check("every row belongs to one of the clubs",
           page.evaluate("() => D.every(r => VENUES.indexOf(r[10]) > -1)"))
-    check("no category is claimed by two clubs",
+    # The same class runs at more than one club - Just Ride is taught at all
+    # three - so names are shared on purpose. What must hold is that the
+    # COUNTS are per club, or a chip would claim another club's classes.
+    check("each club counts its own classes",
+          page.evaluate("""() => VENUES.every(v => {
+            const tally = {};
+            D.filter(r => r[10] === v).forEach(r => tally[r[4]] = (tally[r[4]] || 0) + 1);
+            return ORDER[v].every(c => (CATS[v] || {})[c] === tally[c]);
+          })"""))
+    check("a class shared by clubs is counted separately",
           page.evaluate("""() => {
-            const seen = {};
-            for (const v of VENUES) for (const c of ORDER[v]) {
-              if (seen[c] && seen[c] !== v) return false; seen[c] = v; }
-            return true; }"""))
+            const shared = ORDER[VENUES[0]].filter(c =>
+              VENUES.slice(1).some(v => ORDER[v].indexOf(c) > -1));
+            return shared.length === 0 || shared.some(c =>
+              new Set(VENUES.map(v => (CATS[v] || {})[c])).size > 1);
+          }"""))
 
     # storage must not collide with the BLOK page - same origin
     keys = page.evaluate("() => LS")

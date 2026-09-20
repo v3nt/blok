@@ -95,11 +95,22 @@ def fetch_club(code, club, club_id, start, days, warnings):
         if data is None:
             warnings.append("%s %s..%s: no timetable data in the page" % (club, a, b))
             continue
-        for iso, clubs in data.items():
-            for name, classes in clubs.items():
+        for iso, payload in data.items():
+            # A day with no classes comes back as [] rather than {}, which is
+            # what crashed the first run. Anything that is not a club->classes
+            # map is simply a day with nothing on.
+            if isinstance(payload, dict):
+                groups = list(payload.items())
+            elif isinstance(payload, list) and payload:
+                groups = [(club, payload)]
+            else:
+                continue
+            for name, classes in groups:
                 if name.strip().lower() != club.lower():
                     continue          # the page can carry a default club too
                 for c in classes:
+                    if (c.get("location_name") or club).strip().lower() != club.lower():
+                        continue      # belt and braces: trust the row's own club
                     key = (iso, c.get("start_time"), c.get("service_title"))
                     if key in seen:
                         continue
@@ -166,6 +177,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=str(OUT))
     ap.add_argument("--days", type=int, default=DAYS)
+    ap.add_argument("--from-json", metavar="FILE",
+                    help="build from rows captured earlier instead of fetching "
+                         "(the same JSON --dump writes)")
     ap.add_argument("--dump", action="store_true",
                     help="also write the scraped rows next to the page")
     args = ap.parse_args()
@@ -175,9 +189,14 @@ def main():
 
     log("Third Space refresh %s" % datetime.datetime.now().strftime("%F %T"))
     start, warnings, rows = datetime.date.today(), [], []
-    for code, club, club_id in CLUBS:
-        rows += to_rows(code, club, fetch_club(code, club, club_id, start,
-                                               args.days, warnings))
+    if args.from_json:
+        raw = json.loads(pathlib.Path(args.from_json).read_text(encoding="utf-8"))
+        rows = raw["rows"] if isinstance(raw, dict) else raw
+        log("  loaded %d class(es) from %s" % (len(rows), args.from_json))
+    else:
+        for code, club, club_id in CLUBS:
+            rows += to_rows(code, club, fetch_club(code, club, club_id, start,
+                                                   args.days, warnings))
     if not rows:
         log("FATAL: no classes scraped - leaving %s untouched" % args.out)
         for w in warnings: log("  ! " + w)
