@@ -119,19 +119,60 @@ def fetch_club(code, club, club_id, start, days, warnings):
     log("  %s -> %d class(es)" % (club, got))
     return seen
 
-def descriptions(warnings):
-    """{class name: blurb} and {class name: category} from /classes/."""
-    desc, cat = {}, {}
-    for page_no in range(1, 6):
+def norm(name):
+    """Compare class names loosely: 'Lift - Weightlifting Classes' is 'Lift'."""
+    n = html.unescape(name).lower()
+    n = re.split(r"[\u2013\u2014|:]", n)[0]
+    n = re.sub(r"[^a-z0-9 ]", " ", n)
+    return re.sub(r"\s+", " ", n).strip()
+
+# The timetable and the classes listing do not use the same words. These are
+# the ones no amount of tidying will connect.
+ALIAS = {"brazilian jiu jitsu": "bjj fundamentals",
+         "triathlon swim": "triathlon swim training",
+         "swim": "skills drills"}
+# Prefixes the timetable adds to a class that the listing does not carry.
+MODIFIERS = ("hot ", "candlelit ", "warm ", "power ")
+
+def match(cat, listing):
+    """Find the blurb for a timetable category in the /classes/ listing."""
+    key = norm(cat)
+    for candidate in (key, ALIAS.get(key, "")):
+        if candidate and candidate in listing:
+            return listing[candidate]
+    stripped = key
+    for m in MODIFIERS:                       # Hot Vinyasa Yoga -> Vinyasa Yoga
+        if stripped.startswith(m):
+            stripped = stripped[len(m):].strip()
+    if stripped != key and stripped in listing:
+        return listing[stripped]
+    # Boxing Padwork -> Boxing; HYROX -> HYROX Train. Longest wins, so
+    # "Muay Thai Padwork" prefers "Muay Thai" over nothing.
+    best = None
+    for name in listing:
+        if stripped.startswith(name + " ") or name.startswith(stripped + " "):
+            if best is None or len(name) > len(best):
+                best = name
+    return listing[best] if best else None
+
+def descriptions(categories, warnings):
+    """{category: blurb} for the hover tooltips, from /classes/.
+
+    The listing is cached: a page that cannot be fetched should cost us a
+    refresh of the blurbs, not every tooltip on the page.
+    """
+    listing = {}
+    for page_no in range(1, 11):
         url = CLASSES if page_no == 1 else "%spage/%d/" % (CLASSES, page_no)
         try:
             page = get(url)
         except urllib.error.HTTPError as e:
-            if e.code == 404:
-                break                        # ran off the end of the listing
-            warnings.append("classes page %d: %s" % (page_no, e)); break
+            if e.code != 404:
+                warnings.append("classes page %d: %s" % (page_no, e))
+            break
         except Exception as e:
-            warnings.append("classes page %d: %s" % (page_no, e)); break
+            warnings.append("classes page %d: %s" % (page_no, e))
+            break
         cards = re.findall(
             r'class="tag-primary[^"]*">([^<]+)</div>.*?'
             r'class="font-medium heading-four[^"]*">([^<]+)</div>.*?'
@@ -139,15 +180,34 @@ def descriptions(warnings):
         if not cards:
             break
         for c, name, blurb in cards:
-            name = html.unescape(name).strip()
-            blurb = html.unescape(re.sub(r"<[^>]+>", "", blurb)).strip()
-            if name and blurb and len(blurb) > len(desc.get(name, "")):
-                desc[name] = blurb
-                cat[name] = html.unescape(c).strip().title()
-    log("  descriptions: %d class(es)" % len(desc))
-    if not desc:
-        warnings.append("no class descriptions found - tooltips will be empty")
-    return desc, cat
+            blurb = html.unescape(re.sub(r"<[^>]+>", "", blurb))
+            blurb = re.sub(r"\s+", " ", blurb).strip()
+            key = norm(name)
+            if key and blurb and len(blurb) > len(listing.get(key, ("", ""))[1]):
+                listing[key] = (html.unescape(c).strip(), blurb)
+
+    if listing:
+        try:
+            CACHE.write_text(json.dumps({k: list(v) for k, v in listing.items()},
+                                        ensure_ascii=False, indent=1), encoding="utf-8")
+        except Exception as e:
+            warnings.append("could not cache the class listing: %s" % e)
+    elif CACHE.exists():
+        listing = {k: tuple(v) for k, v in json.loads(
+            CACHE.read_text(encoding="utf-8")).items()}
+        warnings.append("could not read /classes/ - using the cached blurbs")
+
+    desc, cat_of, missing = {}, {}, []
+    for c in categories:
+        hit = match(c, listing)
+        if hit:
+            cat_of[c], desc[c] = hit[0], hit[1]
+        else:
+            missing.append(c)
+    log("  descriptions: %d of %d class type(s)" % (len(desc), len(categories)))
+    if missing:
+        log("  no blurb for: %s" % ", ".join(sorted(missing)))
+    return desc, cat_of
 
 def category(title):
     """Collapse 'Just Ride 30' / 'Just Ride: 90s Club Classics' to 'Just Ride'."""
@@ -202,9 +262,8 @@ def main():
         for w in warnings: log("  ! " + w)
         return 1
 
-    desc_by_name, cat_by_name = descriptions(warnings)
-    cats = {r[4] for r in rows}
-    desc = {c: desc_by_name[c] for c in cats if c in desc_by_name}
+    cats = sorted({r[4] for r in rows})
+    desc, cat_by_name = descriptions(cats, warnings)
     palette = {c: CAT_COLOUR.get(cat_by_name.get(c, ""), GREY) for c in cats}
 
     venues = [(code, club, "tsTypes" + code) for code, club, _ in CLUBS]
