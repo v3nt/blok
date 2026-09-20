@@ -41,6 +41,9 @@ header a{color:#c8c8d4}
 .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
 .star{border:0;background:none;cursor:pointer;font-size:14px;line-height:1;padding:0 2px;color:#c9c9d1}
 .star[aria-pressed="true"]{color:#e8a90c}
+.rstar{opacity:0;transition:opacity .12s;vertical-align:middle;margin-left:4px}
+tr:hover .rstar,.rstar[aria-pressed="true"],.rstar:focus{opacity:1}
+@media(hover:none){.rstar{opacity:1}}
 #reset{border:1px solid var(--bd);background:#f4f4f6;border-radius:7px;padding:5px 11px;font:inherit;font-size:12.5px;cursor:pointer}
 #reset:hover{background:#eaeaee}
 #booked{background:#eaf3fc;border-bottom:1px solid #cfe0f2;padding:11px 18px;font-size:13px;display:none}
@@ -119,7 +122,7 @@ body.locked{overflow:hidden}
 </style></head><body>
 <div id="topbar"><h1>Class schedule — Third Space</h1><button id="mnu" type="button" aria-label="Filters and details" aria-expanded="false" aria-controls="drawer">&#9776;</button></div>
 <header><h1>Class schedule — Third Space</h1>
-<p class="sub">Third Space · Islington &amp; Moorgate &amp; City · 1608 classes · auto-updated every 2 hours · refreshed Sun 20 Sep 2026, 18:00 UTC</p>
+<p class="sub">Third Space · Islington &amp; Moorgate &amp; City · 1608 classes · auto-updated every 2 hours · refreshed Sun 20 Sep 2026, 18:05 UTC</p>
 <div id="lg"></div></header>
 <div class="bar" id="filters">
 <div class="top">
@@ -334,8 +337,12 @@ function addRow(tb,r,cur){
  tr.insertCell().outerHTML='<td class="t">'+r[2]+'</td>';
  tr.insertCell().outerHTML='<td class="mins mut">'+r[3]+'</td>';
  var d=DESC[r[4]]||'';
+ var fk=r[10]+'|'+r[4], fav=favs.indexOf(fk)>-1;
  tr.insertCell().outerHTML='<td><span class="pill'+(d?' hasd':'')+'" style="background:'+PC[r[4]]+'"'
-  +(d?' tabindex="0" data-desc="'+d.split('"').join('&quot;')+'"':'')+'>'+r[4]+'</span></td>';
+  +(d?' tabindex="0" data-desc="'+d.split('"').join('&quot;')+'"':'')+'>'+r[4]+'</span>'
+  +'<button type="button" class="star rstar" data-fk="'+fk.split('"').join('&quot;')+'"'
+  +' aria-pressed="'+(fav?'true':'false')+'" title="'+(fav?'Unfavourite ':'Favourite ')
+  +r[4].split('"').join('&quot;')+'">'+(fav?'\u2605':'\u2606')+'</button></td>';
  tr.insertCell().textContent=r[5];
  var su=STUDIO_URL[r[6]];
  tr.insertCell().outerHTML=su?('<td><a href="'+su+'" target="_blank" rel="noopener">'+r[6]+'</a></td>'):('<td>'+r[6]+'</td>');
@@ -409,6 +416,18 @@ function draw(){
   lg.appendChild(e);
  });
 }
+// Favouriting from the schedule is the same act as favouriting a filter
+// chip: one list, one storage key. Delegated from the table body because
+// draw() replaces every row.
+document.getElementById('tb').addEventListener('click',function(e){
+ var b=e.target&&e.target.closest?e.target.closest('.rstar'):null;
+ if(!b)return;
+ var fk=b.getAttribute('data-fk'), i=favs.indexOf(fk);
+ if(i>-1)favs.splice(i,1);else favs.push(fk);
+ s(LS.v,favs);
+ place(fk.split('|')[0]);          // move the chip into or out of the star row
+ draw();                            // repaint the stars in the table
+});
 refreshAll();
 draw();
 // The filters were sticky, so they held the top of the window all the way down

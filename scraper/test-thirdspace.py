@@ -122,6 +122,35 @@ with sync_playwright() as p:
         check("favourites are remembered",
               page.evaluate("() => document.querySelectorAll('#fav' + VENUES[0] + ' .chip').length") == starred)
 
+
+    # --- favouriting from the schedule row --------------------------------
+    # The star after a class tag is the same act as the star on its filter
+    # chip: one list, one key, both views in step.
+    star = "document.querySelector('#tb tr[data-cat] .rstar')"
+    check("every class row has a star", page.evaluate(
+        "() => document.querySelectorAll('#tb tr[data-cat]').length ==="
+        " document.querySelectorAll('#tb tr[data-cat] .rstar').length"))
+    cat = page.evaluate("() => {const r = document.querySelector('#tb tr[data-cat]');"
+                        " return r && r.dataset.cat}")
+    was = page.evaluate("() => %s.getAttribute('aria-pressed')" % star)
+    act("the row star is clickable", lambda: page.evaluate("() => %s.click()" % star))
+    page.wait_for_timeout(300)
+    now = page.evaluate("() => %s.getAttribute('aria-pressed')" % star)
+    check("clicking the row star flips it", now != was, "%s -> %s" % (was, now))
+    check("the filter chip agrees with the row star",
+          page.evaluate("""(c) => {
+            const chip = [...document.querySelectorAll('.chip .star')].find(b =>
+              (b.title || '').indexOf(c) > -1);
+            return !!chip && chip.getAttribute('aria-pressed') === '%s';
+          }""" % now, cat))
+    check("favouriting from a row does not hide any class",
+          page.evaluate("() => document.querySelectorAll('#tb tr[data-cat]').length") > 0)
+    page.reload(); page.wait_for_timeout(500)
+    check("a row favourite is remembered",
+          page.evaluate("() => %s.getAttribute('aria-pressed')" % star) == now)
+    act("put it back", lambda: page.evaluate("() => %s.click()" % star))
+    page.wait_for_timeout(250)
+
     check("mobile menu is present",
           page.evaluate("() => !!document.getElementById('drawer') && !!document.getElementById('mnu')"))
     check("no JavaScript errors", not errors, "; ".join(errors[:3]))

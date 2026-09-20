@@ -491,6 +491,35 @@ def main():
             page.evaluate("() => window.scrollTo(0, 0)"); page.wait_for_timeout(300)
             check("desktop: the strip goes away back at the top", not page.evaluate(strip))
 
+
+        # --- favouriting from the schedule row --------------------------------
+        # The star after a class tag is the same act as the star on its filter
+        # chip: one list, one key, both views in step.
+        star = "document.querySelector('#tb tr[data-cat] .rstar')"
+        check("every class row has a star", page.evaluate(
+            "() => document.querySelectorAll('#tb tr[data-cat]').length ==="
+            " document.querySelectorAll('#tb tr[data-cat] .rstar').length"))
+        cat = page.evaluate("() => {const r = document.querySelector('#tb tr[data-cat]');"
+                            " return r && r.dataset.cat}")
+        was = page.evaluate("() => %s.getAttribute('aria-pressed')" % star)
+        act("the row star is clickable", lambda: page.evaluate("() => %s.click()" % star))
+        page.wait_for_timeout(300)
+        now = page.evaluate("() => %s.getAttribute('aria-pressed')" % star)
+        check("clicking the row star flips it", now != was, "%s -> %s" % (was, now))
+        check("the filter chip agrees with the row star",
+              page.evaluate("""(c) => {
+                const chip = [...document.querySelectorAll('.chip .star')].find(b =>
+                  (b.title || '').indexOf(c) > -1);
+                return !!chip && chip.getAttribute('aria-pressed') === '%s';
+              }""" % now, cat))
+        check("favouriting from a row does not hide any class",
+              page.evaluate("() => document.querySelectorAll('#tb tr[data-cat]').length") > 0)
+        page.reload(); page.wait_for_timeout(500)
+        check("a row favourite is remembered",
+              page.evaluate("() => %s.getAttribute('aria-pressed')" % star) == now)
+        act("put it back", lambda: page.evaluate("() => %s.click()" % star))
+        page.wait_for_timeout(250)
+
         # --- mobile: one hamburger, everything else inside it ----------------
         # The controls are MOVED into the drawer, never copied: two copies of a
         # checkbox is two sources of truth, and they drift apart silently.
