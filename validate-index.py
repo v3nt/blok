@@ -9,6 +9,7 @@ text - which happily counts rows inside broken JavaScript.
 
 Exit 0 = safe to publish. Exit 1 = do not commit.
 """
+import json
 import os
 import re
 import sys
@@ -84,23 +85,11 @@ if rows < 20:
 # of them is a regression, not a refresh - reject it and keep the last good
 # version live.
 REQUIRED = {
-    'id="favM"':  "Mission E1 favourites row",
-    'id="catsM"': "Mission E1 filter list",
-    'id="favB"':  "BLOK favourites row",
-    'id="catsB"': "BLOK filter list",
-    'id="allFavM"': "Mission E1 favourites select-all",
-    'id="allCatM"': "Mission E1 non-favourites select-all",
-    'id="allFavB"': "BLOK favourites select-all",
-    'id="allCatB"': "BLOK non-favourites select-all",
-    "orderB":     "BLOK category order",
-    "orderM":     "Mission E1 category order",
-    "blokFavs":   "saved favourites key",
-    "DEFAULT_FAVS=": "default favourites (calisthenics / strength) on first load",
-    "DESC=":        "class descriptions for the hover tooltip",
-    "STUDIO_URL=":  "studio names linking to ClassPass",
-    'id="colM"':   "Mission E1 collapse toggle",
-    'id="colB"':   "BLOK collapse toggle",
-    "blokCollapse": "remembered collapsed state",
+    "DEFAULT_FAVS=": "default favourites on first load",
+    "DESC=":         "class descriptions for the hover tooltip",
+    "STUDIO_URL=":   "studio names linking out",
+    "VENUES=":       "the venue codes the filters are built from",
+    "ORDER=":        "per-venue category order",
     # mobile: the hamburger and the drawer it fills must survive every rebuild
     'id="topbar"': "mobile top bar",
     'id="mnu"':    "mobile hamburger button",
@@ -108,11 +97,50 @@ REQUIRED = {
     'id="dbody"':  "mobile menu contents",
     'id="scrim"':  "mobile menu backdrop",
     'class="sub"': "header line the drawer moves into the menu",
-    'id="bkt"':      "booked panel minimise toggle",
     'id="minibar"':  "collapsed filter strip",
     'id="mbt"':      "filter strip expand button",
-    "blokBookedCol": "remembered booked-panel state",
+    'id="bkt"':      "booked panel minimise toggle",
 }
+
+# Per-venue controls are checked against the page's OWN venue list, so this
+# gate works for any page the builder makes - index.html (BLOK / Mission E1)
+# and 3rdspace.html (Islington / Moorgate / City) alike.
+venues = re.search(r'VENUES=(\[[^\]]*\])', html)
+if venues:
+    try:
+        for code in json.loads(venues.group(1)):
+            for tpl, what in (('id="fav%s"', "favourites row"),
+                              ('id="cats%s"', "filter list"),
+                              ('id="allFav%s"', "favourites select-all"),
+                              ('id="allCat%s"', "non-favourites select-all"),
+                              ('id="col%s"', "collapse toggle")):
+                REQUIRED[tpl % code] = "%s for venue %s" % (what, code)
+    except Exception as e:
+        print("FAIL: cannot read VENUES out of the page (%s)" % e)
+        sys.exit(1)
+else:
+    print("FAIL: no VENUES list - the filters cannot have been built")
+    sys.exit(1)
+
+# The page must save its settings somewhere, and each venue must have its own
+# key: index.html and 3rdspace.html share an origin, so a shared key would let
+# one page's filters overwrite the other's.
+ls = re.search(r'var LS=(\{.*?\});', html, re.S)
+if not ls:
+    print("FAIL: no LS key map - nothing would be remembered")
+    sys.exit(1)
+try:
+    keys = json.loads(ls.group(1))
+    missing_keys = [k for k in ("a", "f", "w", "t", "v", "vv", "c", "bk") if k not in keys]
+    if missing_keys:
+        print("FAIL: LS is missing %s" % ", ".join(missing_keys)); sys.exit(1)
+    per_venue = keys["t"]
+    if len(set(per_venue.values())) != len(per_venue):
+        print("FAIL: two venues share a storage key: %r" % per_venue); sys.exit(1)
+except SystemExit:
+    raise
+except Exception as e:
+    print("FAIL: cannot read the LS key map (%s)" % e); sys.exit(1)
 missing = [(marker, what) for marker, what in REQUIRED.items() if marker not in html]
 
 # A marker missing from this page is only a REGRESSION if the published page

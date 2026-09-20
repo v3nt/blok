@@ -34,6 +34,15 @@ fi
 "$PY" refresh.py
 RC=$?
 
+# Third Space needs no browser and no login - it is plain HTTP against a
+# public timetable - so it runs even when the ClassPass scrape failed, and
+# its own failure never changes this script's exit code.
+"$PY" thirdspace.py
+TS_RC=$?
+if [ "$TS_RC" -ne 0 ]; then
+  echo "  ! thirdspace.py exited $TS_RC (3rdspace.html left as it was)"
+fi
+
 NOW=$(date '+%F %T')
 if [ "$RC" -eq 0 ]; then
   echo "----- $NOW refresh OK (exit 0)"

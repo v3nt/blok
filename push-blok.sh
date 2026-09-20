@@ -121,6 +121,17 @@ write_status
 # of input", and rendered an empty table for hours. HTML validity is not
 # enough - the whole schedule lives inside one <script> block.
 if [ -f validate-index.py ]; then
+  # 3rdspace.html goes through the same gate, but only once it exists and
+  # only as a veto on itself: a broken Third Space page must not block a
+  # good BLOK one.
+  if [ -f 3rdspace.html ]; then
+    if ! TS_VALIDATION=$(python3 validate-index.py 3rdspace.html 2>&1); then
+      log "  ! 3rdspace.html rejected: $TS_VALIDATION"
+      git checkout -- 3rdspace.html 2>/dev/null || true
+    else
+      log "  3rdspace.html: $TS_VALIDATION"
+    fi
+  fi
   if ! VALIDATION=$(python3 validate-index.py index.html 2>&1); then
     log "BLOCKED: $VALIDATION"
     log "index.html left uncommitted; last good version stays live"
