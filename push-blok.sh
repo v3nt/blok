@@ -128,6 +128,16 @@ if [ -f validate-index.py ]; then
     if ! TS_VALIDATION=$(python3 validate-index.py 3rdspace.html 2>&1); then
       log "  ! 3rdspace.html rejected: $TS_VALIDATION"
       git checkout -- 3rdspace.html 2>/dev/null || true
+    elif [ -f scraper/test-thirdspace.py ]; then
+      TS_RC=0
+      TS_TEST=$(python3 scraper/test-thirdspace.py 3rdspace.html 2>&1) || TS_RC=$?
+      if [ "$TS_RC" -eq 1 ]; then
+        log "  ! 3rdspace.html failed its checks - reverting just that page"
+        log "    $(echo "$TS_TEST" | tail -3 | tr '\n' ' ')"
+        git checkout -- 3rdspace.html 2>/dev/null || true
+      else
+        log "  3rdspace.html: $(echo "$TS_TEST" | tail -1)"
+      fi
     else
       log "  3rdspace.html: $TS_VALIDATION"
     fi
