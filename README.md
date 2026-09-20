@@ -99,3 +99,26 @@ Known failure modes, all of which now report rather than fail silently:
 - **push rejected** — someone else pushed; `push-blok.sh` rebases, this folder wins
 - **baseline regression** — a build dropped part of the UI; the publish is
   blocked and `index.html` reverts to the last good commit
+
+## Two pages, one UI
+
+`index.html` (BLOK + Mission E1, via ClassPass) and `3rdspace.html` (Third
+Space Islington / Moorgate / City) are built from the SAME template in
+`scraper/refresh.py`. `thirdspace.py` imports it.
+
+**A UI improvement that could apply to both should be made once, in the
+template, so both get it.** That is the default: the hamburger menu, the
+collapsing filter strip, the tooltips, the minimisable panel and the row
+stars all arrived that way. Only genuinely page-specific things are
+parameterised:
+
+| Parameter | index.html | 3rdspace.html |
+| --- | --- | --- |
+| `venues` | one group per gym (B, M) | one group for all clubs (T) |
+| `locations` | none | a switch per club |
+| storage keys | `blok*` | `ts*` |
+| booking status | live from ClassPass | "In the timetable" |
+
+Both are checked before publishing: `scraper/test-baseline.py` (index.html)
+and `scraper/test-thirdspace.py` (3rdspace.html). A shared feature gets a
+check in both suites.
