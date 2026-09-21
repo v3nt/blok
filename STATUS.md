@@ -6,12 +6,7 @@ GitHub (and therefore from a phone) without touching the Mac.
 | Field | Value |
 |---|---|
 | Scrape result | **OK** |
-| Last scrape log line | `----- 2026-09-21 14:08:50 refresh OK (exit 0)` |
+| Last scrape log line | `----- 2026-09-21 16:05:05 refresh start (python: /usr/bin/python3)` |
 | index.html modified | 2026-09-21 14:08:44 BST |
 | Classes in index.html | 2096 |
 
-## Recent push errors
-
-```
-2026-09-21 08:08:45  BLOCKED: baseline regression
-```
