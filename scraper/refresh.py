@@ -71,17 +71,6 @@ STUDIOS = [
     ("Clapton",    "blok-clapton-london",   "B"),
     ("Shoreditch", "blok-shoreditch-london","B"),
 ]
-# Venues on trial: scraped every run so their real credit costs and timetables
-# are on record, but deliberately NOT published to index.html. The page groups
-# classes by venue B / M, so publishing these needs filter sections of their
-# own - a separate piece of work, not a flag I can flip behind your back.
-# Their rows land in extra-venues.json instead, and a failure here can never
-# affect the schedule.
-EXTRA_STUDIOS = [
-    ("RUMBLE Dalston",    "rumble-dalston-london",  "R"),
-    ("Psycle Shoreditch", "psycle-shoreditch-london", "P"),
-]
-EXTRA_OUT = HERE / "extra-venues.json"
 MAX_DAYS = 14
 
 # Every class type at every studio is kept. The category is the class name
@@ -704,7 +693,6 @@ def main():
             log("  ! Chrome would not start (%s); using bundled Chromium" % e)
             browser, ctx = start(None)
         booked = {}
-        extra_rows = []
         try:
             page = ctx.new_page()
             for name, slug, venue in STUDIOS:
@@ -716,14 +704,6 @@ def main():
                 except Exception as e:
                     warnings.append("%s: scrape failed: %s" % (name, e))
                     log("  ! %s failed: %s" % (name, e))
-            # Trial venues: same scrape, separate file, never fatal.
-            for name, slug, venue in EXTRA_STUDIOS:
-                try:
-                    url = args.base + slug + (".html" if args.base.startswith("file:") else "")
-                    extra_rows += scrape(page, url, name, venue, year, warnings)
-                except Exception as e:
-                    warnings.append("%s (trial venue): %s" % (name, e))
-                    log("  ! %s (trial venue) failed: %s" % (name, e))
             # ClassPass's reservations page is no longer visited: you book as a
             # BLOK member, so it is always empty. Bookings come from BLOK's
             # emails below. upcoming() is kept only in case that changes.
@@ -739,16 +719,6 @@ def main():
                 except Exception as e:
                     log("  ! could not close the browser: %s" % e)
             log("  browser closed")
-    if extra_rows:
-        try:
-            EXTRA_OUT.write_text(json.dumps({
-                "scraped": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
-                "note": "trial venues - not published to index.html",
-                "rows": extra_rows,
-            }, ensure_ascii=False, indent=1), encoding="utf-8")
-            log("  trial venues: %d class(es) -> %s" % (len(extra_rows), EXTRA_OUT.name))
-        except Exception as e:
-            warnings.append("could not write %s: %s" % (EXTRA_OUT.name, e))
     # You book as a BLOK member now, so ClassPass's reservations list is
     # empty; BLOK's own confirmation emails are the source of truth. Merged
     # with (not instead of) ClassPass, in case a class is ever booked there.
