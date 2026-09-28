@@ -17,3 +17,4 @@ _to_delete/
 
 # trial venues: scraped data, regenerated every run
 scraper/extra-venues.json
+scraper/blok-bookings.json

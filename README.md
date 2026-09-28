@@ -34,7 +34,8 @@ Only needed once, on the Mac that runs the jobs:
 /usr/bin/python3 -m playwright install chromium
 
 cd ~/Sites/jynk/blok/scraper
-/usr/bin/python3 login_setup.py     # log in; saves auth_state.json
+/usr/bin/python3 blok_mail.py --setup   # Gmail app password -> Keychain (your BLOK bookings)
+/usr/bin/python3 login_setup.py          # optional: ClassPass login (booking status only)
 ./refresh.sh                        # first real run
 
 cp ../net.jynk.blokscrape.plist ~/Library/LaunchAgents/
@@ -78,7 +79,9 @@ local fixture, so the scraper is testable without the live site.
 | `index.html` | the published page — generated, never hand-edited |
 | `scraper/refresh.py` | scrape → categorise → mark bookings → build the page |
 | `scraper/refresh.sh` | launchd wrapper; picks a python that has playwright |
-| `scraper/login_setup.py` | one-off: saves `auth_state.json` so bookings can be read |
+| `scraper/blok_mail.py` | your bookings, from BLOK's confirmation/cancellation emails (IMAP, app password in Keychain) |
+| `scraper/test-blok-mail.py` | offline checks for the email parsing and book/cancel replay |
+| `scraper/login_setup.py` | optional: ClassPass login, only for bookable/full status |
 | `scraper/class-descriptions.py` | one-off: rebuilds `class-descriptions.json` (hover text) |
 | `scraper/class-descriptions.json` | class blurbs, keyed by class name |
 | `scraper/CLASS-TYPES.md` | the same blurbs, readable |
@@ -95,7 +98,7 @@ Known failure modes, all of which now report rather than fail silently:
 
 - **zero classes scraped** — the page is left untouched rather than blanked;
   the log names the studio, the page title it got, and saves `debug-<studio>.html`
-- **bookings missing** — `auth_state.json` expired; rerun `login_setup.py`
+- **bookings missing** — look for `BLOK emails:` / `BLOK mailbox unreachable` in `scraper/refresh.log`; if the app password was revoked, rerun `blok_mail.py --setup`. You book as a BLOK member, so ClassPass login does not affect bookings.
 - **push rejected** — someone else pushed; `push-blok.sh` rebases, this folder wins
 - **baseline regression** — a build dropped part of the UI; the publish is
   blocked and `index.html` reverts to the last good commit

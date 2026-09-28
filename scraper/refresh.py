@@ -723,6 +723,18 @@ def main():
             log("  trial venues: %d class(es) -> %s" % (len(extra_rows), EXTRA_OUT.name))
         except Exception as e:
             warnings.append("could not write %s: %s" % (EXTRA_OUT.name, e))
+    # You book as a BLOK member now, so ClassPass's reservations list is
+    # empty; BLOK's own confirmation emails are the source of truth. Merged
+    # with (not instead of) ClassPass, in case a class is ever booked there.
+    booked = set(booked or ())
+    try:
+        import blok_mail
+        for e in blok_mail.bookings(log=log, warnings=warnings):
+            cat = categorise(e["cls"], "B")
+            if e["studio"]:
+                booked.add((e["date"], e["mins"], e["studio"], cat))
+    except Exception as e:
+        warnings.append("BLOK email bookings unavailable: %s" % e)
     if booked:
         log("  marked %d row(s) as booked" % mark_booked(rows, booked, warnings))
     if not rows:
