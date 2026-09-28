@@ -213,6 +213,23 @@ def main():
         check("Reset filters restores the default favourites",
               want_all <= got_reset, f"missing {sorted(want_all - got_reset)}")
 
+        # Reset favourites: after starring an extra class and un-starring a
+        # default, the button puts back exactly the hardcoded list.
+        page.evaluate("() => { const v=VENUES[0];"
+                      " const x=document.querySelector('#cats'+v+' .star'); if(x) x.click();"
+                      " const y=document.querySelector('#fav'+v+' .star'); if(y) y.click(); }")
+        page.reload()
+        tweaked = state()
+        check("starring/un-starring overrides the defaults and survives a reload",
+              {(v, c) for v in codes for c in tweaked["fav"][v]} != got_reset)
+        if act("Reset favourites is clickable", lambda: page.click("#resetFav")):
+            page.reload()
+            rf = state()
+            got_rf = {(v, c) for v in codes for c in rf["fav"][v]}
+            check("Reset favourites restores exactly the defaults (and sticks)",
+                  got_rf == want_all, f"extra {sorted(got_rf - want_all)} "
+                  f"missing {sorted(want_all - got_rf)}")
+
         # --- bookings ---------------------------------------------------------
         # Bookings come from /profile/upcoming, not from a "Cancel" button in the
         # schedule, which only appears while logged in and silently produced a
@@ -280,25 +297,27 @@ def main():
         # --- collapsible non-favourites --------------------------------------
         # Collapsing hides chips only. It must not change the selection, so the
         # table underneath stays exactly as it was.
+        v0 = codes[0]
+        others = codes[1:]
         check("non-favourites start expanded",
-              not s["collapsed"]["M"] and s["chipVisible"]["M"])
+              not s["collapsed"][v0] and s["chipVisible"][v0])
         before = state()["rows"]
-        act("BLOK collapse toggle is clickable", lambda: page.click("#colB"))
+        act(f"{v0} collapse toggle is clickable", lambda: page.click("#col" + v0))
         col = state()
-        check("collapsing hides the BLOK non-favourite chips",
-              col["collapsed"]["B"] and not col["chipVisible"]["B"])
+        check(f"collapsing hides the {v0} non-favourite chips",
+              col["collapsed"][v0] and not col["chipVisible"][v0])
         check("collapsing leaves the favourites row visible", col["favVisible"])
         check("collapsing does not change what is listed",
               col["rows"] == before, f"{col['rows']} vs {before}")
-        check("the other gym is unaffected", not col["collapsed"]["M"])
+        if others:
+            check("the other venues are unaffected",
+                  not any(col["collapsed"][v] for v in others))
         page.reload()
         kept = state()
-        check("collapsed state is remembered",
-              kept["collapsed"]["B"] and not kept["collapsed"]["M"])
-        act("BLOK collapse toggle expands again", lambda: page.click("#colB"))
+        check("collapsed state is remembered", kept["collapsed"][v0])
+        act(f"{v0} collapse toggle expands again", lambda: page.click("#col" + v0))
         page.reload()
-        check("expanding again is remembered",
-              not state()["collapsed"]["B"])
+        check("expanding again is remembered", not state()["collapsed"][v0])
 
         # --- studio links ----------------------------------------------------
         # Every studio cell links to that studio on ClassPass. Checked as
@@ -306,14 +325,13 @@ def main():
         EXPECTED = {
             "Clapton":    "https://classpass.com/studios/blok-clapton-london",
             "Shoreditch": "https://classpass.com/studios/blok-shoreditch-london",
-            "Mission E1": "https://classpass.com/studios/mission-e1-london",
         }
         pairs = set(s["studioLinks"])
         check("every studio cell is a link",
               len(s["studioLinks"]) == s["studioCells"],
               f"{len(s['studioLinks'])} links for {s['studioCells']} cells")
         seen = {p.split(" -> ")[0] for p in pairs}
-        check("all three studios appear", seen == set(EXPECTED), str(sorted(seen)))
+        check("every configured studio appears", seen == set(EXPECTED), str(sorted(seen)))
         wrong = [p for p in pairs if EXPECTED.get(p.split(" -> ")[0]) != p.split(" -> ")[1]]
         check("each studio links to its own ClassPass page", not wrong, str(wrong[:3]))
 
