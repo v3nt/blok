@@ -22,7 +22,8 @@ Needs playwright (same dependency as refresh.py). If it is missing this exits
 import sys, json, pathlib
 
 PATH = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "index.html").resolve()
-GROUPS = [("M", "Mission E1"), ("B", "BLOK")]
+# Venues are read from the page: this suite must keep working whichever
+# gyms are configured, not assume BLOK + Mission E1 forever.
 fails, checks = [], 0
 
 def check(name, cond, detail=""):
@@ -71,9 +72,10 @@ def main():
               const el = i => document.getElementById(i);
               const txt = i => (el(i) || {}).textContent || '';
               return {
-                favM: ids('#favM'), catM: ids('#catsM'),
-                favB: ids('#favB'), catB: ids('#catsB'),
-                toggles: ['allFavM','allCatM','allFavB','allCatB']
+                fav: Object.fromEntries(VENUES.map(v => [v, ids('#fav'+v)])),
+                cat: Object.fromEntries(VENUES.map(v => [v, ids('#cats'+v)])),
+                venues: VENUES,
+                toggles: VENUES.flatMap(v => ['allFav'+v,'allCat'+v])
                   .map(i => { const e = document.getElementById(i);
                               return e ? (e.disabled ? 'disabled' : (e.indeterminate ? 'mixed' : e.checked)) : null; }),
                 rows: document.querySelectorAll('#tb tr:not(.day)').length,
@@ -82,11 +84,11 @@ def main():
                 tipped: document.querySelectorAll('#tb .pill[data-desc]').length,
                 nativeTitles: document.querySelectorAll('#tb .pill[title]').length,
                 tipEl: !!el('tip'),
-                collapsed: {M: el('catsM').classList.contains('collapsed'),
-                            B: el('catsB').classList.contains('collapsed')},
-                chipVisible: {M: !!(el('catsM').querySelector('.chip') || {}).offsetParent,
-                              B: !!(el('catsB').querySelector('.chip') || {}).offsetParent},
-                favVisible: !!(el('favB').querySelector('.chip') || {}).offsetParent,
+                collapsed: Object.fromEntries(VENUES.map(v =>
+                  [v, el('cats'+v).classList.contains('collapsed')])),
+                chipVisible: Object.fromEntries(VENUES.map(v =>
+                  [v, !!(el('cats'+v).querySelector('.chip') || {}).offsetParent])),
+                favVisible: !!(el('fav'+VENUES[0]).querySelector('.chip') || {}).offsetParent,
                 booked: [...document.querySelectorAll('#tb tr[data-state="booked"]')]
                   .map(tr => tr.cells[0].textContent + ' ' + tr.cells[4].textContent),
                 bookedPanel: (el('booked') || {}).style ? el('booked').style.display : 'missing',
@@ -94,13 +96,12 @@ def main():
                 bookedDates: (typeof D === 'undefined' ? [] :
                   D.filter(r => r[7] === 'booked').map(r => r[0])),
                 defaults: (typeof DEFAULT_FAVS === 'undefined') ? [] : DEFAULT_FAVS,
-                orderB: (typeof orderB === 'undefined') ? [] : orderB,
-                orderM: (typeof orderM === 'undefined') ? [] : orderM,
+                order: (typeof ORDER === 'undefined') ? {} : ORDER,
                 studioCells: document.querySelectorAll('#tb tr:not(.day) td:nth-child(5)').length,
                 studioLinks: [...document.querySelectorAll('#tb tr:not(.day) td:nth-child(5) a')]
                   .map(a => a.textContent + ' -> ' + a.getAttribute('href')),
                 saved: JSON.parse(localStorage.getItem('blokFavs') || 'null'),
-                favRowFirst: ['M','B'].every(v => {
+                favRowFirst: VENUES.every(v => {
                   const row = el('fav'+v);
                   if (!row) return false;
                   const kids = [...row.parentNode.querySelectorAll('.row')];
@@ -115,17 +116,23 @@ def main():
 
         # If the grouped UI is absent this is not a subtle regression - it is a
         # different page. Report it plainly instead of failing 15 ways.
-        missing = [i for i in ("favM", "catsM", "favB", "catsB",
-                               "allFavM", "allCatM", "allFavB", "allCatB")
-                   if not page.query_selector("#" + i)]
+        codes = page.evaluate("() => (typeof VENUES === 'undefined') ? [] : VENUES")
+        labels = page.evaluate("() => [...document.querySelectorAll('.grp h3')]"
+                               ".map(h => h.textContent.trim())")
+        GROUPS = list(zip(codes, labels)) if len(labels) == len(codes) else [
+            (c, c) for c in codes]
+        missing = ([] if codes else ["VENUES"]) + [
+            i for c in codes for i in ("fav" + c, "cats" + c, "allFav" + c, "allCat" + c)
+            if not page.query_selector("#" + i)]
         if missing:
             print("FAIL: this is not the agreed UI - missing #" + ", #".join(missing))
             browser.close()
             return 1
 
         # --- structure -----------------------------------------------------
-        check("two filter groups, one per gym",
-              len(page.query_selector_all(".grp")) == 2)
+        check("a filter group for every venue on the page",
+              len(page.query_selector_all(".grp")) == len(codes), 
+              "%d groups, %d venues" % (len(page.query_selector_all(".grp")), len(codes)))
         for gid, label in GROUPS:
             check(f"{label}: has a favourites row and a list",
                   page.query_selector(f"#fav{gid}") and page.query_selector(f"#cats{gid}"))
@@ -141,42 +148,41 @@ def main():
         # The invariant is "every default that exists on this page is starred" -
         # not a hardcoded list of names. A shorter date window legitimately
         # drops whole categories, and the test must not fail for that.
-        for gid, order_key in (("B", "orderB"), ("M", "orderM")):
+        for gid, label in GROUPS:
             want = {c for v, _, c in (d.partition("|") for d in s["defaults"])
-                    if v == gid} & set(s[order_key])
-            check(f"{'BLOK' if gid == 'B' else 'Mission E1'}: every default that "
-                  f"exists is favourited",
-                  want <= set(s["fav" + gid]),
-                  f"missing {sorted(want - set(s['fav' + gid]))}")
+                    if v == gid} & set(s["order"].get(gid, []))
+            check(f"{label}: every default that exists is favourited",
+                  want <= set(s["fav"][gid]),
+                  f"missing {sorted(want - set(s['fav'][gid]))}")
         check("the defaults are the calisthenics/strength classes",
-              any("CALISTHENICS" in d for d in s["defaults"])
-              and any("Kulture" in d for d in s["defaults"]), str(s["defaults"][:4]))
+              any("CALISTHENICS" in d for d in s["defaults"]), str(s["defaults"][:4]))
 
         # --- no chip in two places ----------------------------------------
         for gid, label in GROUPS:
-            fav, cat = s["fav" + gid], s["cat" + gid]
+            fav, cat = s["fav"][gid], s["cat"][gid]
             check(f"{label}: no chip duplicated across rows",
                   not (set(fav) & set(cat)), str(sorted(set(fav) & set(cat))))
 
         # --- each toggle drives only its own row ---------------------------
-        act("BLOK list toggle is operable", lambda: page.uncheck("#allCatB"))
+        v0 = codes[0]
+        act(f"{v0} list toggle is operable", lambda: page.uncheck("#allCat" + v0))
         after = state()
-        check("BLOK list toggle leaves BLOK favourites alone",
-              set(after["favB"]) == set(s["favB"]) and after["rows"] < s["total"])
-        act("BLOK list toggle re-checks", lambda: page.check("#allCatB"))
+        check(f"{v0} list toggle leaves its favourites alone",
+              set(after["fav"][v0]) == set(s["fav"][v0]) and after["rows"] < s["total"])
+        act(f"{v0} list toggle re-checks", lambda: page.check("#allCat" + v0))
 
         # --- favouriting must not deselect (the bug that hid classes) ------
         before_rows = state()["rows"]
-        starred = act("a Mission chip has a star to click",
-                      lambda: page.locator("#catsM > .chip").first.locator(".star").click())
+        starred = act(f"a {v0} chip has a star to click",
+                      lambda: page.locator(f"#cats{v0} > .chip").first.locator(".star").click())
         moved = state()
         check("favouriting a type does not hide its classes",
               moved["rows"] == before_rows, f"{moved['rows']} vs {before_rows}")
         check("favouriting moves the chip, not copies it",
-              not (set(moved["favM"]) & set(moved["catM"])))
+              not (set(moved["fav"][v0]) & set(moved["cat"][v0])))
         if starred:
             act("the favourited chip can be un-starred",
-                lambda: page.locator("#favM > .chip").first.locator(".star").click())
+                lambda: page.locator(f"#fav{v0} > .chip").first.locator(".star").click())
 
         # --- defaults reach a browser that already saved a list ------------
         page.evaluate("() => { localStorage.setItem('blokFavs','[]');"
@@ -185,24 +191,25 @@ def main():
         seeded = state()
         # Same invariant as the first-load check: whatever defaults this page
         # actually has must all be starred. Counting them hardcodes a data size.
-        want_all = {(d.split("|")[0], d.split("|")[1]) for d in s["defaults"]}
-        got = {("B", c) for c in seeded["favB"]} | {("M", c) for c in seeded["favM"]}
+        want_all = {(d.split("|")[0], d.split("|")[1]) for d in s["defaults"]
+                    if d.split("|")[0] in codes}
+        got = {(v, c) for v in codes for c in seeded["fav"][v]}
         check("defaults seed into a browser with a stale saved list",
               want_all <= got, f"missing {sorted(want_all - got)}")
 
         # --- but a deliberate clear must stick -----------------------------
-        page.evaluate("() => document.querySelectorAll('#favB .star,#favM .star')"
-                      ".forEach(b => b.click())")
+        page.evaluate("() => VENUES.forEach(v => document.querySelectorAll('#fav'+v+' .star')"
+                      ".forEach(b => b.click()))")
         page.reload()
         cleared = state()
         check("clearing every favourite stays cleared",
-              not cleared["favB"] and not cleared["favM"],
-              f"favB={cleared['favB']} favM={cleared['favM']}")
+              not any(cleared["fav"][v] for v in codes),
+              str({v: cleared["fav"][v] for v in codes}))
 
         # --- reset gets you back -------------------------------------------
         act("Reset filters is clickable", lambda: page.click("#reset"))
         reset = state()
-        got_reset = {("B", c) for c in reset["favB"]} | {("M", c) for c in reset["favM"]}
+        got_reset = {(v, c) for v in codes for c in reset["fav"][v]}
         check("Reset filters restores the default favourites",
               want_all <= got_reset, f"missing {sorted(want_all - got_reset)}")
 
