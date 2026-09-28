@@ -316,12 +316,10 @@ def scrape(page, url, studio, venue, year, warnings):
             break
         page.wait_for_timeout(2600)
     if logged_out:
-        msg = ("%s: signed out - %d class(es) published without a booking "
-               "status. The schedule itself is unaffected. To get statuses and "
-               "your bookings back: /usr/bin/python3 %s"
-               % (studio, logged_out, HERE / "login_setup.py"))
-        warnings.append(msg)
-        log("  ! " + msg)
+        # Normal now: you book as a BLOK member, so there is no ClassPass
+        # session and no availability. Logged as info, not as a warning.
+        log("  %s: %d class(es) without ClassPass availability (not signed in - expected)"
+            % (studio, logged_out))
     log("  %s -> %d classes  [%s]" % (studio, len(rows), " ".join(seen_days)))
     return rows
 
@@ -571,6 +569,23 @@ def build(rows, template, today=None, venues=None, ls_keys=None,
     if "@@" in html: raise SystemExit("FATAL: unreplaced template token")
     return html, states, cats
 
+def email_bookings(warnings, offline=False):
+    """Your BLOK bookings as (date, mins, studio, class) keys, from BLOK's emails.
+
+    offline=True uses the last saved result only (no mailbox access), which is
+    what --rebuild wants: it must work with no network.
+    """
+    keys = set()
+    try:
+        import blok_mail
+        found = blok_mail.cached() if offline else blok_mail.bookings(log=log, warnings=warnings)
+        for e in found:
+            if e.get("studio"):
+                keys.add((e["date"], e["mins"], e["studio"], categorise(e["cls"], "B")))
+    except Exception as e:
+        warnings.append("BLOK email bookings unavailable: %s" % e)
+    return keys
+
 def rebuild(out):
     """Re-emit an existing page with the current template. No browser.
 
@@ -594,6 +609,14 @@ def rebuild(out):
     # Keep the page's own day window: rebuilding must not silently drop days
     # just because it happens to run later than the scrape did.
     today = min(r[0] for r in rows)
+    # Bookings from the saved BLOK-email result, so a rebuild shows them too.
+    w = []
+    booked = email_bookings(w, offline=True)
+    if booked:
+        log("  marked %d row(s) as booked (saved BLOK emails)"
+            % mark_booked(rows, booked, w, today=datetime.date.today().isoformat()))
+    for x in w:
+        log("  ! " + x)
     new, states, _ = build(rows, TEMPLATE, today=today)
     path.write_text(new, encoding="utf-8")
     log("  rebuilt %s from %d existing classes (%d bytes) states=%s"
@@ -632,10 +655,6 @@ def main():
     year = datetime.date.today().year
     rows, warnings = [], []
     log("BLOK refresh %s" % datetime.datetime.now().strftime("%F %T"))
-    if not AUTH.exists():
-        log("  ! not signed in (no auth_state.json). The schedule will come back"
-            " signed out and nothing will publish. Run: /usr/bin/python3 %s"
-            % (HERE / "login_setup.py"))
     with sync_playwright() as p:
         UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
               "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -733,15 +752,7 @@ def main():
     # You book as a BLOK member now, so ClassPass's reservations list is
     # empty; BLOK's own confirmation emails are the source of truth. Merged
     # with (not instead of) ClassPass, in case a class is ever booked there.
-    booked = set(booked or ())
-    try:
-        import blok_mail
-        for e in blok_mail.bookings(log=log, warnings=warnings):
-            cat = categorise(e["cls"], "B")
-            if e["studio"]:
-                booked.add((e["date"], e["mins"], e["studio"], cat))
-    except Exception as e:
-        warnings.append("BLOK email bookings unavailable: %s" % e)
+    booked = set(booked or ()) | email_bookings(warnings)
     if booked:
         log("  marked %d row(s) as booked" % mark_booked(rows, booked, warnings))
     if not rows:

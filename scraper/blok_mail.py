@@ -169,6 +169,13 @@ def bookings(log=print, warnings=None):
             warnings.append("BLOK mailbox unreachable (%s) and no saved bookings" % e)
             return []
 
+def cached():
+    """The last good result, without touching the network (for --rebuild)."""
+    try:
+        return json.loads(CACHE.read_text(encoding="utf-8")).get("bookings", [])
+    except Exception:
+        return []
+
 def setup():
     print("Create an app password at https://myaccount.google.com/apppasswords")
     print("(name it 'blok'), then paste it here. It goes into your Keychain only.")

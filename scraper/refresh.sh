@@ -22,6 +22,22 @@ done
 
 echo "----- $(date '+%F %T') refresh start (python: ${PY:-none with playwright})"
 
+# One run at a time. Two runs share one Chrome profile, and the second one
+# dies with "profile is already in use" - which is what happened when a
+# by-hand run overlapped the 14:05 scheduled one. A lock older than 30 min
+# is a crashed run and is taken over.
+LOCK="$PWD/.refresh.lock"
+if ! mkdir "$LOCK" 2>/dev/null; then
+  if [ -n "$(find "$LOCK" -maxdepth 0 -mmin +30 2>/dev/null)" ]; then
+    echo "  stale lock from a crashed run - taking it over"
+  else
+    echo "  another refresh is already running - skipping this one"
+    echo "----- $(date '+%F %T') refresh skipped (already running)"
+    exit 0
+  fi
+fi
+trap 'rmdir "$LOCK" 2>/dev/null' EXIT
+
 if [ -z "$PY" ]; then
   echo "FATAL: no python3 with playwright. Tried BLOK_PYTHON, PATH, /usr/bin,"
   echo "       /opt/homebrew/bin, /usr/local/bin."
