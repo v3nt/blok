@@ -74,12 +74,33 @@ tbody tr[data-state="full"] td:not(:last-child){opacity:.55}
 .empty{padding:26px;text-align:center;color:#6b6b76}
 #main{background:#fff}
 #topbar{display:none}
+/* Day jump strip: M T W ... with the date, one link per day on screen. */
+.dnav{display:flex;gap:3px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.dnav::-webkit-scrollbar{display:none}
+.dnav a{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;min-width:30px;padding:3px 4px 2px;border-radius:7px;text-decoration:none;color:#44444c;font-size:10.5px;line-height:1.15;background:#f4f4f6;border:1px solid transparent}
+.dnav a b{font-size:12.5px;font-weight:650}
+.dnav a:hover{background:#e6e6eb}
+.dnav a.wk{margin-left:9px}
+.dnav a.today{border-color:#1f7fd1;color:#1f7fd1}
+.dnav a::after{content:"";width:5px;height:5px;border-radius:50%;margin-top:2px;background:transparent}
+.dnav a.bk::after{background:#1f7fd1}
+#days{padding:8px 10px;border-bottom:1px solid var(--bd);background:#fff}
+#minibar .dnav{flex:1;min-width:0}
+tr.hit td{background:#fff3c4!important}
+#booked a.bgo{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;color:inherit;text-decoration:none;cursor:pointer}
+#booked a.bgo:hover .bl{text-decoration:underline}
+#booked .bh{color:#b06a00;font-size:12px}
 #drawer,#scrim{display:none}
 @media(max-width:640px){
 td,th{padding:7px 6px;font-size:12.5px}.mins{display:none}
 header{display:none}
 #topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:20;background:#16161a;color:#fff;padding:11px 12px}
 #topbar h1{margin:0;font-size:16px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#topbar{flex-wrap:wrap}
+#topbar .dnav{flex-basis:100%;order:3;margin-top:2px}
+#topbar .dnav a{background:#22222a;color:#d8d8de}
+#topbar .dnav a.today{border-color:#7fb6ec;color:#9ccaf5}
+#topbar .dnav a.bk::after{background:#7fb6ec}
 #mnu{border:1px solid #3a3a44;background:#22222a;color:#fff;border-radius:9px;font:inherit;font-size:20px;line-height:1;padding:11px 14px;min-width:46px;min-height:46px;cursor:pointer}
 /* Six columns cannot fit a phone - the booking status, the thing you
    actually came for, was being clipped off the right edge. Each class
@@ -120,9 +141,9 @@ html{overflow-x:hidden}
 body.locked{overflow:hidden}
 }
 </style></head><body>
-<div id="topbar"><h1>Class schedule</h1><button id="mnu" type="button" aria-label="Filters and details" aria-expanded="false" aria-controls="drawer">&#9776;</button></div>
+<div id="topbar"><h1>Class schedule</h1><button id="mnu" type="button" aria-label="Filters and details" aria-expanded="false" aria-controls="drawer">&#9776;</button><nav class="dnav" aria-label="Jump to a day"></nav></div>
 <header><h1>Class schedule — BLOK</h1>
-<p class="sub"><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> · 28 Sep – 11 Oct 2026 · 1692 classes · auto-updated every 2 hours · refreshed Mon 28 Sep 2026, 19:47 BST</p>
+<p class="sub"><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> · 28 Sep – 11 Oct 2026 · 1692 classes · auto-updated every 2 hours · refreshed Mon 28 Sep 2026, 19:01 UTC</p>
 <div id="lg"></div></header>
 <div class="bar" id="filters">
 <div class="top">
@@ -134,12 +155,12 @@ body.locked{overflow:hidden}
 </div>
 <div class="grp"><h3>BLOK — Clapton &amp; Shoreditch</h3><div class="row fav" id="favB"><label class="all"><input type="checkbox" id="allFavB" checked> all</label></div><div class="row" id="catsB"><button type="button" class="col" id="colB" aria-expanded="true"></button><label class="all"><input type="checkbox" id="allCatB" checked> all</label></div></div>
 </div>
-<div id="minibar"><button id="mbt" type="button" aria-expanded="false" aria-controls="filters"><span id="mbc">▾</span>Filters</button><span id="mshown"></span></div>
+<div id="minibar"><button id="mbt" type="button" aria-expanded="false" aria-controls="filters"><span id="mbc">▾</span>Filters</button><span id="mshown"></span><nav class="dnav" aria-label="Jump to a day"></nav></div>
 <div id="fscrim"></div>
 <div id="booked"></div>
 <div id="scrim"></div>
 <aside id="drawer" aria-label="Filters and details"><div id="dhead"><b>Filters</b><button id="dclose" type="button">Done</button></div><div id="dbody"></div></aside>
-<div id="main"><table><thead><tr><th>Time</th><th class="mins">Min</th><th>Class</th><th>Instructor</th><th>Studio</th><th>Booking status</th></tr></thead><tbody id="tb"></tbody></table></div>
+<div id="main"><nav class="dnav" id="days" aria-label="Jump to a day"></nav><table><thead><tr><th>Time</th><th class="mins">Min</th><th>Class</th><th>Instructor</th><th>Studio</th><th>Booking status</th></tr></thead><tbody id="tb"></tbody></table></div>
 <div id="tip" role="tooltip"></div>
 <div class="empty" id="none" style="display:none">No classes match these filters.</div>
 <script>
@@ -318,7 +339,7 @@ function sd(iso){var d=new Date(iso+'T00:00:00');return d.toLocaleDateString('en
  var h='<h2><button type="button" id="bkt" aria-controls="bkl"><span id="bkc"></span>'+
          'Your booked classes ('+mine.length+')</button></h2><ul id="bkl">';
  mine.forEach(function(r){
-  h+='<li><span class="bt">'+sd(r[0])+', '+r[2]+'</span><span class="bl">'+r[4]+' · '+r[6]+'</span><span class="bn">'+r[5]+' · '+r[3]+' min</span></li>';
+  h+='<li><a class="bgo" href="#" title="Show in the schedule" data-k="'+r[0]+'|'+r[1]+'|'+r[6]+'|'+r[4]+'"><span class="bt">'+sd(r[0])+', '+r[2]+'</span><span class="bl">'+r[4]+' · '+r[6]+'</span><span class="bn">'+r[5]+' · '+r[3]+' min</span></a></li>';
  });
  var bx=document.getElementById('booked');bx.innerHTML=h+'</ul>';bx.style.display='block';
  bx.classList.add('on');
@@ -335,9 +356,9 @@ function sd(iso){var d=new Date(iso+'T00:00:00');return d.toLocaleDateString('en
  paintBk();
 })();
 function addRow(tb,r,cur){
- if(r[0]!==cur){var dr=tb.insertRow();var dc=dr.insertCell();dc.colSpan=6;dc.textContent=dl(r[0]);dr.className='day'}
+ if(r[0]!==cur){var dr=tb.insertRow();var dc=dr.insertCell();dc.colSpan=6;dc.textContent=dl(r[0]);dr.className='day';dr.id='d-'+r[0];if(DSHOWN)DSHOWN.push(r[0])}
  var tr=tb.insertRow();
- tr.setAttribute('data-cat',r[4]);tr.setAttribute('data-state',r[7]);
+ tr.setAttribute('data-cat',r[4]);if(r[7]==='booked')tr.setAttribute('data-k',r[0]+'|'+r[1]+'|'+r[6]+'|'+r[4]);tr.setAttribute('data-state',r[7]);
  tr.setAttribute('data-avail',r[7]==='bookable'?'1':'0');
  tr.setAttribute('data-wd',r[9]);tr.setAttribute('data-mins',r[1]);
  tr.insertCell().outerHTML='<td class="t">'+r[2]+'</td>';
@@ -390,7 +411,7 @@ function addRow(tb,r,cur){
  document.addEventListener('keydown',function(e){if(e.key==='Escape')hide();});
 })();
 function draw(){
- var tb=document.getElementById('tb');tb.innerHTML='';
+ var tb=document.getElementById('tb');tb.innerHTML='';DSHOWN=[];setTimeout(paintDays,0);
  var cur='',shown=0,cnt={};
  D.forEach(function(r){
   if(LOCS.length&&!LOCON[r[6]])return;      // location switched off
@@ -495,4 +516,56 @@ draw();
  if(mq.addEventListener)mq.addEventListener('change',apply);else if(mq.addListener)mq.addListener(apply);
  apply();
 })();
+// Jump links: the M T W ... strip and each booked class scroll the schedule
+// to that day / that class, clear of whatever header is stuck to the top.
+var DSHOWN;
+function jumpTo(el){
+ if(!el)return false;
+ var dr=document.getElementById('drawer');
+ if(dr&&dr.classList.contains('open')){var c=document.getElementById('dclose');if(c)c.click();}
+ var off=6,tp=document.getElementById('topbar'),mb=document.getElementById('minibar');
+ if(tp&&getComputedStyle(tp).display!=='none')off+=tp.offsetHeight;
+ else if(mb){var was=mb.classList.contains('on');mb.classList.add('on');off+=mb.offsetHeight;if(!was)mb.classList.remove('on');}
+ // Instant, then one correction: the sticky filter strip appears once the
+ // filters scroll away and shifts the table by its own height, so a single
+ // (or smooth) scroll lands a strip-height off. The yellow flash marks it.
+ window.scrollTo(0,Math.max(0,el.getBoundingClientRect().top+window.pageYOffset-off));
+ var fix=function(){var dy=el.getBoundingClientRect().top-off;if(Math.abs(dy)>2)window.scrollBy(0,dy)};
+ requestAnimationFrame(function(){requestAnimationFrame(fix)});setTimeout(fix,120);
+ el.classList.remove('hit');void el.offsetWidth;el.classList.add('hit');
+ setTimeout(function(){el.classList.remove('hit')},1800);
+ return true;
+}
+function paintDays(){
+ var n=new Date(),p=function(x){return (x<10?'0':'')+x};
+ var today=n.getFullYear()+'-'+p(n.getMonth()+1)+'-'+p(n.getDate()),bkd={};
+ D.forEach(function(r){if(r[7]==='booked')bkd[r[0]]=1});
+ var h='';
+ (DSHOWN||[]).forEach(function(iso,i){
+  var d=new Date(iso+'T00:00:00'),c=[];
+  if(i&&d.getDay()===1)c.push('wk');
+  if(iso===today)c.push('today');
+  if(bkd[iso])c.push('bk');
+  h+='<a href="#d-'+iso+'" data-d="'+iso+'" class="'+c.join(' ')+'" title="'+dl(iso)+(bkd[iso]?' — you have a booking':'')+'">'
+   +'<span>'+'MTWTFSS'.charAt((d.getDay()+6)%7)+'</span><b>'+d.getDate()+'</b></a>';
+ });
+ [].forEach.call(document.querySelectorAll('.dnav'),function(nv){nv.innerHTML=h});
+}
+document.addEventListener('click',function(e){
+ var t=e.target;if(!t||!t.closest)return;
+ var a=t.closest('.dnav a');
+ if(a){e.preventDefault();jumpTo(document.getElementById('d-'+a.getAttribute('data-d')));return;}
+ var b=t.closest('#booked a.bgo');
+ if(b){
+  e.preventDefault();
+  var k=b.getAttribute('data-k'),row=null;
+  [].some.call(document.querySelectorAll('#tb tr[data-k]'),function(tr){if(tr.getAttribute('data-k')===k){row=tr;return true}return false});
+  if(!jumpTo(row)){
+   var note=b.querySelector('.bh');
+   if(!note){note=document.createElement('span');note.className='bh';b.appendChild(note)}
+   note.textContent='hidden by your filters';
+   setTimeout(function(){note.textContent=''},2500);
+  }
+ }
+});
 </script></body></html>

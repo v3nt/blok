@@ -376,6 +376,38 @@ def main():
             check("the panel is never larger than the schedule's booked rows",
                   tally["inPanel"] <= tally["inTable"], str(tally))
 
+        # --- jump links -----------------------------------------------------
+        # M T W ... strip: one link per day on screen, each lands its day row
+        # just under whatever header is stuck to the top.
+        page.evaluate("window.scrollTo(0,0)")
+        page.wait_for_timeout(200)
+        jd = page.evaluate("""() => ({
+            links: [...document.querySelectorAll('#days a')].map(a => a.getAttribute('data-d')),
+            rows: [...document.querySelectorAll('#tb tr.day')].map(t => t.id.slice(2))})""")
+        check("the day strip has one link per day shown, in order",
+              jd["links"] == jd["rows"] and len(jd["links"]) > 0,
+              f"{len(jd['links'])} links vs {len(jd['rows'])} days")
+        if len(jd["links"]) > 3:
+            iso = jd["links"][3]
+            act("a day link is clickable", lambda: page.click(f'#days a[data-d="{iso}"]'))
+            page.wait_for_timeout(1000)
+            pos = page.evaluate("""i => { const r = document.getElementById('d-'+i).getBoundingClientRect().top;
+                const mb = document.getElementById('minibar');
+                return [r, mb.classList.contains('on') ? mb.offsetHeight : 0]; }""", iso)
+            check("a day link brings that day to the top, clear of the sticky bar",
+                  pos[1] <= pos[0] <= pos[1] + 30, str(pos))
+        bk = page.locator("#booked a.bgo")
+        if bk.count():
+            page.evaluate("window.scrollTo(0,0)")
+            k = bk.first.get_attribute("data-k")
+            act("a booked class is clickable", lambda: bk.first.click())
+            page.wait_for_timeout(1000)
+            hit = page.evaluate("""k => { const t = [...document.querySelectorAll('#tb tr[data-k]')]
+                .find(x => x.getAttribute('data-k') === k);
+                return t ? [t.getBoundingClientRect().top, innerHeight] : null; }""", k)
+            check("a booked class link scrolls to that class in the schedule",
+                  bool(hit) and 0 <= hit[0] < hit[1] / 2, str(hit))
+
         # --- your own bookings survive every convenience filter ---------------
         # "Bookable now only" hid all of them: a booked class is not bookable.
         if s["booked"]:
