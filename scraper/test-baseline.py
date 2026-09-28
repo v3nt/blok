@@ -231,31 +231,21 @@ def main():
                   f"missing {sorted(want_all - got_rf)}")
 
         # --- bookings ---------------------------------------------------------
-        # Bookings come from /profile/upcoming, not from a "Cancel" button in the
-        # schedule, which only appears while logged in and silently produced a
-        # page with nothing marked.
-        # The schedule is public; only booking status needs a session. A
-        # signed-out build says so in the header, and must still publish - the
-        # times and classes are exactly as right as ever. Requiring bookings
-        # here would block every publish whenever the profile is signed out,
-        # which is the opposite of what this page is for.
-        signed_out = page.evaluate(
-            "() => /booking status unavailable/i.test("
-            "(document.querySelector('header p')||{}).textContent||'')")
-        if signed_out:
-            print("  note: signed-out build - booking status checks skipped")
-        check("booked classes are marked in the table",
-              signed_out or s["booked"], "none marked")
+        # Bookings come from BLOK's confirmation emails (blok_mail.py); you
+        # book as a member, so ClassPass availability is normally absent.
+        # Having no bookings at all is legitimate, so it is not a failure -
+        # but a row whose status cell still tells you to go to ClassPass is.
+        no_status = page.evaluate(
+            "() => [...document.querySelectorAll('#tb tr[data-state]')]"
+            ".every(t => ['unknown','booked'].includes(t.dataset.state))")
+        if no_status:
+            print("  note: no ClassPass availability in this build - status checks skipped")
         check("the booked panel is shown when there are bookings",
               (not s["booked"]) or s["bookedPanel"] == "block", s["bookedPanel"])
-        unknown_rows = page.evaluate(
-            "() => document.querySelectorAll('tr[data-state=\"unknown\"]').length")
-        check("a signed-out build says so on the page",
-              (not signed_out) or unknown_rows > 0,
-              "header claims signed out but no unknown-status rows")
-        check("a signed-in build has real booking statuses",
-              signed_out or unknown_rows == 0,
-              f"{unknown_rows} rows have no status but the header does not say so")
+        stale_label = page.evaluate(
+            "() => [...document.querySelectorAll('#tb td.st')]"
+            ".filter(td => /check on classpass/i.test(td.textContent)).length")
+        check("no row tells you to check ClassPass", stale_label == 0, f"{stale_label} rows")
 
         # No day that has already happened: a past row at the same time as a
         # future booking is how the wrong row gets read as "not booked".

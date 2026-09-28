@@ -289,7 +289,7 @@ def scrape(page, url, studio, venue, year, warnings):
                   # are all right there - and mark the status unknown. Dropping
                   # the row meant a signed-out profile published nothing at all.
                   logged_out += 1
-                  st, lab = "unknown", "Check on ClassPass"
+                  st, lab = "unknown", ""
               if st is None:
                   warnings.append("%s: unknown status %r for %r" % (studio, lab, name))
                   continue
@@ -497,6 +497,12 @@ def build(rows, template, today=None, venues=None, ls_keys=None,
         log("  dropped %d row(s) for venue(s) not on this page: %s"
               % (len(dropped), ", ".join(sorted({r[10] for r in dropped}))))
         rows = [r for r in rows if r[10] in codes]
+    # You book as a BLOK member, so ClassPass availability is not shown and
+    # the status cell stays empty unless you are booked. Rows saved by older
+    # builds still carry the old label - clear it here so --rebuild fixes them.
+    for r in rows:
+        if r[7] == "unknown" and r[8] == "Check on ClassPass":
+            r[8] = ""
     rows.sort(key=lambda r: (r[0], r[1], r[6]))
     states, cats = {}, {}
     for r in rows:
@@ -538,8 +544,7 @@ def build(rows, template, today=None, venues=None, ls_keys=None,
     link = '<a href="https://classpass.com/studios/%s" target="_blank" rel="noopener">%s</a>'
     # Say it on the page when statuses are missing, so a signed-out build is
     # never mistaken for "everything is bookable".
-    unknown = states.get("unknown", 0)
-    note = (" \u00b7 booking status unavailable (signed out)" if unknown else "")
+    note = ""
     if sub_html is not None:
         sub = sub_html % (len(rows), now.strftime("%a %-d %b %Y, %H:%M %Z"))
         html = (template.replace("@@DATA@@", data).replace("@@SUB@@", sub)
@@ -700,7 +705,9 @@ def main():
                 except Exception as e:
                     warnings.append("%s (trial venue): %s" % (name, e))
                     log("  ! %s (trial venue) failed: %s" % (name, e))
-            booked = upcoming(page, year, warnings, url=args.upcoming)
+            # ClassPass's reservations page is no longer visited: you book as a
+            # BLOK member, so it is always empty. Bookings come from BLOK's
+            # emails below. upcoming() is kept only in case that changes.
         finally:
             # ALWAYS close the window - on success, on a broken page, on
             # Ctrl-C. The run is now visible, so a leaked Chrome is a window
