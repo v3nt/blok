@@ -10,3 +10,8 @@ GitHub (and therefore from a phone) without touching the Mac.
 | index.html modified | 2026-10-02 16:06:49 BST |
 | Classes in index.html | 1740 |
 
+## Recent push errors
+
+```
+fatal: unable to access 'https://github.com/v3nt/blok.git/': Failed to connect to github.com port 443 after 264 ms: Couldn't connect to server
+```
