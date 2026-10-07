@@ -6,17 +6,13 @@ GitHub (and therefore from a phone) without touching the Mac.
 | Field | Value |
 |---|---|
 | Scrape result | **FAIL** |
-| Last scrape log line | `----- 2026-10-07 20:13:37 refresh FAILED (exit 1)` |
+| Last scrape log line | `----- 2026-10-07 22:05:05 refresh start (python: /usr/bin/python3)` |
 | index.html modified | 2026-10-07 06:07:13 BST |
 | Classes in index.html | 1830 |
 
 ## Last scrape failure
 
 ```
-  ! 11 reservation(s) had no matching class in the schedule
-Third Space refresh 2026-10-07 20:07:37
-  Islington -> 0 class(es)
-  Moorgate -> 0 class(es)
   City -> 0 class(es)
 FATAL: no classes scraped - leaving /Users/danielcrabbe14/Sites/jynk/blok/3rdspace.html untouched
   ! Islington 2026-10-07..2026-10-10: <urlopen error [Errno 8] nodename nor servname provided, or not known>
@@ -33,6 +29,10 @@ FATAL: no classes scraped - leaving /Users/danielcrabbe14/Sites/jynk/blok/3rdspa
   ! City 2026-10-19..2026-10-20: <urlopen error [Errno 8] nodename nor servname provided, or not known>
   ! thirdspace.py exited 1 (3rdspace.html left as it was)
 ----- 2026-10-07 20:13:37 refresh FAILED (exit 1)
+----- 2026-10-07 22:05:05 refresh start (python: /usr/bin/python3)
+BLOK refresh 2026-10-07 22:05:06
+  browser: chrome, visible window
+  loaded 53 saved cookie(s)
 ```
 
 ## Recent push errors
