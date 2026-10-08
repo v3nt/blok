@@ -15,5 +15,4 @@ GitHub (and therefore from a phone) without touching the Mac.
 ```
 fatal: unable to access 'https://github.com/v3nt/blok.git/': Could not resolve host: github.com
 fatal: unable to access 'https://github.com/v3nt/blok.git/': Could not resolve host: github.com
-fatal: unable to access 'https://github.com/v3nt/blok.git/': Could not resolve host: github.com
 ```
