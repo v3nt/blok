@@ -80,6 +80,7 @@ local fixture, so the scraper is testable without the live site.
 | `scraper/refresh.py` | scrape → categorise → mark bookings → build the page |
 | `scraper/refresh.sh` | launchd wrapper; picks a python that has playwright |
 | `scraper/blok_mail.py` | your bookings, from BLOK's confirmation/cancellation emails (IMAP, app password in Keychain) |
+| `refresh.py --bookings` | run by `push-blok.sh` every 10 min: re-reads BLOK's emails and updates booked/cancelled marks (no browser; rewrites the page only when bookings change) |
 | `scraper/test-blok-mail.py` | offline checks for the email parsing and book/cancel replay |
 | `scraper/login_setup.py` | optional: ClassPass login, only for bookable/full status |
 | `scraper/class-descriptions.py` | one-off: rebuilds `class-descriptions.json` (hover text) |

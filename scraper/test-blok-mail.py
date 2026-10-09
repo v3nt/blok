@@ -90,6 +90,46 @@ hit = refresh.mark_booked(rows, keys, w, today="2026-09-28")
 check("emails mark exactly the booked rows",
       [r[7] for r in rows] == ["booked", "unknown", "unknown", "booked"], str([r[7] for r in rows]))
 
+# A class cancelled after the page was built is un-marked, and the cleared
+# row says nothing rather than claiming "Bookable".
+rows[0][7], rows[0][8] = "booked", "You're booked"
+w = []
+refresh.mark_booked(rows, set(), w, today="2026-09-28")
+check("cancelling your last booking clears it (an empty list still applies)",
+      all(r[7] != "booked" for r in rows), str([r[7] for r in rows]))
+check("a cleared row is 'unknown', not 'Bookable'",
+      rows[0][7:9] == ["unknown", ""], str(rows[0][7:9]))
+
+# --bookings: rewrites the page only when bookings change.
+import json, os, tempfile, datetime as _dt
+d0 = (_dt.date.today() + _dt.timedelta(days=3)).isoformat()
+page_rows = [[d0, 1180, "7:40PM", 60, "CALISTHENICS", "x", "Clapton", "booked", "You're booked", "", "B"],
+             [d0, 1115, "6:35PM", 50, "BLOKSTRENGTH: FULL BODY", "y", "Clapton", "unknown", "", "", "B"]]
+tmp = pathlib.Path(tempfile.mkdtemp()) / "index.html"
+tmp.write_text(refresh.build([list(r) for r in page_rows], refresh.TEMPLATE, today=d0)[0], encoding="utf-8")
+def page_booked():
+    h = tmp.read_text(encoding="utf-8"); i = h.index("var D=["); j = h.index("],SC=", i)
+    return sorted((r[1], r[4]) for r in json.loads(h[i + 6:j + 1]) if r[7] == "booked")
+real = bm.bookings
+try:
+    bm.bookings = lambda log=print, warnings=None: [
+        {"date": d0, "mins": 1115, "cls": "BLOKSTRENGTH: FULL BODY", "studio": "Clapton"}]
+    refresh.rebuild(str(tmp), online=True)
+    check("--bookings swaps a cancelled class for a new booking",
+          page_booked() == [(1115, "BLOKSTRENGTH: FULL BODY")], str(page_booked()))
+    before = tmp.stat().st_mtime_ns
+    refresh.rebuild(str(tmp), online=True)
+    check("--bookings leaves the page alone when nothing changed",
+          tmp.stat().st_mtime_ns == before)
+    def boom(log=print, warnings=None):
+        raise RuntimeError("no network")
+    bm.bookings = boom
+    refresh.rebuild(str(tmp), online=True)
+    check("a mailbox failure never clears your bookings",
+          page_booked() == [(1115, "BLOKSTRENGTH: FULL BODY")], str(page_booked()))
+finally:
+    bm.bookings = real
+
 print(("OK: %d BLOK email checks passed" % checks) if not fails
       else "FAIL: %d of %d BLOK email checks failed" % (fails, checks))
 sys.exit(1 if fails else 0)

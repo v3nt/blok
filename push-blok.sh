@@ -54,6 +54,22 @@ if [ -n "$TRACKED_DS" ]; then
   echo "$TRACKED_DS" | tr '\n' '\0' | xargs -0 git rm --cached -q -- 2>/dev/null || true
 fi
 
+# ------------------------------------------------------------- your bookings
+
+# Every 10 minutes: re-read BLOK's booking/cancellation emails and update the
+# booked marks in index.html (no browser, a few seconds). The page is only
+# rewritten when your bookings changed, so a quiet check commits nothing.
+# Skipped while a scrape is running - they share index.html - and never fatal.
+LOCK="$REPO/scraper/.refresh.lock"
+if mkdir "$LOCK" 2>/dev/null; then
+  BK_OUT=$("${BLOK_PYTHON:-/usr/bin/python3}" scraper/refresh.py --bookings 2>&1) || true
+  rmdir "$LOCK" 2>/dev/null || true
+  echo "$BK_OUT" | grep -E 'unchanged|no longer booked|newly booked|unreachable|FATAL|Error' \
+    | while IFS= read -r line; do log "bookings: ${line#  }"; done || true
+else
+  log "bookings: scrape running - checked next time"
+fi
+
 # --------------------------------------------------------------- health report
 
 write_status() {

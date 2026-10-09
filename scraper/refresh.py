@@ -409,7 +409,8 @@ def mark_booked(rows, booked, warnings, today=None):
             r[7], r[8] = "booked", "You're booked"
             hit += 1
         elif r[7] == "booked" and r[0] >= today:
-            r[7], r[8] = "bookable", "Bookable"
+            # Not "Bookable": with no ClassPass session we do not know that.
+            r[7], r[8] = "unknown", ""
             cleared += 1
     if cleared:
         warnings.append("%d future row(s) were marked booked but are not in "
@@ -578,15 +579,21 @@ def email_bookings(warnings, offline=False):
                 keys.add((e["date"], e["mins"], e["studio"], categorise(e["cls"], "B")))
     except Exception as e:
         warnings.append("BLOK email bookings unavailable: %s" % e)
+        return None          # unknown - leave whatever the page shows alone
     return keys
 
-def rebuild(out):
+def rebuild(out, online=False):
     """Re-emit an existing page with the current template. No browser.
 
     The rows live in the page as `var D=[...]`, so a template change ships
-    immediately instead of waiting up to two hours for the next scrape. Data,
-    booking statuses and booked marks are carried across untouched - this only
-    changes the shell around them.
+    immediately instead of waiting up to two hours for the next scrape.
+
+    Bookings are re-applied from BLOK's emails: the saved result offline
+    (--rebuild), or a fresh mailbox check with online=True (--bookings, run
+    every 10 minutes by push-blok.sh). A class cancelled since the last scrape
+    is un-marked here - including your LAST booking, so an empty list is
+    applied too. In online mode the page is only rewritten when your bookings
+    actually changed, so the 10-minute check does not commit every time.
     """
     path = pathlib.Path(out)
     try:
@@ -603,14 +610,25 @@ def rebuild(out):
     # Keep the page's own day window: rebuilding must not silently drop days
     # just because it happens to run later than the scrape did.
     today = min(r[0] for r in rows)
-    # Bookings from the saved BLOK-email result, so a rebuild shows them too.
+    now = datetime.date.today().isoformat()
+    mine = lambda: {(r[0], r[1], r[6], r[4]) for r in rows if r[7] == "booked" and r[0] >= now}
+    before = mine()
     w = []
-    booked = email_bookings(w, offline=True)
-    if booked:
-        log("  marked %d row(s) as booked (saved BLOK emails)"
-            % mark_booked(rows, booked, w, today=datetime.date.today().isoformat()))
+    booked = email_bookings(w, offline=not online)
+    if booked is not None:
+        hit = mark_booked(rows, booked, w, today=now)
+        log("  marked %d row(s) as booked (%s)" % (hit, "BLOK emails" if online else "saved BLOK emails"))
     for x in w:
         log("  ! " + x)
+    after = mine()
+    if online:
+        if after == before:
+            log("  bookings unchanged (%d upcoming) - page left as it is" % len(after))
+            return 0
+        for k in sorted(before - after):
+            log("  - no longer booked: %s %s %s %s" % (k[0], fmt_time(k[1]), k[3], k[2]))
+        for k in sorted(after - before):
+            log("  + newly booked:     %s %s %s %s" % (k[0], fmt_time(k[1]), k[3], k[2]))
     new, states, _ = build(rows, TEMPLATE, today=today)
     path.write_text(new, encoding="utf-8")
     log("  rebuilt %s from %d existing classes (%d bytes) states=%s"
@@ -623,6 +641,9 @@ def main():
     # A UI change does not need new data. index.html carries the classes it was
     # built from, so the page can be regenerated with the current template
     # offline, in a second, without opening a browser or touching ClassPass.
+    ap.add_argument("--bookings", action="store_true",
+                    help="check BLOK's emails and update the booked marks in --out; "
+                         "no browser, rewrites the page only if bookings changed")
     ap.add_argument("--rebuild", action="store_true",
                     help="regenerate --out from the classes already in it, "
                          "using the current template; no browser, no network")
@@ -643,6 +664,8 @@ def main():
     ap.add_argument("--upcoming", default=UPCOMING_URL,
                     help="reservations page; overridable for the same reason")
     args = ap.parse_args()
+    if args.bookings:
+        return rebuild(args.out, online=True)
     if args.rebuild:
         return rebuild(args.out)
     from playwright.sync_api import sync_playwright
@@ -727,7 +750,8 @@ def main():
     # You book as a BLOK member now, so ClassPass's reservations list is
     # empty; BLOK's own confirmation emails are the source of truth. Merged
     # with (not instead of) ClassPass, in case a class is ever booked there.
-    booked = set(booked or ()) | email_bookings(warnings)
+    mail = email_bookings(warnings)
+    booked = set(booked or ()) | (mail or set())
     if booked:
         log("  marked %d row(s) as booked" % mark_booked(rows, booked, warnings))
     if not rows:
