@@ -480,7 +480,7 @@ def ls_object(venues, keys):
 def favicon(text, bg, fg="#ffffff", size=40):
     """A tab icon: rounded square with a letter or two, as an inline SVG data URI."""
     import urllib.parse
-    svg = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+    svg = ('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">'
            '<rect width="64" height="64" rx="14" fill="%s"/>'
            '<text x="32" y="33" text-anchor="middle" dominant-baseline="central" '
            'font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="%d" '
@@ -556,7 +556,13 @@ def build(rows, template, today=None, venues=None, ls_keys=None,
         j(codes), j({c: order[c] for c in codes}), j(favs), j(desc), j(studio_url),
         j(locations)))
     template = template.replace("@@ICON@@", (icon or BLOK_ICON).replace('"', "%22"))
-    now = datetime.datetime.now().astimezone()
+    # Always London time, whichever machine builds the page (a rebuild in a
+    # UTC sandbox stamped "15:12 UTC" on a page refreshed at 16:12 BST).
+    try:
+        from zoneinfo import ZoneInfo
+        now = datetime.datetime.now(ZoneInfo("Europe/London"))
+    except Exception:
+        now = datetime.datetime.now().astimezone()
     f = lambda iso: datetime.date.fromisoformat(iso).strftime("%-d %b")
     link = '<a href="https://classpass.com/studios/%s" target="_blank" rel="noopener">%s</a>'
     # Say it on the page when statuses are missing, so a signed-out build is
