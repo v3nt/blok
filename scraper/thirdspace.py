@@ -279,6 +279,8 @@ def main():
         rows, refresh.TEMPLATE, venues=venues, ls_keys=ls_keys, palette=palette,
         desc=desc, studio_url={club: BASE + "/timetable/" for _, club, _ in CLUBS},
         title="Class schedule — Third Space",
+        # Third Space: teal "3S", so the two tabs never look alike.
+        icon=refresh.favicon("3S", "#0f6e6e", size=30),
         locations=[club for _, club, _ in CLUBS],
         sub_html=('<p class="sub">Third Space · '
                   + " &amp; ".join(club for _, club, _ in CLUBS)

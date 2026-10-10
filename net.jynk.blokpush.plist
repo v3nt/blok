@@ -7,10 +7,13 @@
 
     <key>ProgramArguments</key>
     <array>
+        <!-- Run through bash, so the job never depends on the script's
+             executable bit (losing it stopped all pushes on 9 Oct). -->
+        <string>/bin/bash</string>
         <string>/Users/danielcrabbe14/Sites/jynk/blok/push-blok.sh</string>
     </array>
 
-    <!-- Check every 10 minutes; the scheduled scrape runs every 4 hours. -->
+    <!-- Every 10 minutes: check BLOK emails for bookings, then commit + push. -->
     <key>StartInterval</key>
     <integer>600</integer>
 
