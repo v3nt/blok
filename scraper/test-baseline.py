@@ -366,7 +366,7 @@ def main():
                 inData: D.filter(r => r[7] === 'booked').length,
                 upcoming: upcoming.length,
                 inTable: document.querySelectorAll('#tb tr[data-state="booked"]').length,
-                inPanel: document.querySelectorAll('#booked li').length,
+                inPanel: document.querySelectorAll('#booked li:not(.wl)').length,
               };
             }""")
             check("every booked class in the data is rendered in the schedule",

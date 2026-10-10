@@ -64,7 +64,7 @@ LOCK="$REPO/scraper/.refresh.lock"
 if mkdir "$LOCK" 2>/dev/null; then
   BK_OUT=$("${BLOK_PYTHON:-/usr/bin/python3}" scraper/refresh.py --bookings 2>&1) || true
   rmdir "$LOCK" 2>/dev/null || true
-  echo "$BK_OUT" | grep -E 'unchanged|no longer booked|newly booked|unreachable|FATAL|Error' \
+  echo "$BK_OUT" | grep -E 'unchanged|no longer |  + now |unreachable|FATAL|Error' \
     | while IFS= read -r line; do log "bookings: ${line#  }"; done || true
 else
   log "bookings: scrape running - checked next time"

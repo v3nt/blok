@@ -70,6 +70,16 @@ def parse(body):
         return {"kind": "booked", "cls": cls, "date": d.isoformat(), "mins": _mins(tm),
                 "studio": _field(lines, "LOCATION") or "",
                 "instructor": _field(lines, "INSTRUCTOR") or ""}
+    # Waitlist: "You're on the waitlist for CALISTHENICS 60 at 11:10, Saturday,
+    # 10 October 2026." / "You have been removed from the waitlist for ...".
+    # Neither names the studio in the text (the .ics attachment may - see fetch).
+    m = re.search(r"(You.re on|removed from) the waitlist for (.+?) at (\d{1,2}:\d\d), "
+                  r"\w+, (\d{1,2}) (\w+) (\d{4})", flat)
+    if m:
+        d = datetime.date(int(m.group(6)), MONTHS[m.group(5).lower()], int(m.group(4)))
+        return {"kind": "waitlist" if m.group(1).endswith("on") else "unwaitlisted",
+                "cls": m.group(2).strip(), "date": d.isoformat(),
+                "mins": _mins(m.group(3)), "studio": ""}
     m = re.search(r"Your spot at (.+?) for (\d{1,2}:\d\d), (\w+) (\d{1,2}), (\d{4}) "
                   r"has been cancelled", flat)
     if m:
@@ -79,17 +89,30 @@ def parse(body):
     return None
 
 def replay(events):
-    """Events (each with 'sent', an ISO timestamp) -> current bookings.
+    """Events (each with 'sent', an ISO timestamp) -> what you hold now.
 
-    Keyed on date + time + class; the newest email for a key wins.
+    Keyed on date + time + class; the newest email for a key wins. Each result
+    has kind "booked" or "waitlist".
+      booked        -> booked (also how a waitlist spot that came through shows)
+      cancelled     -> gone
+      waitlist      -> on the waitlist, unless already booked
+      unwaitlisted  -> off the waitlist; a booking for that class is kept,
+                       because BLOK may send this when you are moved INTO it
     """
     state = {}
     for e in sorted(events, key=lambda e: e["sent"]):
         key = (e["date"], e["mins"], e["cls"])
+        cur = state.get(key)
         if e["kind"] == "booked":
             state[key] = e
-        else:
+        elif e["kind"] == "cancelled":
             state.pop(key, None)
+        elif e["kind"] == "waitlist":
+            if not (cur and cur["kind"] == "booked"):
+                state[key] = e
+        elif e["kind"] == "unwaitlisted":
+            if cur and cur["kind"] == "waitlist":
+                state.pop(key)
     return sorted(state.values(), key=lambda e: (e["date"], e["mins"]))
 
 # --- mailbox ---------------------------------------------------------------
@@ -113,6 +136,17 @@ def _body(msg):
                 best = txt
     return best
 
+def _ics_studio(msg):
+    """Clapton / Shoreditch from an attached calendar invite, or ""."""
+    for p in (msg.walk() if msg.is_multipart() else [msg]):
+        if p.get_content_type() == "text/calendar" or (p.get_filename() or "").endswith(".ics"):
+            txt = (p.get_payload(decode=True) or b"").decode("utf-8", "replace")
+            m = re.search(r"^LOCATION[^:]*:(.*)$", txt, re.M)
+            for name in ("Clapton", "Shoreditch"):
+                if m and name.lower() in m.group(1).lower():
+                    return name
+    return ""
+
 def fetch(days=LOOKBACK_DAYS):
     since = (datetime.date.today() - datetime.timedelta(days=days)).strftime("%d-%b-%Y")
     im = imaplib.IMAP4_SSL(IMAP_HOST, timeout=30)
@@ -134,6 +168,8 @@ def fetch(days=LOOKBACK_DAYS):
             except ValueError:
                 skipped += 1
                 continue
+            if ev and not ev.get("studio"):
+                ev["studio"] = _ics_studio(msg)
             if ev:
                 sent = email.utils.parsedate_to_datetime(msg["Date"])
                 ev["sent"] = sent.astimezone(datetime.timezone.utc).isoformat()
@@ -154,8 +190,9 @@ def bookings(log=print, warnings=None):
         CACHE.write_text(json.dumps({
             "checked": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
             "emails": len(events), "bookings": current}, indent=1), encoding="utf-8")
-        log("  BLOK emails: %d booking/cancellation email(s) -> %d current booking(s)"
-            % (len(events), len(current)))
+        nw = sum(1 for b in current if b.get("kind") == "waitlist")
+        log("  BLOK emails: %d booking/cancellation/waitlist email(s) -> %d booking(s), %d waitlist"
+            % (len(events), len(current) - nw, nw))
         if skipped:
             warnings.append("%d BLOK email(s) in an unexpected layout were skipped" % skipped)
         return current
@@ -194,8 +231,9 @@ def main():
         setup()
     w = []
     for b in bookings(warnings=w):
-        print("  %s %02d:%02d  %-28s %s" % (b["date"], b["mins"] // 60, b["mins"] % 60,
-                                           b["cls"], b["studio"]))
+        print("  %s %02d:%02d  %-28s %-10s %s" % (b["date"], b["mins"] // 60, b["mins"] % 60,
+                                                 b["cls"], b["studio"],
+                                                 "WAITLIST" if b.get("kind") == "waitlist" else ""))
     for x in w:
         print("  ! " + x)
     return 1 if any("unreachable" in x for x in w) else 0

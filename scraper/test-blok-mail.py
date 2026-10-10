@@ -90,6 +90,41 @@ hit = refresh.mark_booked(rows, keys, w, today="2026-09-28")
 check("emails mark exactly the booked rows",
       [r[7] for r in rows] == ["booked", "unknown", "unknown", "booked"], str([r[7] for r in rows]))
 
+# --- waitlist ---------------------------------------------------------------
+# Real wording (Oct 2026). Neither email names the studio.
+WJOIN = ("<h1>YOU’RE ON THE WAITLIST.</h1><p>Hi Daniel, You’re on the waitlist for "
+         "CALISTHENICS 60 at 11:10, Saturday, 10 October 2026. We’ll let you know if you "
+         "secure your spot by email as soon as it happens.</p>")
+WOFF = ("<h1>WAITLIST SPOT CANCELLED.</h1><p>Hi Daniel, You have been removed from the "
+        "waitlist for CALISTHENICS 60 at 11:10, Saturday, 10 October 2026. Unsure why you "
+        "were removed from the waitlist?</p>")
+wj, wo = bm.parse(WJOIN), bm.parse(WOFF)
+check("a waitlist email parses",
+      wj and (wj["kind"], wj["date"], wj["mins"], wj["cls"]) == ("waitlist", "2026-10-10", 670, "CALISTHENICS 60"),
+      str(wj))
+check("a waitlist-removal email parses",
+      wo and (wo["kind"], wo["date"], wo["mins"]) == ("unwaitlisted", "2026-10-10", 670), str(wo))
+ev = lambda e, t: dict(e, sent=t)
+kinds = lambda evs: [(b["kind"], b["date"]) for b in bm.replay(evs)]
+check("joining a waitlist shows it", kinds([ev(wj, "1")]) == [("waitlist", "2026-10-10")])
+check("being removed from the waitlist clears it", kinds([ev(wj, "1"), ev(wo, "2")]) == [])
+spot = dict(wj, kind="booked", studio="Clapton")
+check("a waitlist spot that comes through shows as booked",
+      kinds([ev(wj, "1"), ev(spot, "2")]) == [("booked", "2026-10-10")])
+check("a removal email after you got the spot keeps the booking",
+      kinds([ev(wj, "1"), ev(spot, "2"), ev(wo, "3")]) == [("booked", "2026-10-10")])
+
+wrows = [row("2026-10-10", 670, "CALISTHENICS", "Clapton"),
+         row("2026-10-10", 670, "OPEN GYM", "Clapton")]
+w = []
+refresh.mark_booked(wrows, set(), w, today="2026-10-09",
+                    waitlist={("2026-10-10", 670, "", "CALISTHENICS")})
+check("a waitlisted class is marked 'On waitlist' (studio not needed)",
+      [r[7:9] for r in wrows] == [["waitlist", "On waitlist"], ["unknown", "Check on ClassPass"]],
+      str([r[7:9] for r in wrows]))
+refresh.mark_booked(wrows, set(), w, today="2026-10-09", waitlist=set())
+check("leaving the waitlist clears the mark", wrows[0][7:9] == ["unknown", ""], str(wrows[0][7:9]))
+
 # A class cancelled after the page was built is un-marked, and the cleared
 # row says nothing rather than claiming "Bookable".
 rows[0][7], rows[0][8] = "booked", "You're booked"
