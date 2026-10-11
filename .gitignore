@@ -19,3 +19,6 @@ _to_delete/
 scraper/extra-venues.json
 scraper/blok-bookings.json
 scraper/.refresh.lock/
+
+# Python venv on the home server (deploy/install-linux.sh)
+.venv/
