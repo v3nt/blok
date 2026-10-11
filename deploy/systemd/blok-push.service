@@ -1,0 +1,15 @@
+[Unit]
+Description=BLOK: refresh bookings from email, validate, test, commit and push
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=server
+WorkingDirectory=/srv/apps/blok
+Environment=PATH=/srv/apps/blok/.venv/bin:/usr/local/bin:/usr/bin:/bin
+Environment=BLOK_PYTHON=/srv/apps/blok/.venv/bin/python
+ExecStart=/bin/bash /srv/apps/blok/push-blok.sh
+StandardOutput=append:/srv/apps/blok/push-blok.log
+StandardError=append:/srv/apps/blok/push-blok.log
+TimeoutStartSec=15min

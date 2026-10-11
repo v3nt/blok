@@ -18,7 +18,7 @@ If the mailbox can't be reached, the last good result (blok-bookings.json)
 is used instead, so one network blip never wipes your bookings off the page.
 """
 import argparse, datetime, email, email.header, email.utils, getpass, html, imaplib
-import json, pathlib, re, subprocess, sys
+import json, os, pathlib, re, shutil, subprocess, sys
 
 HERE = pathlib.Path(__file__).resolve().parent
 CACHE = HERE / "blok-bookings.json"
@@ -117,13 +117,29 @@ def replay(events):
 
 # --- mailbox ---------------------------------------------------------------
 
+# Where the app password lives off the Mac (the home server has no Keychain):
+# $BLOK_GMAIL_APP_PASSWORD, else this file (mode 600), else the macOS Keychain.
+PASSWORD_FILE = pathlib.Path(os.environ.get(
+    "BLOK_GMAIL_PASSWORD_FILE", "~/.config/blok/gmail-app-password")).expanduser()
+
+def _has_keychain():
+    return shutil.which("security") is not None
+
 def password():
-    r = subprocess.run(["security", "find-generic-password", "-s", SERVICE,
-                        "-a", ACCOUNT, "-w"], capture_output=True, text=True)
-    if r.returncode != 0:
-        raise RuntimeError("no Gmail app password in the Keychain - run: "
-                           "/usr/bin/python3 %s --setup" % pathlib.Path(__file__).resolve())
-    return r.stdout.strip()
+    pw = os.environ.get("BLOK_GMAIL_APP_PASSWORD", "").strip()
+    if pw:
+        return pw
+    if PASSWORD_FILE.exists():
+        pw = PASSWORD_FILE.read_text(encoding="utf-8").strip()
+        if pw:
+            return pw
+    if _has_keychain():
+        r = subprocess.run(["security", "find-generic-password", "-s", SERVICE,
+                            "-a", ACCOUNT, "-w"], capture_output=True, text=True)
+        if r.returncode == 0:
+            return r.stdout.strip()
+    raise RuntimeError("no Gmail app password (env, %s or Keychain) - run: "
+                       "python3 %s --setup" % (PASSWORD_FILE, pathlib.Path(__file__).resolve()))
 
 def _body(msg):
     parts = msg.walk() if msg.is_multipart() else [msg]
@@ -215,12 +231,19 @@ def cached():
 
 def setup():
     print("Create an app password at https://myaccount.google.com/apppasswords")
-    print("(name it 'blok'), then paste it here. It goes into your Keychain only.")
+    where = "your Keychain" if _has_keychain() else str(PASSWORD_FILE)
+    print("(name it 'blok'), then paste it here. It goes into %s only." % where)
     pw = getpass.getpass("App password for %s: " % ACCOUNT).replace(" ", "")
     if not pw:
         sys.exit("nothing entered - no change")
-    subprocess.run(["security", "add-generic-password", "-U", "-s", SERVICE,
-                    "-a", ACCOUNT, "-w", pw], check=True)
+    if _has_keychain():
+        subprocess.run(["security", "add-generic-password", "-U", "-s", SERVICE,
+                        "-a", ACCOUNT, "-w", pw], check=True)
+    else:
+        PASSWORD_FILE.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        PASSWORD_FILE.touch(mode=0o600, exist_ok=True)
+        os.chmod(PASSWORD_FILE, 0o600)
+        PASSWORD_FILE.write_text(pw + "\n", encoding="utf-8")
     print("Saved. Checking the mailbox...")
 
 def main():

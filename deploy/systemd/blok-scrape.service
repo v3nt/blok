@@ -1,0 +1,18 @@
+[Unit]
+Description=BLOK schedule: scrape ClassPass + Third Space and rebuild the pages
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=server
+WorkingDirectory=/srv/apps/blok
+Environment=PATH=/srv/apps/blok/.venv/bin:/usr/local/bin:/usr/bin:/bin
+Environment=BLOK_PYTHON=/srv/apps/blok/.venv/bin/python
+# ClassPass serves an empty schedule to headless Chrome, so the scraper runs a
+# real (headed) Chrome window inside a virtual display.
+ExecStart=/usr/bin/xvfb-run -a "--server-args=-screen 0 1600x1200x24" /bin/bash scraper/refresh.sh
+StandardOutput=append:/srv/apps/blok/scraper/refresh.log
+StandardError=append:/srv/apps/blok/scraper/refresh.log
+TimeoutStartSec=45min
+Nice=10
