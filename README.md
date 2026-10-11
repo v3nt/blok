@@ -51,6 +51,10 @@ behaves the same from your shell as from launchd.
 if `auth_state.json` is missing or stale the schedule still publishes in full,
 and only the booking marks are skipped, with a warning in the log.
 
+## Running on the home server
+
+The same pipeline runs on `nab9` as systemd timers. See [`deploy/LINUX.md`](deploy/LINUX.md).
+
 ## The gates
 
 Nothing reaches GitHub without passing both:

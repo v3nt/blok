@@ -1,0 +1,9 @@
+[Unit]
+Description=BLOK scrape every 2 hours at :05 (same slots as the Mac's launchd job)
+
+[Timer]
+OnCalendar=*-*-* 00/2:05:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
