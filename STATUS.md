@@ -6,9 +6,9 @@ GitHub (and therefore from a phone) without touching the Mac.
 | Field | Value |
 |---|---|
 | Scrape result | **OK** |
-| Last scrape log line | `----- 2026-10-15 14:06:11 refresh OK (exit 0)` |
-| index.html modified | 2026-10-15 14:14:56 BST |
-| Classes in index.html | 1779 |
+| Last scrape log line | `----- 2026-10-15 16:06:45 refresh OK (exit 0)` |
+| index.html modified | 2026-10-15 16:06:39 BST |
+| Classes in index.html | 1748 |
 
 ## Recent push errors
 
