@@ -6,7 +6,7 @@ GitHub (and therefore from a phone) without touching the Mac.
 | Field | Value |
 |---|---|
 | Scrape result | **OK** |
-| Last scrape log line | `----- 2026-10-22 12:05:00 refresh skipped (already running)` |
+| Last scrape log line | `----- 2026-10-22 14:05:00 refresh start (python: /srv/apps/blok/.venv/bin/python)` |
 | index.html modified | 2026-10-22 09:45:19 BST |
 | Classes in index.html | 1858 |
 
