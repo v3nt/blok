@@ -6,14 +6,14 @@ GitHub (and therefore from a phone) without touching the Mac.
 | Field | Value |
 |---|---|
 | Scrape result | **OK** |
-| Last scrape log line | `----- 2026-10-31 16:05:05 refresh start (python: /usr/bin/python3)` |
-| index.html modified | 2026-10-11 09:00:13 BST |
+| Last scrape log line | `----- 2026-10-31 16:05:44 refresh OK (exit 0)` |
+| index.html modified | 2026-10-31 16:15:47 GMT |
 | Classes in index.html | 1832 |
 
 ## Recent push errors
 
 ```
-2026-10-11 06:52:26  BLOCKED: baseline regression
 2026-10-31 15:54:30  BLOCKED: baseline regression
 2026-10-31 16:05:17  BLOCKED: baseline regression
+2026-10-31 16:15:47  BLOCKED: FAIL: only 10 class rows in D - refusing to publish an empty schedule
 ```
