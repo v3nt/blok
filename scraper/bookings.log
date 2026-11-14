@@ -22,3 +22,7 @@
   marked 5 row(s) as booked (BLOK emails)
   ! 1 reservation(s) had no matching class in the schedule
   bookings unchanged (5 upcoming) - page left as it is
+  marked 5 row(s) as booked (BLOK emails)
+  ! BLOK mailbox unreachable (The read operation timed out) - using bookings from 2026-11-14T17:26:43+00:00
+  ! 1 reservation(s) had no matching class in the schedule
+  bookings unchanged (5 upcoming) - page left as it is
