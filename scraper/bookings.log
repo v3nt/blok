@@ -61,3 +61,6 @@
   marked 5 row(s) as booked (BLOK emails)
   ! BLOK mailbox unreachable (The read operation timed out) - using bookings from 2026-11-14T21:46:40+00:00
   bookings unchanged (5 upcoming) - page left as it is
+  BLOK emails: 78 booking/cancellation/waitlist email(s) -> 32 booking(s), 0 waitlist
+  marked 5 row(s) as booked (BLOK emails)
+  bookings unchanged (5 upcoming) - page left as it is
