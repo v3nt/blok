@@ -340,3 +340,7 @@
   marked 6 row(s) as booked (BLOK emails)
   ! 1 reservation(s) had no matching class in the schedule
   bookings unchanged (4 upcoming) - page left as it is
+  BLOK emails: 82 booking/cancellation/waitlist email(s) -> 34 booking(s), 0 waitlist
+  marked 6 row(s) as booked (BLOK emails)
+  ! 1 reservation(s) had no matching class in the schedule
+  bookings unchanged (4 upcoming) - page left as it is
