@@ -656,7 +656,7 @@ def main():
             " l.checked = false; l.dispatchEvent(new Event('change', {bubbles: true})) }"))
         page.wait_for_timeout(300)
 
-        check("filter chips carry a description", page.evaluate("() => document.querySelectorAll('.chip label.chip[data-desc], label.chip[data-desc]').length") > 0)
+        check("filter chips carry a description", page.evaluate("() => document.querySelectorAll('.chip input[data-c][data-desc]').length") > 0)
         check("the keyword search box exists", page.evaluate("() => !!document.getElementById('q')"))
         n_before = page.evaluate("() => document.querySelectorAll('#tb tr[data-cat]').length")
         act("type a search that matches nothing", lambda: page.fill("#q", "zzzznothing"))

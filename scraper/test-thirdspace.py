@@ -185,9 +185,9 @@ with sync_playwright() as p:
                         ".every(l => /\\d\\d:\\d\\d/.test(l.textContent))"))
 
     check("a class-type filter shows its description on hover",
-          page.evaluate("() => { const i = document.querySelector('#cats' + VENUES[0] + ' label.chip[data-desc], #fav' + VENUES[0] + ' label.chip[data-desc]');"
+          page.evaluate("() => { const i = document.querySelector('#cats' + VENUES[0] + ' input[data-desc], #fav' + VENUES[0] + ' input[data-desc]');"
                         " return !!i && !!i.getAttribute('data-desc') }"))
-    act("hovering a filter shows the description", lambda: page.hover("%s label.chip[data-desc]" % ("#cats" + codes[0])))
+    act("hovering a filter shows the description", lambda: page.hover("%s input[data-desc]" % ("#cats" + codes[0])))
     page.wait_for_timeout(200)
     check("the tooltip shows the description",
           page.evaluate("() => { const t = document.getElementById('tip');"
@@ -200,6 +200,13 @@ with sync_playwright() as p:
     check("the filter checkboxes carry the class colour and there are no colour dots",
           page.evaluate("() => { const i = document.querySelector('#cats' + VENUES[0] + ' input[data-c]');"
                         " return !!i.style.getPropertyValue('--c') && !document.querySelector('.grp .chip .dot') }"))
+    page.mouse.move(5, 5)
+    page.hover("#cats" + codes[0] + " label.chip > span")      # the name, not the checkbox
+    page.wait_for_timeout(200)
+    check("hovering the name does not show the tooltip",
+          page.evaluate("() => document.getElementById('tip').style.display !== 'block'"))
+    page.hover("#cats" + codes[0] + " input[data-desc]")
+    page.wait_for_timeout(200)
     check("the tooltip says which clubs run the class",
           page.evaluate("() => document.getElementById('tip').textContent.indexOf('At: ') > -1"))
     page.mouse.move(5, 5)

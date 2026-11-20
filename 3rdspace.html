@@ -82,9 +82,10 @@ tbody tr[data-state="full"] td:not(:last-child){opacity:.55}
 .grp .row label.chip .star{margin:0 0 0 .2em;padding:0;vertical-align:baseline;white-space:nowrap}
 .grp .row .col{grid-column:1/2;justify-self:start;text-align:left}
 .grp .row .all{grid-column:2/-1;justify-self:start}
-.grp .row label.chip[data-desc]{cursor:help}
-.grp .row label.chip>input[data-c]{-webkit-appearance:none;appearance:none;width:15px;height:15px;margin:1px 0 0;border:2px solid var(--c,#8a8a8f);border-radius:4px;background:#fff;cursor:pointer}
-.grp .row label.chip>input[data-c]:checked{background:var(--c,#8a8a8f) url(data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Cpath fill=none stroke=white stroke-width=2.6 d=%27M3 8.5l3.2 3.2L13 5%27/%3E%3C/svg%3E) center/11px no-repeat}
+.grp .row label.chip>input[data-c]{-webkit-appearance:none;appearance:none;width:15px;height:15px;margin:1px 0 0;border:2px solid var(--c,#8a8a8f);border-radius:4px;background:var(--c,#8a8a8f);opacity:.3;cursor:help;transition:opacity .1s}
+.grp .row label.chip>input[data-c]:hover{opacity:.65;outline:2px solid var(--c,#8a8a8f);outline-offset:1px}
+.grp .row label.chip>input[data-c]:checked{opacity:1;background:var(--c,#8a8a8f) url(data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3E%3Cpath%20fill=%27none%27%20stroke=%27white%27%20stroke-width=%272.6%27%20d=%27M3%208.5l3.2%203.2L13%205%27/%3E%3C/svg%3E) center/11px no-repeat}
+.grp .row label.chip>input[data-c]:checked:hover{opacity:1}
 .grp .row label.chip>input[data-c]:focus-visible{outline:2px solid #1f7fd1;outline-offset:2px}
 .grp .row label.chip>input{flex:none}
 .grp .row .chip{white-space:normal}
@@ -174,7 +175,7 @@ body.locked{overflow:hidden}
 </style></head><body>
 <div id="topbar"><h1>Class schedule — Third Space</h1><button id="mnu" type="button" aria-label="Filters and details" aria-expanded="false" aria-controls="drawer">&#9776;</button><nav class="dnav" aria-label="Jump to a day"></nav></div>
 <header><h1>Class schedule — Third Space</h1>
-<p class="sub">Third Space · Islington &amp; Moorgate &amp; City &amp; Canary Wharf &amp; Tower Bridge · 3080 classes · auto-updated every 2 hours · refreshed Fri 20 Nov 2026, 09:29 GMT</p>
+<p class="sub">Third Space · Islington &amp; Moorgate &amp; City &amp; Canary Wharf &amp; Tower Bridge · 3080 classes · auto-updated every 2 hours · refreshed Fri 20 Nov 2026, 09:34 GMT</p>
 <div id="lg"></div></header>
 <div class="bar" id="filters">
 <div class="top">
@@ -295,7 +296,7 @@ function build(wrapId,order,sel,venue){
   var l=document.createElement('label');l.className='chip';
   var i=document.createElement('input');i.type='checkbox';i.checked=sel.indexOf(c)>-1;i.dataset.c=c;
   i.addEventListener('change',function(){sync(venue)});
-  if(DESC[c]){l.setAttribute('data-name',c);l.setAttribute('data-desc',DESC[c])}
+  if(DESC[c]){i.setAttribute('data-name',c);i.setAttribute('data-desc',DESC[c])}
   i.style.setProperty('--c',PC[c]);
   var t=document.createElement('span');t.textContent=c;
   var n=document.createElement('span');n.className='n';n.textContent=(CATS[venue]&&CATS[venue][c])||0;
@@ -449,7 +450,7 @@ function addRow(tb,r,cur){
   tip.style.top=top+'px'; cur=el;
  }
  function hide(){tip.style.display='none';cur=null;}
- function pill(e){return e.target&&e.target.closest?e.target.closest('.pill[data-desc],label.chip[data-desc]'):null;}
+ function pill(e){return e.target&&e.target.closest?e.target.closest('.pill[data-desc],input[data-desc]'):null;}
  document.addEventListener('mouseover',function(e){var el=pill(e);if(el)show(el,e.clientX,e.clientY);else if(cur)hide();});
  document.addEventListener('mousemove',function(e){var el=pill(e);if(cur&&el===cur)show(cur,e.clientX,e.clientY);});
  document.addEventListener('focusin',function(e){var el=pill(e);if(el){var r=el.getBoundingClientRect();show(el,r.left,r.bottom-8);}});
