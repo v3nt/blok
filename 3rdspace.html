@@ -72,16 +72,25 @@ tbody tr[data-state="full"] td:not(:last-child){opacity:.55}
 #tip i.tt.lc{color:#9ec5ff;margin-top:-3px}
 #tip i.tt{display:block;font-style:normal;font-size:11px;color:#8fd0b0;margin:-2px 0 5px}
 /* Class-type filters in a grid: --cols columns on a wide screen, wrapping onto the next line.
-   Phones keep the drawer layout. Wider screens get more columns (8, then 10); a long name wraps onto a second line and the row grows to fit. */
+   Phones keep the drawer layout. Wider screens get more columns (7, then 10); a long name wraps onto a second line and the row grows to fit. */
 .bar{--cols:6}
-@media(min-width:1500px){.bar{--cols:8}}
+@media(min-width:1500px){.bar{--cols:7}}
 @media(min-width:1900px){.bar{--cols:10}}
 @media(min-width:641px){
 .grp .row.fav.on,.grp .row:not(.locs):not(.fav){display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:6px 10px;align-items:start}
 .grp .row .chip{min-width:0;align-items:flex-start}
 .grp .row label.chip .star{margin:0 0 0 .2em;padding:0;vertical-align:baseline;white-space:nowrap}
-.grp .row .col{grid-column:1/2;justify-self:start;text-align:left}
-.grp .row .all{grid-column:2/-1;justify-self:start}
+.bar>.grp:first-child{border-top:0;margin-top:0;padding-top:0;margin-bottom:10px;padding-bottom:9px;border-bottom:1px dashed var(--bd)}
+.disnote{margin:0 0 7px;font-size:11.5px;color:#6b6b76}
+.chip.off,label.off{opacity:.65}
+.why{display:block;font-size:10.5px;font-weight:600;color:#a15c00;margin-top:1px}
+label.off .why{display:inline;margin-left:6px}
+.grp .row label.chip>input[data-c]:disabled{cursor:not-allowed}
+.grp .row .hd{grid-column:1/-1;display:flex;align-items:center;gap:10px}
+.grp .row .hd .col{padding:0}
+.grp .row .hd .all{border-right:0;padding-right:0;margin:0}
+.grp .row.fav.on::before{content:none}
+.grp .row.fav .hd::before{content:"\2605";color:#e8a90c;font-size:12px}
 .grp .row label.chip>input[data-c]{-webkit-appearance:none;appearance:none;width:15px;height:15px;margin:1px 0 0;border:2px solid var(--c,#8a8a8f);border-radius:4px;background:var(--c,#8a8a8f);opacity:.3;cursor:help;transition:opacity .1s}
 .grp .row label.chip>input[data-c]:hover{opacity:.65;outline:2px solid var(--c,#8a8a8f);outline-offset:1px}
 .grp .row label.chip>input[data-c]:checked{opacity:1;background:var(--c,#8a8a8f) url(data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3E%3Cpath%20fill=%27none%27%20stroke=%27white%27%20stroke-width=%272.6%27%20d=%27M3%208.5l3.2%203.2L13%205%27/%3E%3C/svg%3E) center/11px no-repeat}
@@ -175,9 +184,10 @@ body.locked{overflow:hidden}
 </style></head><body>
 <div id="topbar"><h1>Class schedule — Third Space</h1><button id="mnu" type="button" aria-label="Filters and details" aria-expanded="false" aria-controls="drawer">&#9776;</button><nav class="dnav" aria-label="Jump to a day"></nav></div>
 <header><h1>Class schedule — Third Space</h1>
-<p class="sub">Third Space · Islington &amp; Moorgate &amp; City &amp; Canary Wharf &amp; Tower Bridge · 3080 classes · auto-updated every 2 hours · refreshed Fri 20 Nov 2026, 09:34 GMT</p>
+<p class="sub">Third Space · Islington &amp; Moorgate &amp; City &amp; Canary Wharf &amp; Tower Bridge · 3080 classes · auto-updated every 2 hours · refreshed Fri 20 Nov 2026, 09:50 GMT</p>
 <div id="lg"></div></header>
 <div class="bar" id="filters">
+<div class="grp"><h3>Locations</h3><div class="row locs" id="locs"></div></div>
 <div class="top">
 <input type="search" id="q" placeholder="Search classes, types, descriptions…" aria-label="Search class names and descriptions" autocomplete="off">
 <label><input type="checkbox" id="av"> Bookable now only</label>
@@ -187,8 +197,8 @@ body.locked{overflow:hidden}
 <span class="sep"></span><button id="reset">Reset filters</button><button id="resetFav" type="button" title="Put the favourite stars back to the built-in defaults">Reset favourites</button>
 <span id="shown"></span>
 </div>
-<div class="grp"><h3>Locations</h3><div class="row locs" id="locs"></div></div>
-<div class="grp"><h3>Class types</h3><div class="row fav" id="favT"><label class="all"><input type="checkbox" id="allFavT" checked> all</label></div><div class="row" id="catsT"><button type="button" class="col" id="colT" aria-expanded="true"></button><label class="all"><input type="checkbox" id="allCatT" checked> all</label></div></div>
+<div class="grp"><h3>Class types</h3><div class="row fav" id="favT"><span class="hd"><label class="all"><input type="checkbox" id="allFavT" checked> all</label></span></div><div class="row" id="catsT"><span class="hd"><button type="button" class="col" id="colT" aria-expanded="true"></button><label class="all"><input type="checkbox" id="allCatT" checked> all</label></span></div></div>
+<div class="grp dis" id="dis" style="display:none"><h3>Not available with these filters</h3><p class="disnote">These have no classes with your current filters; the reason is shown on each. They come back when you relax the filter.</p><div class="row" id="disrow"></div></div>
 </div>
 <div id="minibar"><button id="mbt" type="button" aria-expanded="false" aria-controls="filters"><span id="mbc">▾</span>Filters</button><span id="mshown"></span><nav class="dnav" aria-label="Jump to a day"></nav></div>
 <div id="fscrim"></div>
@@ -227,7 +237,7 @@ var av=document.getElementById('av'),hf=document.getElementById('hf'),hw=documen
 var HASLEGS=Object.keys(FOCUS).some(function(c){return FOCUS[c]==='Legs'});
 document.getElementById('legsl').style.display=HASLEGS?'':'none';
 legsEl.checked=HASLEGS&&!!g(LS.l,false);
-var qEl=document.getElementById('q'),QT=[],QC={};
+var qEl=document.getElementById('q'),QT=[],QC={},DIS={},DISLOC={},DISSIG='';
 function qmatch(c){if(!QT.length)return true;var h=QC[c];if(h===undefined){h=QC[c]=[c,TYPES[c]||'',FOCUS[c]||'',DESC[c]||''].join(' ').toLowerCase()}return QT.every(function(t){return h.indexOf(t)>-1})}
 function paintQ(){QT=qEl.value.toLowerCase().split(' ').filter(Boolean);VENUES.forEach(function(v){CHIPS[v].forEach(function(ch){ch.el.style.display=qmatch(ch.cat)?'':'none'})})}
 qEl.addEventListener('input',function(){paintQ();draw()});
@@ -235,7 +245,7 @@ av.checked=!!g(LS.a,false);hf.checked=!!g(LS.f,false);hw.checked=!!g(LS.w,false)
 var ROWS=[];VENUES.forEach(function(v){ROWS.push(['allFav'+v,'fav'+v,v]);ROWS.push(['allCat'+v,'cats'+v,v])});
 function boxesIn(rowId){return [].slice.call(document.getElementById(rowId).querySelectorAll('input[data-c]'))}
 function boxes(venue){return ROWS.filter(function(r){return r[2]===venue})
- .reduce(function(a,r){return a.concat(boxesIn(r[1]))},[])}
+ .reduce(function(a,r){return a.concat(boxesIn(r[1]))},[]).concat(boxesIn('disrow').filter(function(x){return x.dataset.v===venue}))}
 ROWS.forEach(function(r){
  var master=document.getElementById(r[0]);
  master.addEventListener('change',function(){
@@ -284,7 +294,7 @@ var LOCON={};
    s(LS.lo,LOCS.filter(function(n){return LOCON[n]}));
    draw();
   });
-  var t=document.createElement('span');t.textContent=name;
+  var t=document.createElement('span');t.textContent=name;l.setAttribute('data-locl',name);
   l.appendChild(i);l.appendChild(t);
   if(LOCINFO[name]){var h=document.createElement('span');h.className='n';h.textContent=LOCINFO[name];l.appendChild(h)}
   row.appendChild(l);
@@ -294,7 +304,7 @@ var CHIPS={};VENUES.forEach(function(v){CHIPS[v]=[]});
 function build(wrapId,order,sel,venue){
  order.forEach(function(c){
   var l=document.createElement('label');l.className='chip';
-  var i=document.createElement('input');i.type='checkbox';i.checked=sel.indexOf(c)>-1;i.dataset.c=c;
+  var i=document.createElement('input');i.type='checkbox';i.checked=sel.indexOf(c)>-1;i.dataset.c=c;i.dataset.v=venue;
   i.addEventListener('change',function(){sync(venue)});
   if(DESC[c]){i.setAttribute('data-name',c);i.setAttribute('data-desc',DESC[c])}
   i.style.setProperty('--c',PC[c]);
@@ -329,8 +339,16 @@ function place(venue){
   ch.star.setAttribute('aria-pressed',on?'true':'false');
   ch.star.textContent=on?'★':'☆';
   ch.star.title=(on?'Unfavourite ':'Favourite ')+ch.cat;
-  (on?favRow:allRow).appendChild(ch.el);   // master 'all' label stays first, it is never moved
-  if(on)nfav++;
+  var dis=DIS[ch.key],w=ch.el.querySelector('.why'),inp=ch.el.querySelector('input');
+  if(dis){
+   if(!w){w=document.createElement('small');w.className='why';ch.el.querySelector('label>span').appendChild(w)}
+   w.textContent=dis;inp.disabled=true;ch.el.classList.add('off');
+   document.getElementById('disrow').appendChild(ch.el);
+  }else{
+   if(w)w.remove();inp.disabled=false;ch.el.classList.remove('off');
+   (on?favRow:allRow).appendChild(ch.el);   // the all header stays first, it is never moved
+   if(on)nfav++;
+  }
  });
  favRow.className='row fav'+(nfav?' on':'');
  paintCol(venue);
@@ -467,7 +485,64 @@ function addRow(tb,r,cur){
  },true);
  document.addEventListener('keydown',function(e){if(e.key==='Escape')hide();});
 })();
+var B_LOC=1,B_LEG=2,B_Q=4,B_AV=8,B_HF=16,B_HW=32;
+function topMask(r){
+ var m=0;
+ if(LOCS.length&&!LOCON[r[6]])m|=B_LOC;
+ if(legsEl.checked&&FOCUS[r[4]]!=='Legs')m|=B_LEG;
+ if(r[7]!=='booked'&&r[7]!=='waitlist'){
+  if(av.checked&&r[7]!=='bookable')m|=B_AV;
+  if(hf.checked&&r[7]==='full')m|=B_HF;
+  if(hw.checked&&r[9]<5&&r[1]>=480&&r[1]<=1035)m|=B_HW;
+ }
+ return m;
+}
+function why(b){
+ var o=[];
+ if(b&B_LOC)o.push(LOCS.filter(function(n){return !LOCON[n]}).join(', ')+' off');
+ if(b&B_LEG)o.push('Legs only');
+ if(b&B_AV)o.push('Bookable now only');
+ if(b&B_HF)o.push('Hide full');
+ if(b&B_HW)o.push('Hide weekday hours');
+ return o.join(' + ');
+}
+function evalDisabled(){
+ var okc={},sg={},un={},okl={},sl={},ul={};
+ D.forEach(function(r){
+  var m=topMask(r),mm=m&~B_LOC,k=r[10]+'|'+r[4];
+  if(qmatch(r[4])){
+   if(!m)okc[k]=1;
+   else{un[k]=(un[k]||0)|m;if((m&(m-1))===0)sg[k]=(sg[k]||0)|m}
+  }
+  if(!mm)okl[r[6]]=1;
+  else{ul[r[6]]=(ul[r[6]]||0)|mm;if((mm&(mm-1))===0)sl[r[6]]=(sl[r[6]]||0)|mm}
+ });
+ var nd={},nl={},sig=[];
+ Object.keys(un).forEach(function(k){if(!okc[k]){nd[k]=why(sg[k]||un[k]);sig.push(k+'='+nd[k])}});
+ if(LOCS.length>1)LOCS.forEach(function(n){if(!okl[n]&&ul[n]){nl[n]=why(sl[n]||ul[n]);sig.push('L'+n+'='+nl[n])}});
+ var s=sig.join('|');
+ if(s===DISSIG)return;
+ DISSIG=s;DIS=nd;DISLOC=nl;
+ VENUES.forEach(function(v){place(v)});
+ var lrow=document.getElementById('locs'),drow=document.getElementById('disrow');
+ if(lrow){
+  var LL=[].slice.call(document.querySelectorAll('label[data-locl]'));
+  LOCS.forEach(function(n){
+   var l=LL.filter(function(x){return x.getAttribute('data-locl')===n})[0];
+   if(!l)return;
+   var w=l.querySelector('.why'),inp=l.querySelector('input');
+   if(DISLOC[n]){
+    if(!w){w=document.createElement('small');w.className='why';l.appendChild(w)}
+    w.textContent=DISLOC[n];inp.disabled=true;l.classList.add('off');drow.appendChild(l);
+   }else{
+    if(w)w.remove();inp.disabled=false;l.classList.remove('off');lrow.appendChild(l);
+   }
+  });
+ }
+ document.getElementById('dis').style.display=drow.children.length?'':'none';
+}
 function draw(){
+ evalDisabled();
  var tb=document.getElementById('tb');tb.innerHTML='';DSHOWN=[];setTimeout(paintDays,0);
  var cur='',shown=0,cnt={};
  D.forEach(function(r){

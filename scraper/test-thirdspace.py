@@ -192,7 +192,7 @@ with sync_playwright() as p:
     check("the tooltip shows the description",
           page.evaluate("() => { const t = document.getElementById('tip');"
                         " return t.style.display === 'block' && t.textContent.length > 20 }"))
-    check("'more' and 'all' sit on their own line above the chips",
+    check("'more' and 'all' sit together on their own line above the chips",
           page.evaluate("""() => { const row = document.getElementById('cats' + VENUES[0]);
             const col = row.querySelector('.col').getBoundingClientRect(), all = row.querySelector('.all').getBoundingClientRect();
             const first = row.querySelector('.chip').getBoundingClientRect();
@@ -233,6 +233,36 @@ with sync_playwright() as p:
     page.wait_for_timeout(250)
     check("Reset filters clears the search",
           page.evaluate("() => document.getElementById('q').value") == "" and rows() == n0)
+
+    # --- filters that your other filters make useless move to a disabled section ---
+    check("the disabled section starts hidden",
+          page.evaluate("() => document.getElementById('dis').style.display === 'none'"))
+    n_cats = page.evaluate("() => document.querySelectorAll('#cats' + VENUES[0] + ' input[data-c]').length"
+                           " + document.querySelectorAll('#fav' + VENUES[0] + ' input[data-c]').length")
+    page.evaluate("() => { const l = document.getElementById('legs'); l.checked = true;"
+                  " l.dispatchEvent(new Event('change', {bubbles: true})) }")
+    page.wait_for_timeout(300)
+    check("with Legs only, class types with no leg classes move to the disabled section",
+          page.evaluate("() => document.getElementById('dis').style.display !== 'none'"
+                        " && document.querySelectorAll('#disrow input[data-c]').length > 0"))
+    check("each one says why",
+          page.evaluate("() => [...document.querySelectorAll('#disrow .chip')]"
+                        ".every(c => (c.querySelector('.why') || {}).textContent === 'Legs only')"))
+    check("those checkboxes are disabled",
+          page.evaluate("() => [...document.querySelectorAll('#disrow input[data-c]')].every(i => i.disabled)"))
+    check("the Legs classes stay in the normal list",
+          page.evaluate("() => [...document.querySelectorAll('#cats' + VENUES[0] + ' label.chip, #fav' + VENUES[0] + ' label.chip')]"
+                        ".some(l => /LGA/.test(l.textContent))"))
+    check("no class type is lost between the lists",
+          page.evaluate("() => document.querySelectorAll('input[data-c]').length") == n_cats)
+    page.evaluate("() => { const l = document.getElementById('legs'); l.checked = false;"
+                  " l.dispatchEvent(new Event('change', {bubbles: true})) }")
+    page.wait_for_timeout(300)
+    check("clearing the filter brings them back and hides the section",
+          page.evaluate("() => document.getElementById('dis').style.display === 'none'"
+                        " && document.querySelectorAll('#disrow input[data-c]').length === 0"))
+    check("their ticks survive the round trip",
+          page.evaluate("() => [...document.querySelectorAll('input[data-c]')].every(i => i.checked)"))
 
     check("mobile menu is present",
           page.evaluate("() => !!document.getElementById('drawer') && !!document.getElementById('mnu')"))
