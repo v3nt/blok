@@ -641,6 +641,21 @@ def main():
         check("desktop: still one copy of every control",
               page.evaluate("() => document.querySelectorAll('#catsB').length === 1"))
 
+        # shared Legs filter: the control exists, BLOK's lower-body class is tagged,
+        # and ticking it leaves only Legs classes
+        check("the Legs filter control exists", page.evaluate("() => !!document.getElementById('legs')"))
+        check("BLOKSTRENGTH: LOWER BODY is tagged Legs",
+              page.evaluate("() => Object.keys(FOCUS).some(c => /lower/i.test(c) && FOCUS[c] === 'Legs')"))
+        act("tick Legs only", lambda: page.evaluate("() => { const l = document.getElementById('legs');"
+            " l.checked = true; l.dispatchEvent(new Event('change', {bubbles: true})) }"))
+        page.wait_for_timeout(300)
+        check("Legs only leaves only Legs classes",
+              page.evaluate("() => { const r = [...document.querySelectorAll('#tb tr[data-cat]')];"
+                            " return r.length > 0 && r.every(x => FOCUS[x.dataset.cat] === 'Legs') }"))
+        act("untick Legs only", lambda: page.evaluate("() => { const l = document.getElementById('legs');"
+            " l.checked = false; l.dispatchEvent(new Event('change', {bubbles: true})) }"))
+        page.wait_for_timeout(300)
+
         check("no JavaScript errors", not errors, "; ".join(errors[:3]))
         browser.close()
 

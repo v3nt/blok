@@ -46,12 +46,12 @@ with sync_playwright() as p:
     # One list of class types covering every club, and the clubs switched on
     # and off separately - not a filter group per club.
     check("one set of class filters", len(codes) == 1, codes)
-    check("a switch for each club", sorted(locs) == ["City", "Islington", "Moorgate"], locs)
+    check("a switch for each club", sorted(locs) == ["Canary Wharf", "City", "Islington", "Moorgate", "Tower Bridge"], locs)
     for el in ("fav", "cats", "allFav", "allCat", "col"):
         check("the class list has #%s%s" % (el, codes[0]),
               page.evaluate("() => !!document.getElementById('%s%s')" % (el, codes[0])))
     check("the location switches are on the page",
-          page.evaluate("() => document.querySelectorAll('#locs input[data-loc]').length") == 3)
+          page.evaluate("() => document.querySelectorAll('#locs input[data-loc]').length") == 5)
     check("classes are listed", rows() > 20, rows())
     check("all three clubs are in the one list",
           page.evaluate("() => new Set(D.map(r => r[6])).size === LOCS.length"))
@@ -150,6 +150,39 @@ with sync_playwright() as p:
           page.evaluate("() => %s.getAttribute('aria-pressed')" % star) == now)
     act("put it back", lambda: page.evaluate("() => %s.click()" % star))
     page.wait_for_timeout(250)
+
+    # --- legs focus + club hours + descriptions ------------------------------
+    check("the Legs filter exists and is on show",
+          page.evaluate("() => { const l = document.getElementById('legs');"
+                        " return !!l && l.closest('label').style.display !== 'none' }"))
+    check("LGA is tagged Legs", page.evaluate("() => FOCUS['LGA'] === 'Legs'"),
+          page.evaluate("() => FOCUS['LGA']"))
+    check("every class type has a focus entry, even if Untagged",
+          page.evaluate("() => ORDER[VENUES[0]].every(c => !!FOCUS[c])"))
+    check("Untagged types are not silently hidden by being absent",
+          page.evaluate("() => ORDER[VENUES[0]].every(c => typeof FOCUS[c] === 'string')"))
+    check("every class type has a tooltip, even if only the fallback",
+          page.evaluate("() => ORDER[VENUES[0]].every(c => !!DESC[c])"))
+    n_all = rows()
+    page.evaluate("() => { const l = document.getElementById('legs'); l.checked = true;"
+                  " l.dispatchEvent(new Event('change', {bubbles: true})) }")
+    page.wait_for_timeout(300)
+    n_legs = rows()
+    check("Legs only shows fewer classes", 0 < n_legs < n_all, "%d -> %d" % (n_all, n_legs))
+    check("every row left is a Legs class",
+          page.evaluate("() => [...document.querySelectorAll('#tb tr[data-cat]')]"
+                        ".every(r => FOCUS[r.dataset.cat] === 'Legs')"))
+    check("those rows carry the LEGS marker",
+          page.evaluate("() => [...document.querySelectorAll('#tb tr[data-cat]')]"
+                        ".every(r => !!r.querySelector('.legsb'))"))
+    page.reload(); page.wait_for_timeout(500)
+    check("Legs only is remembered", rows() == n_legs, rows())
+    page.evaluate("() => document.getElementById('reset').click()")
+    page.wait_for_timeout(300)
+    check("Reset filters clears Legs only", rows() == n_all, "%d vs %d" % (rows(), n_all))
+    check("each club shows its opening hours next to its name",
+          page.evaluate("() => [...document.querySelectorAll('#locs label')]"
+                        ".every(l => /\\d\\d:\\d\\d/.test(l.textContent))"))
 
     check("mobile menu is present",
           page.evaluate("() => !!document.getElementById('drawer') && !!document.getElementById('mnu')"))

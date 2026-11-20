@@ -1,0 +1,235 @@
+{
+ "_note": "Body focus per Third Space class type. Edit a tag here to correct it. One of: Legs, Upper, Full body, Core, Cardio, Mobility-Recovery. Anything not listed is keyword-guessed or Untagged, and the refresh log names it. Keys are the class name lowercased, without the duration or colon suffix.",
+ "lga": {
+  "focus": "Legs",
+  "why": "description: 'Legs, Glutes and Abs ... sculpt the lower body'"
+ },
+ "pulse": {
+  "focus": "Legs",
+  "why": "description: 'targets and strengthens the lower body and core'"
+ },
+ "lift": {
+  "focus": "Full body",
+  "why": "barbell lifting; quote says squat, press, lunge - whole body, not leg-only"
+ },
+ "force": {
+  "focus": "Full body",
+  "why": "'fatigue the whole body'"
+ },
+ "metaburn": {
+  "focus": "Full body",
+  "why": "'full body metabolic conditioning'"
+ },
+ "kettlebells": {
+  "focus": "Full body",
+  "why": "'full-body workout'"
+ },
+ "the method": {
+  "focus": "Full body",
+  "why": "'barre-based full-body workout'"
+ },
+ "traditional reformer pilates": {
+  "focus": "Full body",
+  "why": "'full-body workout'"
+ },
+ "tower pilates": {
+  "focus": "Full body",
+  "why": "'whole body'"
+ },
+ "dynamic reformer": {
+  "focus": "Full body",
+  "why": "'whole body'"
+ },
+ "formula 3": {
+  "focus": "Full body",
+  "why": "rower + kettlebells + bodyweight"
+ },
+ "the wod": {
+  "focus": "Full body",
+  "why": "cross-training WOD"
+ },
+ "yard wod": {
+  "focus": "Full body",
+  "why": "cross-training WOD"
+ },
+ "yard strong": {
+  "focus": "Full body",
+  "why": "strongman circuit"
+ },
+ "yard weightlifting": {
+  "focus": "Full body",
+  "why": "strongman circuit"
+ },
+ "yard gymnastics": {
+  "focus": "Full body",
+  "why": "strongman circuit"
+ },
+ "yard circuit": {
+  "focus": "Full body",
+  "why": "from the name only - no page on the site"
+ },
+ "hyrox 90": {
+  "focus": "Full body",
+  "why": "hybrid race training"
+ },
+ "hyrox engine": {
+  "focus": "Full body",
+  "why": "'strength, endurance and power' blocks"
+ },
+ "hyrox power": {
+  "focus": "Full body",
+  "why": "'endurance, strength and explosive power'"
+ },
+ "hyrox train": {
+  "focus": "Full body",
+  "why": "hybrid race training"
+ },
+ "rocket yoga": {
+  "focus": "Full body",
+  "why": "strong ashtanga-based practice, inversions and arm balances"
+ },
+ "bjj fundamentals": {
+  "focus": "Full body",
+  "why": "grappling"
+ },
+ "bjj intro": {
+  "focus": "Full body",
+  "why": "grappling"
+ },
+ "bjj mixed level classes": {
+  "focus": "Full body",
+  "why": "grappling"
+ },
+ "bjj intermediate advanced": {
+  "focus": "Full body",
+  "why": "grappling"
+ },
+ "bjj sparring and competition classes": {
+  "focus": "Full body",
+  "why": "grappling"
+ },
+ "women s self defence": {
+  "focus": "Full body",
+  "why": "grappling (site shows the BJJ text)"
+ },
+ "muay thai": {
+  "focus": "Full body",
+  "why": "striking and clinch work"
+ },
+ "boxing": {
+  "focus": "Full body",
+  "why": "pad work"
+ },
+ "boxing fundamentals": {
+  "focus": "Full body",
+  "why": "punching technique"
+ },
+ "boxing sparring advanced only": {
+  "focus": "Full body",
+  "why": "contact sparring"
+ },
+ "core": {
+  "focus": "Core",
+  "why": "'engage your core ... shaping your abdominals'"
+ },
+ "just ride": {
+  "focus": "Cardio",
+  "why": "cycling - legs work hard but it is cardio; change to Legs if you want it"
+ },
+ "wattbike": {
+  "focus": "Cardio",
+  "why": "cycling - see Just Ride"
+ },
+ "afterburner": {
+  "focus": "Cardio",
+  "why": "high-intensity circuit, EPOC"
+ },
+ "sweat x": {
+  "focus": "Cardio",
+  "why": "treadmill running + strength"
+ },
+ "hyrox run": {
+  "focus": "Cardio",
+  "why": "treadmill intervals"
+ },
+ "speed fiends": {
+  "focus": "Cardio",
+  "why": "treadmill intervals"
+ },
+ "run club": {
+  "focus": "Cardio",
+  "why": "running"
+ },
+ "engine endurance": {
+  "focus": "Cardio",
+  "why": "bikes, ski ergs, rowers"
+ },
+ "engine intervals": {
+  "focus": "Cardio",
+  "why": "bikes, ski ergs, rowers"
+ },
+ "skills drills": {
+  "focus": "Cardio",
+  "why": "swimming"
+ },
+ "triathlon swim training": {
+  "focus": "Cardio",
+  "why": "swimming"
+ },
+ "dance fit": {
+  "focus": "Cardio",
+  "why": "from the name only - no page on the site"
+ },
+ "dance fit dual teach": {
+  "focus": "Cardio",
+  "why": "from the name only - no page on the site"
+ },
+ "step": {
+  "focus": "Cardio",
+  "why": "from the name only - no page on the site"
+ },
+ "aqua fit": {
+  "focus": "Cardio",
+  "why": "from the name only - no page on the site"
+ },
+ "hatha yoga": {
+  "focus": "Mobility-Recovery",
+  "why": "slow yoga"
+ },
+ "hot yoga": {
+  "focus": "Mobility-Recovery",
+  "why": "'stretches and postures'"
+ },
+ "yin yoga": {
+  "focus": "Mobility-Recovery",
+  "why": "deep stretching"
+ },
+ "vinyasa yoga": {
+  "focus": "Mobility-Recovery",
+  "why": "flow; 'strength, flexibility and mobility'"
+ },
+ "fundamental reformer pilates": {
+  "focus": "Mobility-Recovery",
+  "why": "'posture, strength and flexibility', slower class"
+ },
+ "mat pilates fundamentals": {
+  "focus": "Mobility-Recovery",
+  "why": "alignment and posture"
+ },
+ "sound bath": {
+  "focus": "Mobility-Recovery",
+  "why": "relaxation"
+ },
+ "contrast therapy": {
+  "focus": "Mobility-Recovery",
+  "why": "sauna and cold plunge"
+ },
+ "hot flexibility flow": {
+  "focus": "Mobility-Recovery",
+  "why": "from the name only - no page on the site"
+ },
+ "yoga workshop": {
+  "focus": "Mobility-Recovery",
+  "why": "from the name only - no page on the site"
+ }
+}

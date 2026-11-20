@@ -38,6 +38,8 @@ CLUBS = [
     ("I", "Islington", 123),
     ("G", "Moorgate",  177),
     ("C", "City",       43),
+    ("W", "Canary Wharf", 39),
+    ("B", "Tower Bridge", 63),
 ]
 CHUNK = 4          # days per request - the site's own step
 DAYS = 14
@@ -136,16 +138,21 @@ MODIFIERS = ("hot ", "candlelit ", "warm ", "power ")
 
 def match(cat, listing):
     """Find the blurb for a timetable category in the /classes/ listing."""
+    k = match_key(cat, listing)
+    return listing[k] if k else None
+
+def match_key(cat, listing):
+    """The /classes/ listing key for a timetable category, or None."""
     key = norm(cat)
     for candidate in (key, ALIAS.get(key, "")):
         if candidate and candidate in listing:
-            return listing[candidate]
+            return candidate
     stripped = key
     for m in MODIFIERS:                       # Hot Vinyasa Yoga -> Vinyasa Yoga
         if stripped.startswith(m):
             stripped = stripped[len(m):].strip()
     if stripped != key and stripped in listing:
-        return listing[stripped]
+        return stripped
     # Boxing Padwork -> Boxing; HYROX -> HYROX Train. Longest wins, so
     # "Muay Thai Padwork" prefers "Muay Thai" over nothing.
     best = None
@@ -153,15 +160,59 @@ def match(cat, listing):
         if stripped.startswith(name + " ") or name.startswith(stripped + " "):
             if best is None or len(name) > len(best):
                 best = name
-    return listing[best] if best else None
+    return best
+
+PAGES = HERE / "thirdspace-class-pages.json"     # slug + long description per class type
+FOCUS_FILE = HERE / "thirdspace-focus.json"      # hand-kept body-focus tag per class type
+NO_DESC = "No description on Third Space's site."
+FOCUS_TAGS = ("Legs", "Upper", "Full body", "Core", "Cardio", "Mobility-Recovery")
+
+def page_nodes(page):
+    page = re.sub(r"<(script|style|svg|noscript)[^>]*>.*?</\1>", "", page, flags=re.S)
+    page = re.sub(r"<!--.*?-->", "", page, flags=re.S)
+    return [re.sub(r"\s+", " ", html.unescape(p)).strip()
+            for p in re.split(r"<[^>]+>", page) if p.strip()]
+
+def page_text(page):
+    """The longer description on a /class/<slug>/ page: intro, then the feature blurbs.
+
+    Pages differ: some are just a title and one paragraph, others add a
+    "Book Now" button, three titled feature blocks and a trainer quote. The
+    content is whatever sits between the site menu (ends at "Journal") and
+    the "<name> upcoming classes" heading.
+    """
+    n = page_nodes(page)
+    end = next((i for i, x in enumerate(n) if x.endswith("upcoming classes")), None)
+    if end is None:
+        return ""
+    start = max((i for i in range(end) if n[i] == "Journal"), default=-1) + 1
+    body = [x for x in n[start:end] if x != "Book Now"][1:]      # [0] is the page title
+    out, i = [], 0
+    while i < len(body):
+        x = body[i]
+        if x[:1] in "“\"":               # trainer quote, then its byline
+            i += 2
+            continue
+        out.append(x)
+        i += 1
+    # intro first, then feature blocks as "Heading. text" pairs; cap at a sentence
+    text = out[0] if out else ""
+    for j in range(1, len(out) - 1, 2):
+        text += " " + out[j].rstrip(".") + ". " + out[j + 1]
+    if len(text) > 650:
+        cut = text.rfind(". ", 0, 650)
+        text = text[:cut + 1] if cut > 200 else text[:650].rstrip() + "…"
+    return text
 
 def descriptions(categories, warnings):
-    """{category: blurb} for the hover tooltips, from /classes/.
+    """({category: text}, {category: site category}, {category: long text for tagging}).
 
-    The listing is cached: a page that cannot be fetched should cost us a
-    refresh of the blurbs, not every tooltip on the page.
+    Text comes from the /classes/ listing (one-line blurb) and from each
+    class's own /class/<slug>/ page (longer). Both are cached: a page that
+    cannot be fetched should cost us a refresh of the text, not a tooltip.
+    A type the site has no page for gets NO_DESC so hovering always works.
     """
-    listing = {}
+    listing, slugs = {}, {}
     for page_no in range(1, 11):
         url = CLASSES if page_no == 1 else "%spage/%d/" % (CLASSES, page_no)
         try:
@@ -185,6 +236,11 @@ def descriptions(categories, warnings):
             key = norm(name)
             if key and blurb and len(blurb) > len(listing.get(key, ("", ""))[1]):
                 listing[key] = (html.unescape(c).strip(), blurb)
+        for blk in re.split(r'(?=href="https://www\.thirdspace\.london/class/)', page)[1:]:
+            h = re.match(r'href="https://www\.thirdspace\.london/class/([^/"]+)/"', blk)
+            nm = re.search(r'class="font-medium heading-four[^"]*">([^<]+)</div>', blk)
+            if h and nm:
+                slugs[norm(nm.group(1))] = h.group(1)
 
     if listing:
         try:
@@ -197,17 +253,126 @@ def descriptions(categories, warnings):
             CACHE.read_text(encoding="utf-8")).items()}
         warnings.append("could not read /classes/ - using the cached blurbs")
 
-    desc, cat_of, missing = {}, {}, []
+    # Longer text from each class page. A failed fetch keeps the cached copy.
+    try:
+        pages = json.loads(PAGES.read_text(encoding="utf-8")) if PAGES.exists() else {}
+    except Exception:
+        pages = {}
+    wanted = {match_key(c, listing) for c in categories} - {None}
+    fetched = 0
+    for key in sorted(wanted):
+        slug = slugs.get(key) or pages.get(key, {}).get("slug")
+        if not slug:
+            continue
+        try:
+            text = page_text(get("%s/class/%s/" % (BASE, slug)))
+        except Exception as e:
+            warnings.append("class page %s: %s" % (slug, e))
+            continue
+        if text:
+            pages[key] = {"slug": slug, "long": text}
+            fetched += 1
+    if fetched:
+        try:
+            PAGES.write_text(json.dumps(pages, ensure_ascii=False, indent=1,
+                                        sort_keys=True), encoding="utf-8")
+        except Exception as e:
+            warnings.append("could not cache the class pages: %s" % e)
+
+    desc, cat_of, tagtext, keyof, missing = {}, {}, {}, {}, []
     for c in categories:
-        hit = match(c, listing)
-        if hit:
-            cat_of[c], desc[c] = hit[0], hit[1]
+        key = match_key(c, listing)
+        if key:
+            keyof[c] = key
+            cat_of[c] = listing[key][0]
+            long = pages.get(key, {}).get("long", "")
+            desc[c] = long if len(long) > len(listing[key][1]) else listing[key][1]
+            tagtext[c] = (listing[key][1] + " " + long).strip()
         else:
+            desc[c] = NO_DESC
             missing.append(c)
-    log("  descriptions: %d of %d class type(s)" % (len(desc), len(categories)))
+    log("  descriptions: %d of %d class type(s)" % (len(categories) - len(missing), len(categories)))
     if missing:
-        log("  no blurb for: %s" % ", ".join(sorted(missing)))
-    return desc, cat_of
+        log("  no description on Third Space's site for: %s" % ", ".join(sorted(missing)))
+    return desc, cat_of, tagtext, keyof
+
+CLUBS_CACHE = HERE / "thirdspace-clubs.json"
+
+def club_hours(warnings):
+    """{club: 'Mon-Fri 05:30-22:00 / Sat-Sun 08:00-20:00'} from each club's page.
+
+    Cached, like the descriptions: a club page that cannot be read costs us
+    the hours, never the schedule.
+    """
+    try:
+        cached = json.loads(CLUBS_CACHE.read_text(encoding="utf-8"))
+    except Exception:
+        cached = {}
+    out = {}
+    for _, club, _ in CLUBS:
+        slug = club.lower().replace(" ", "-")
+        try:
+            nodes = page_nodes(get("%s/clubs/%s/" % (BASE, slug)))
+            lines = [x for x in nodes if re.match(r"^(Monday|Saturday)\b.*\d\d:\d\d\s*[\u2013-]\s*\d\d:\d\d$", x)]
+            parts = []
+            for x in lines:
+                m = re.match(r"^(\w+)\s*[\u2013-]\s*(\w+)\s+(\d\d:\d\d)\s*[\u2013-]\s*(\d\d:\d\d)$", x)
+                if m:
+                    parts.append("%s\u2013%s %s\u2013%s" % (m.group(1)[:3], m.group(2)[:3],
+                                                          m.group(3), m.group(4)))
+            if parts:
+                out[club] = " \u00b7 ".join(parts)
+                continue
+            warnings.append("%s: no opening hours found on the club page" % club)
+        except Exception as e:
+            warnings.append("%s club page: %s" % (club, e))
+        if cached.get(club):
+            out[club] = cached[club]
+    if out:
+        try:
+            CLUBS_CACHE.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
+        except Exception as e:
+            warnings.append("could not cache the club hours: %s" % e)
+    return out
+
+def load_focus():
+    try:
+        raw = json.loads(FOCUS_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    return {norm(k): v for k, v in raw.items() if not k.startswith("_")}
+
+LEG_WORDS = re.compile(r"\b(legs?|glutes?|quads?|quadriceps|hamstrings?|squats?|lunges?|"
+                       r"lower[- ]body|calves|calf)\b", re.I)
+
+def focus_tags(categories, tagtext, keyof, warnings):
+    """{category: focus}. The hand-kept file wins; else a keyword guess; else Untagged.
+
+    Anything not in the file is logged, so a new class type never goes
+    unnoticed - correct it by adding it to thirdspace-focus.json.
+    """
+    hand = load_focus()
+    out, guessed, untagged = {}, [], []
+    for c in categories:
+        # 'Hot Yin Yoga' has no entry of its own: it is the listing's Yin Yoga
+        entry = hand.get(norm(c)) or hand.get(keyof.get(c, ""))
+        tag = entry.get("focus") if isinstance(entry, dict) else entry
+        if tag in FOCUS_TAGS:
+            out[c] = tag
+        elif tagtext.get(c) and LEG_WORDS.search(tagtext[c]):
+            out[c] = "Legs"
+            guessed.append(c)
+        else:
+            out[c] = "Untagged"
+            untagged.append(c)
+    legs = sorted(c for c, f in out.items() if f == "Legs")
+    log("  focus: %d class type(s) tagged Legs: %s" % (len(legs), ", ".join(legs) or "none"))
+    if guessed:
+        log("  focus guessed from the text (add to thirdspace-focus.json to confirm): %s"
+            % ", ".join(sorted(guessed)))
+    if untagged:
+        log("  focus Untagged (add to thirdspace-focus.json): %s" % ", ".join(sorted(untagged)))
+    return out
 
 def category(title):
     """Collapse 'Just Ride 30' / 'Just Ride: 90s Club Classics' to 'Just Ride'."""
@@ -263,7 +428,9 @@ def main():
         return 1
 
     cats = sorted({r[4] for r in rows})
-    desc, cat_by_name = descriptions(cats, warnings)
+    desc, cat_by_name, tagtext, keyof = descriptions(cats, warnings)
+    focus = focus_tags(cats, tagtext, keyof, warnings)
+    hours = club_hours(warnings)
     palette = {c: CAT_COLOUR.get(cat_by_name.get(c, ""), GREY) for c in cats}
 
     # ONE set of class filters covering all three clubs, with the clubs
@@ -274,14 +441,14 @@ def main():
     venues = [("T", "Class types", "tsTypes")]
     ls_keys = {"a": "tsAvailOnly", "f": "tsHideFull", "w": "tsHideWorkHours",
                "lo": "tsLocations", "v": "tsFavs", "vv": "tsFavsSeed",
-               "c": "tsCollapse", "bk": "tsBookedCol"}
+               "c": "tsCollapse", "bk": "tsBookedCol", "l": "tsLegsOnly"}
     html_out, states, counts = refresh.build(
         rows, refresh.TEMPLATE, venues=venues, ls_keys=ls_keys, palette=palette,
         desc=desc, studio_url={club: BASE + "/timetable/" for _, club, _ in CLUBS},
         title="Class schedule — Third Space",
         # Third Space: teal "3S", so the two tabs never look alike.
         icon=refresh.favicon("3S", "#0f6e6e", size=30),
-        locations=[club for _, club, _ in CLUBS],
+        locations=[club for _, club, _ in CLUBS], focus=focus, location_info=hours,
         sub_html=('<p class="sub">Third Space · '
                   + " &amp; ".join(club for _, club, _ in CLUBS)
                   + ' · %d classes · auto-updated every 2 hours · '
