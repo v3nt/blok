@@ -13,7 +13,7 @@ GitHub (and therefore from a phone) without touching the Mac.
 ## Recent push errors
 
 ```
-2026-11-20 10:27:23  BLOCKED: baseline regression
 2026-11-20 10:38:26  BLOCKED: baseline regression
 2026-11-20 10:49:28  BLOCKED: baseline regression
+2026-11-20 11:00:52  BLOCKED: baseline regression
 ```

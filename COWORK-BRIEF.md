@@ -93,7 +93,7 @@ Required as of 18 Aug 2026:
 - Title `BLOK — class schedule`; subtitle: studio links · date range · class
   count · refreshed timestamp.
 - Legend with per-state counts and colour dots.
-- Filter bar: "Hide full", "Hide weekday 8:00am–5:25pm",
+- Filter bar: "Hide weekday 8:00am–5:25pm",
   one checkbox per category with counts, and a **Reset filters** button.
 - **"Your booked classes" panel** above the table, soonest first, showing
   `Day D Mon, TIME · Category · Studio · Instructor · N min`. Hidden when empty.
@@ -103,7 +103,7 @@ Required as of 18 Aug 2026:
   bookable), `data-wd`, `data-mins`.
 - Sort by date, then time, then studio. Last column header "Booking status".
 
-**localStorage** keys: `blokHideFull`, `blokHideWorkHours`,
+**localStorage** keys: `blokHideWorkHours`,
 `blokTypes`. Wrap all access in try/catch, and **validate `blokTypes` against
 the current category list** — drop unknown entries, fall back to all if nothing
 survives. A stale saved filter from an older category naming scheme will

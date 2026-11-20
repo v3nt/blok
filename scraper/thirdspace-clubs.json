@@ -85,5 +85,16 @@
    "Mind & Body",
    "Combat"
   ]
+ },
+ "Marylebone": {
+  "hours": "WD 5:30–22:00, WE 8:00–20:00",
+  "facilities": [
+   "Swim",
+   "Train",
+   "Changing Rooms",
+   "Mind & Body",
+   "Sports Med",
+   "Cycle"
+  ]
  }
 }

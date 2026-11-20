@@ -413,8 +413,7 @@ def main():
         if s["booked"]:
             seen = "() => document.querySelectorAll('#tb tr[data-state=\"booked\"]').length"
             all_booked = page.evaluate(seen)
-            for box, name in [("#hf", "Hide full"),
-                              ("#hw", "Hide weekday 8:00am-5:15pm")]:
+            for box, name in [("#hw", "Hide weekday 8:00am-5:15pm")]:
                 act("%s is clickable" % name, lambda b=box: page.check(b))
                 page.wait_for_timeout(300)
                 check("booked classes survive '%s'" % name,

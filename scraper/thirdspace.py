@@ -41,6 +41,7 @@ CLUBS = [
     ("W", "Canary Wharf", 39),
     ("B", "Tower Bridge", 63),
     ("S", "Soho", 52),
+    ("Y", "Marylebone", 51),
 ]
 CHUNK = 4          # days per request - the site's own step
 DAYS = 14
@@ -505,7 +506,7 @@ def main():
     for r in rows:
         r[10] = "T"
     venues = [("T", "Class types", "tsTypes")]
-    ls_keys = {"dc": "tsDisCollapsed", "f": "tsHideFull", "w": "tsHideWorkHours",
+    ls_keys = {"dc": "tsDisCollapsed", "w": "tsHideWorkHours",
                "lo": "tsLocations", "v": "tsFavs", "vv": "tsFavsSeed",
                "c": "tsCollapse", "bk": "tsBookedCol", "l": "tsLegsOnly"}
     html_out, states, counts = refresh.build(
