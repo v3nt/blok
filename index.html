@@ -207,7 +207,7 @@ body.locked{overflow:hidden}
 </style></head><body>
 <div id="topbar"><h1>Class schedule</h1><button id="mnu" type="button" aria-label="Filters and details" aria-expanded="false" aria-controls="drawer">&#9776;</button><nav class="dnav" aria-label="Jump to a day"></nav></div>
 <header><h1>Class schedule — BLOK<span id="upd"></span></h1>
-<p class="sub"><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> · 20 Nov – 3 Dec 2026 · 1829 classes · auto-updated every 2 hours · refreshed Fri 20 Nov 2026, 11:33 GMT</p>
+<p class="sub"><a href="https://classpass.com/studios/blok-clapton-london" target="_blank" rel="noopener">Clapton</a> &amp; <a href="https://classpass.com/studios/blok-shoreditch-london" target="_blank" rel="noopener">Shoreditch</a> · 20 Nov – 3 Dec 2026 · 1829 classes · auto-updated every 2 hours · refreshed Fri 20 Nov 2026, 11:40 GMT</p>
 <div id="lg"></div></header>
 <div class="bar" id="filters">
 <div class="grp"><h3>Locations <label class="all"><input type="checkbox" id="allLoc" checked> all</label></h3><div class="row locs" id="locs"></div></div>
@@ -504,8 +504,8 @@ function addRow(tb,r,cur){
   if(ln){var ms=Object.keys(ln).map(Number).sort(function(x,y){return x-y});if(ms.length){var le=document.createElement('i');le.className='tt lc';le.textContent=(ms.length>2?ms[0]+'\u2013'+ms[ms.length-1]:ms.join(' / '))+' min';meta.appendChild(le)}}
   var lo=window.LOCOF[nm];
   if(lo){var li=document.createElement('i');li.className='tt lc lo';li.textContent=Object.keys(lo).sort().join(', ');tip.appendChild(li)}
-  if(el.classList.contains('pill')){var ctr=el.closest('tr'),ctx=ctr&&around(ctr);if(ctx)tip.appendChild(ctx)}
-  if(!wy&&d)tip.appendChild(document.createTextNode(d));   // unavailable items: top line + reason only
+  if(!wy&&d)tip.appendChild(document.createTextNode(d));
+  if(el.classList.contains('pill')){var ctr=el.closest('tr'),ctx=ctr&&around(ctr);if(ctx)tip.appendChild(ctx)}   // neighbours go last   // unavailable items: top line + reason only
   tip.style.display='block';
   var w=tip.offsetWidth, ht=tip.offsetHeight;
   tip.style.left=Math.min(Math.max(8,x+14), window.innerWidth-w-8)+'px';
@@ -574,8 +574,8 @@ function around(tr){
   var h=document.createElement('i');h.className='tt';h.textContent=title;box.appendChild(h);
   list.slice(0,4).forEach(function(c){var l=document.createElement('div'),g=gap(c);l.textContent=c[2]+' \u00b7 '+c[4]+' \u00b7 '+c[3]+' min \u00b7 '+(g>0?g+' min gap':'back to back');box.appendChild(l)});
  }
- sec('Straight after, at '+club,nx,function(c){return c[1]-end});
  sec('Just before, at '+club,pv,function(c){return st-(c[1]+(c[3]||0))});
+ sec('Straight after, at '+club,nx,function(c){return c[1]-end});
  return box;
 }
 function mkGhost(ch,why){
