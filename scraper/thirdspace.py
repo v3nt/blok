@@ -467,7 +467,7 @@ def main():
     for r in rows:
         r[10] = "T"
     venues = [("T", "Class types", "tsTypes")]
-    ls_keys = {"a": "tsAvailOnly", "f": "tsHideFull", "w": "tsHideWorkHours",
+    ls_keys = {"f": "tsHideFull", "w": "tsHideWorkHours",
                "lo": "tsLocations", "v": "tsFavs", "vv": "tsFavsSeed",
                "c": "tsCollapse", "bk": "tsBookedCol", "l": "tsLegsOnly"}
     html_out, states, counts = refresh.build(

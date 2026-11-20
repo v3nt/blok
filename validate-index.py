@@ -131,7 +131,7 @@ if not ls:
     sys.exit(1)
 try:
     keys = json.loads(ls.group(1))
-    missing_keys = [k for k in ("a", "f", "w", "t", "v", "vv", "c", "bk") if k not in keys]
+    missing_keys = [k for k in ("f", "w", "t", "v", "vv", "c", "bk") if k not in keys]
     if missing_keys:
         print("FAIL: LS is missing %s" % ", ".join(missing_keys)); sys.exit(1)
     per_venue = keys["t"]
