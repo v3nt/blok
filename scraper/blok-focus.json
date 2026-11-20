@@ -1,0 +1,178 @@
+{
+ "_note": "Body focus and workout type per BLOK class type. Edit a tag to correct it. focus is one of: Legs, Upper, Full body, Core, Cardio, Mobility-Recovery; a class with no focus shows no body tag. Keys are the class name as it appears on the page, lowercased, WITHOUT the duration (BLOKSTRENGTH: LOWER BODY keeps its colon part). The same logic as thirdspace-focus.json - see classinfo.py.",
+ "BLOKSTRENGTH: LOWER BODY": {
+  "why": "description: squats, deadlifts, lunges",
+  "focus": "Legs",
+  "type": "Strength"
+ },
+ "SMALL GROUP PT: LOWER BODY": {
+  "why": "description: squats, deadlifts, lunges",
+  "focus": "Legs",
+  "type": "Strength"
+ },
+ "BLOKSTRENGTH: UPPER BODY": {
+  "why": "description: shoulders, arms, chest and back",
+  "focus": "Upper",
+  "type": "Strength"
+ },
+ "SMALL GROUP PT: UPPER BODY": {
+  "why": "description: shoulders, arms, chest and back",
+  "focus": "Upper",
+  "type": "Strength"
+ },
+ "BLOKSTRENGTH: FULL BODY": {
+  "why": "description: full body / head-to-toe",
+  "focus": "Full body",
+  "type": "Strength"
+ },
+ "SMALL GROUP PT: FULL BODY": {
+  "why": "description: full body / head-to-toe",
+  "focus": "Full body",
+  "type": "Strength"
+ },
+ "CALISTHENICS": {
+  "why": "description: upper body strength, endurance and core",
+  "focus": "Upper",
+  "type": "Strength"
+ },
+ "HANDSTANDS": {
+  "why": "from the name: shoulders and arms",
+  "focus": "Upper",
+  "type": "Strength"
+ },
+ "BLOKCORE": {
+  "why": "description: core",
+  "focus": "Core",
+  "type": "Strength"
+ },
+ "BLOKFIT": {
+  "why": "description: full-body circuit",
+  "focus": "Full body",
+  "type": "Conditioning"
+ },
+ "BLOKPOWER": {
+  "why": "description: explosive strength, plyometrics",
+  "focus": "Cardio",
+  "type": "Conditioning"
+ },
+ "BLOKSCULPT": {
+  "why": "description: arms, shoulders, core and glutes with HIIT",
+  "focus": "Full body",
+  "type": "Conditioning"
+ },
+ "BOXCON": {
+  "why": "description: bag work and conditioning",
+  "focus": "Cardio",
+  "type": "Combat"
+ },
+ "BLOKMOBILITY": {
+  "why": "description: mobility skills and strength",
+  "focus": "Mobility-Recovery",
+  "type": "Strength"
+ },
+ "REFORMER PILATES L1": {
+  "why": "description: Reformer, whole body",
+  "focus": "Full body",
+  "type": "Pilates"
+ },
+ "REFORMER PILATES L2": {
+  "why": "description: Reformer, whole body",
+  "focus": "Full body",
+  "type": "Pilates"
+ },
+ "REFORMER PILATES L3": {
+  "why": "description: Reformer, whole body",
+  "focus": "Full body",
+  "type": "Pilates"
+ },
+ "POWER REFORMER L2": {
+  "why": "description: full-body control with plyometric cardio",
+  "focus": "Full body",
+  "type": "Pilates"
+ },
+ "MAT PILATES": {
+  "why": "description: core, low impact, tones the entire body",
+  "focus": "Core",
+  "type": "Pilates"
+ },
+ "BARRE": {
+  "why": "description is too general to name a body part",
+  "type": "Barre",
+  "focus": "Untagged"
+ },
+ "FLOOR BARRE": {
+  "why": "description is too general to name a body part",
+  "type": "Barre",
+  "focus": "Untagged"
+ },
+ "DYNAMIC VINYASA": {
+  "why": "description: yoga",
+  "focus": "Mobility-Recovery",
+  "type": "Yoga / mind"
+ },
+ "POWER YOGA": {
+  "why": "description: yoga",
+  "focus": "Mobility-Recovery",
+  "type": "Yoga / mind"
+ },
+ "ROCKET YOGA": {
+  "why": "description: yoga",
+  "focus": "Mobility-Recovery",
+  "type": "Yoga / mind"
+ },
+ "YIN YANG FLOW": {
+  "why": "description: yoga",
+  "focus": "Mobility-Recovery",
+  "type": "Yoga / mind"
+ },
+ "YIN YOGA": {
+  "why": "description: yoga",
+  "focus": "Mobility-Recovery",
+  "type": "Yoga / mind"
+ },
+ "YOGA WITH MEDITATION": {
+  "why": "description: yoga",
+  "focus": "Mobility-Recovery",
+  "type": "Yoga / mind"
+ },
+ "BLOKBREATH": {
+  "why": "description: breathwork, sound",
+  "focus": "Mobility-Recovery",
+  "type": "Recovery"
+ },
+ "BLOKSOUND": {
+  "why": "description: breathwork, sound",
+  "focus": "Mobility-Recovery",
+  "type": "Recovery"
+ },
+ "HOT + COLD": {
+  "why": "description: contrast therapy, recovery",
+  "focus": "Mobility-Recovery",
+  "type": "Recovery"
+ },
+ "HOT + COLD QUIET": {
+  "why": "description: contrast therapy, recovery",
+  "focus": "Mobility-Recovery",
+  "type": "Recovery"
+ },
+ "HOT + COLD GUIDED: Recover": {
+  "why": "description: contrast therapy, recovery",
+  "focus": "Mobility-Recovery",
+  "type": "Recovery"
+ },
+ "HOT + COLD GUIDED: Unwind": {
+  "why": "description: contrast therapy, recovery",
+  "focus": "Mobility-Recovery",
+  "type": "Recovery"
+ },
+ "HOT + COLD GUIDED: Energise": {
+  "why": "description: contrast therapy, recovery",
+  "focus": "Mobility-Recovery",
+  "type": "Recovery"
+ },
+ "OPEN GYM": {
+  "why": "you train independently, so there is no fixed focus",
+  "type": "Gym",
+  "focus": "Untagged"
+ }
+}

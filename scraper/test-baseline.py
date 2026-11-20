@@ -117,7 +117,7 @@ def main():
         # If the grouped UI is absent this is not a subtle regression - it is a
         # different page. Report it plainly instead of failing 15 ways.
         codes = page.evaluate("() => (typeof VENUES === 'undefined') ? [] : VENUES")
-        labels = page.evaluate("() => [...document.querySelectorAll('.grp:not(.dis) h3')]"
+        labels = page.evaluate("() => [...document.querySelectorAll('.grp:not(.dis):not(:has(#locs)) h3')]"
                                ".map(h => h.textContent.trim())")
         GROUPS = list(zip(codes, labels)) if len(labels) == len(codes) else [
             (c, c) for c in codes]
@@ -131,8 +131,8 @@ def main():
 
         # --- structure -----------------------------------------------------
         check("a filter group for every venue on the page",
-              len(page.query_selector_all(".grp:not(.dis)")) == len(codes), 
-              "%d groups, %d venues" % (len(page.query_selector_all(".grp:not(.dis)")), len(codes)))
+              len(page.query_selector_all(".grp:not(.dis):not(:has(#locs))")) == len(codes), 
+              "%d groups, %d venues" % (len(page.query_selector_all(".grp:not(.dis):not(:has(#locs))")), len(codes)))
         for gid, label in GROUPS:
             check(f"{label}: has a favourites row and a list",
                   page.query_selector(f"#fav{gid}") and page.query_selector(f"#cats{gid}"))

@@ -21,6 +21,10 @@ Exit codes: 0 ok, 1 nothing scraped (the page is left untouched).
 """
 import argparse, datetime, html, json, pathlib, re, sys, urllib.request, urllib.error
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import classinfo                                  # focus/type tagging shared with index.html
+from classinfo import norm, FOCUS_TAGS
+
 HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parent
 OUT = REPO / "3rdspace.html"
@@ -123,13 +127,6 @@ def fetch_club(code, club, club_id, start, days, warnings):
     log("  %s -> %d class(es)" % (club, got))
     return seen
 
-def norm(name):
-    """Compare class names loosely: 'Lift - Weightlifting Classes' is 'Lift'."""
-    n = html.unescape(name).lower()
-    n = re.split(r"[\u2013\u2014|:]", n)[0]
-    n = re.sub(r"[^a-z0-9 ]", " ", n)
-    return re.sub(r"\s+", " ", n).strip()
-
 # The timetable and the classes listing do not use the same words. These are
 # the ones no amount of tidying will connect.
 ALIAS = {"brazilian jiu jitsu": "bjj fundamentals",
@@ -167,13 +164,8 @@ def match_key(cat, listing):
 PAGES = HERE / "thirdspace-class-pages.json"     # slug + long description per class type
 FOCUS_FILE = HERE / "thirdspace-focus.json"      # hand-kept body-focus tag per class type
 NO_DESC = "No description on Third Space's site."
-FOCUS_TAGS = ("Legs", "Upper", "Full body", "Core", "Cardio", "Mobility-Recovery")
 
-def page_nodes(page):
-    page = re.sub(r"<(script|style|svg|noscript)[^>]*>.*?</\1>", "", page, flags=re.S)
-    page = re.sub(r"<!--.*?-->", "", page, flags=re.S)
-    return [re.sub(r"\s+", " ", html.unescape(p)).strip()
-            for p in re.split(r"<[^>]+>", page) if p.strip()]
+page_nodes = classinfo.page_nodes
 
 def page_text(page):
     """The longer description on a /class/<slug>/ page: intro, then the feature blurbs.
@@ -378,59 +370,14 @@ SITE_TYPE = {"Strength & Conditioning": "Strength", "Sports & Performance": "Con
              "Dance": "Dance", "Running": "Running", "HYROX": "Conditioning"}
 
 def type_tags(categories, cat_of, keyof, warnings):
-    """{category: short workout type}: the focus file's "type", else from the site category."""
-    hand = load_focus()
-    out, unknown = {}, []
-    for c in categories:
-        entry = hand.get(norm(c)) or hand.get(keyof.get(c, ""))
-        t = entry.get("type") if isinstance(entry, dict) else None
-        t = t or SITE_TYPE.get(cat_of.get(c, ""))
-        if t:
-            out[c] = t
-        else:
-            unknown.append(c)
-    if unknown:
-        log("  no workout type for: %s" % ", ".join(sorted(unknown)))
-    return out
+    return classinfo.type_tags(categories, lambda c: SITE_TYPE.get(cat_of.get(c, "")),
+                               keyof, FOCUS_FILE, log)
 
 def load_focus():
-    try:
-        raw = json.loads(FOCUS_FILE.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
-    return {norm(k): v for k, v in raw.items() if not k.startswith("_")}
-
-LEG_WORDS = re.compile(r"\b(legs?|glutes?|quads?|quadriceps|hamstrings?|squats?|lunges?|"
-                       r"lower[- ]body|calves|calf)\b", re.I)
+    return classinfo.load_focus(FOCUS_FILE)
 
 def focus_tags(categories, tagtext, keyof, warnings):
-    """{category: focus}. The hand-kept file wins; else a keyword guess; else Untagged.
-
-    Anything not in the file is logged, so a new class type never goes
-    unnoticed - correct it by adding it to thirdspace-focus.json.
-    """
-    hand = load_focus()
-    out, guessed, untagged = {}, [], []
-    for c in categories:
-        # 'Hot Yin Yoga' has no entry of its own: it is the listing's Yin Yoga
-        entry = hand.get(norm(c)) or hand.get(keyof.get(c, ""))
-        tag = entry.get("focus") if isinstance(entry, dict) else entry
-        if tag in FOCUS_TAGS:
-            out[c] = tag
-        elif tagtext.get(c) and LEG_WORDS.search(tagtext[c]):
-            out[c] = "Legs"
-            guessed.append(c)
-        else:
-            out[c] = "Untagged"
-            untagged.append(c)
-    legs = sorted(c for c, f in out.items() if f == "Legs")
-    log("  focus: %d class type(s) tagged Legs: %s" % (len(legs), ", ".join(legs) or "none"))
-    if guessed:
-        log("  focus guessed from the text (add to thirdspace-focus.json to confirm): %s"
-            % ", ".join(sorted(guessed)))
-    if untagged:
-        log("  focus Untagged (add to thirdspace-focus.json): %s" % ", ".join(sorted(untagged)))
-    return out
+    return classinfo.focus_tags(categories, tagtext, keyof, FOCUS_FILE, log, "thirdspace-focus.json")
 
 def category(title):
     """Collapse 'Just Ride 30' / 'Just Ride: 90s Club Classics' to 'Just Ride'."""
@@ -494,8 +441,7 @@ def main():
     n_classes = {}
     for r in rows:
         n_classes[r[6]] = n_classes.get(r[6], 0) + 1
-    loc_order = sorted((club for _, club, _ in CLUBS),
-                       key=lambda c: (-len(facilities.get(c, [])), -n_classes.get(c, 0), c))
+    loc_order = classinfo.order_locations([club for _, club, _ in CLUBS], facilities, n_classes)
     log("  locations, most facilities first: " + ", ".join(
         "%s (%d/%d)" % (c, len(facilities.get(c, [])), n_classes.get(c, 0)) for c in loc_order))
     palette = {c: CAT_COLOUR.get(cat_by_name.get(c, ""), GREY) for c in cats}

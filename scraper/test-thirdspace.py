@@ -201,6 +201,13 @@ with sync_playwright() as p:
     check("locations are ordered by facilities, most first",
           page.evaluate("() => { const n = [...document.querySelectorAll('#locs .fbadge')].map(b => +b.textContent);"
                         " return n.every((v, i) => i === 0 || n[i - 1] >= v) }"))
+    check("locations sit in a 6-column grid on a normal desktop",
+          page.evaluate("""() => { const t = [...document.querySelectorAll('#locs label')].map(l => Math.round(l.getBoundingClientRect().top));
+            return t.slice(0, 6).every(v => Math.abs(v - t[0]) < 4) && t.length > 6 && t[6] > t[0] + 10 }"""))
+    check("opening hours sit on a new line under the name",
+          page.evaluate("""() => [...document.querySelectorAll('#locs label')].every(l => {
+            const n = l.querySelector('span').getBoundingClientRect(), h = l.querySelector('.n').getBoundingClientRect();
+            return h.top > n.bottom - 2 })"""))
     check("each club shows its opening hours next to its name",
           page.evaluate("() => [...document.querySelectorAll('#locs label')]"
                         ".every(l => /\\d\\d:\\d\\d/.test(l.textContent))"))
@@ -320,6 +327,23 @@ with sync_playwright() as p:
     page.evaluate("() => { const l = document.getElementById('legs'); l.checked = false;"
                   " l.dispatchEvent(new Event('change', {bubbles: true})) }")
     page.wait_for_timeout(300)
+    # a starred class that becomes unavailable stays in the favourites row, AND is listed again below
+    star = lambda where: ("() => { const b = [...document.querySelectorAll('%s .star')].find(s => /Lift/.test(s.title)); b.click() }" % where)
+    page.evaluate(star("#disrow"))                       # Lift is unavailable under Legs only: star it
+    page.wait_for_timeout(300)
+    check("an unavailable favourite stays in the favourites row, greyed",
+          page.evaluate("() => [...document.querySelectorAll('#fav' + VENUES[0] + ' > .chip.off')].some(c => /Lift/.test(c.textContent))"))
+    check("...and is listed again in the Not available section",
+          page.evaluate("() => [...document.querySelectorAll('#disrow > .ghost')].some(c => /Lift/.test(c.textContent))"))
+    check("the count equals what the section holds",
+          page.evaluate("() => document.getElementById('disn').textContent === '(' + document.getElementById('disrow').children.length + ')'"))
+    check("the copy is not a second live checkbox",
+          page.evaluate("() => [...document.querySelectorAll('input[data-c]')].filter(i => i.dataset.c === 'Lift').length") == 1)
+    page.evaluate(star("#fav" + codes[0]))                # un-star it again
+    page.wait_for_timeout(300)
+    check("un-starring it moves it down, with no duplicate left behind",
+          page.evaluate("() => ![...document.querySelectorAll('#fav' + VENUES[0] + ' > .chip')].some(c => /Lift/.test(c.textContent))"
+                        " && [...document.querySelectorAll('#disrow > .chip')].filter(c => /Lift/.test(c.textContent)).length === 1"))
     check("clearing the filter brings them back and hides the section",
           page.evaluate("() => document.getElementById('dis').style.display === 'none'"
                         " && document.querySelectorAll('#disrow input[data-c]').length === 0"))
