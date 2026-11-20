@@ -245,9 +245,31 @@ with sync_playwright() as p:
     check("with Legs only, class types with no leg classes move to the disabled section",
           page.evaluate("() => document.getElementById('dis').style.display !== 'none'"
                         " && document.querySelectorAll('#disrow input[data-c]').length > 0"))
-    check("each one says why",
-          page.evaluate("() => [...document.querySelectorAll('#disrow .chip')]"
-                        ".every(c => (c.querySelector('.why') || {}).textContent === 'Legs only')"))
+    check("the section is collapsed by default and shows how many are in it",
+          page.evaluate("() => document.getElementById('disbody').style.display === 'none'"
+                        " && /\\(\\d+\\)/.test(document.getElementById('disbtn').textContent)"))
+    check("the count matches what is inside",
+          page.evaluate("() => document.getElementById('disn').textContent ==="
+                        " '(' + document.getElementById('disrow').children.length + ')'"))
+    page.click("#disbtn")
+    page.wait_for_timeout(200)
+    check("the section opens and the count is still shown",
+          page.evaluate("() => document.getElementById('disbody').style.display !== 'none'"
+                        " && /\\(\\d+\\)/.test(document.getElementById('disbtn').textContent)"))
+    check("the reason is not printed on the chips",
+          page.evaluate("() => !document.querySelector('#disrow .why') && ![...document.querySelectorAll('#disrow .chip')]"
+                        ".some(c => /Legs only/.test(c.textContent))"))
+    check("each one carries its reason for the hover",
+          page.evaluate("() => [...document.querySelectorAll('#disrow label.chip')]"
+                        ".every(l => l.getAttribute('data-why') === 'Legs only')"))
+    page.hover("#disrow label.chip >> nth=0")
+    page.wait_for_timeout(250)
+    check("hovering a disabled one shows why",
+          page.evaluate("() => { const t = document.getElementById('tip');"
+                        " return t.style.display === 'block' && t.textContent.indexOf('Not available: Legs only') > -1 }"))
+    page.mouse.move(5, 5)
+    check("the heading is not bold",
+          page.evaluate("() => parseInt(getComputedStyle(document.getElementById('disbtn')).fontWeight) < 600"))
     check("those checkboxes are disabled",
           page.evaluate("() => [...document.querySelectorAll('#disrow input[data-c]')].every(i => i.disabled)"))
     check("the Legs classes stay in the normal list",
