@@ -1,8 +1,89 @@
 {
- "Islington": "WD 5:30–22:00 · WK 7:00–21:00",
- "Moorgate": "WD 5:30–22:00 · WK 8:00–20:00",
- "City": "WD 5:30–22:00 · WK 8:00–20:00",
- "Canary Wharf": "WD 5:30–22:30 · WK 8:00–20:00",
- "Tower Bridge": "WD 5:30–22:00 · WK 8:00–20:00",
- "Soho": "WD 5:30–22:00 · WK 8:00–20:00"
+ "Islington": {
+  "hours": "WD 5:30–22:00, WE 7:00–21:00",
+  "facilities": [
+   "Train",
+   "Swim",
+   "Wellness Spa – Coming Soon",
+   "Reformer Pilates",
+   "Mind & Body",
+   "Hot Yoga",
+   "Changing Rooms",
+   "Spin Studio",
+   "High-Intensity Studio (HIIT)",
+   "Recovery Zone",
+   "Recovery Spa",
+   "Third Space Sports Med"
+  ]
+ },
+ "Moorgate": {
+  "hours": "WD 5:30–22:00, WE 8:00–20:00",
+  "facilities": [
+   "Train",
+   "Mind & Body",
+   "Cycle",
+   "Recovery",
+   "Changing Rooms"
+  ]
+ },
+ "City": {
+  "hours": "WD 5:30–22:00, WE 8:00–20:00",
+  "facilities": [
+   "Train",
+   "Swim",
+   "Contrast Therapy",
+   "Changing Rooms",
+   "Mind & Body",
+   "Lift",
+   "Cycle",
+   "HIIT Studio",
+   "Sports Med",
+   "Reformer Pilates",
+   "Members Lounge"
+  ]
+ },
+ "Canary Wharf": {
+  "hours": "WD 5:30–22:30, WE 8:00–20:00",
+  "facilities": [
+   "Wellness Spa – Coming Soon",
+   "HYROX Training Space",
+   "Reformer Pilates Studio",
+   "Swim",
+   "The Yard",
+   "Train",
+   "Lift",
+   "Changing Rooms",
+   "Cycle",
+   "High Intensity Studio",
+   "Combat",
+   "Climb",
+   "Members Lounge",
+   "Sports Med",
+   "Recovery Spa"
+  ]
+ },
+ "Tower Bridge": {
+  "hours": "WD 5:30–22:00, WE 8:00–20:00",
+  "facilities": [
+   "Swim",
+   "Train",
+   "Changing Rooms",
+   "Reformer Pilates",
+   "Cycle",
+   "Sports Med",
+   "Contrast Therapy",
+   "Strength & Conditioning Studio"
+  ]
+ },
+ "Soho": {
+  "hours": "WD 5:30–22:00, WE 8:00–20:00",
+  "facilities": [
+   "Swim",
+   "Train",
+   "Cycle",
+   "Changing Rooms",
+   "Mind & Body",
+   "Combat"
+  ]
+ }
 }

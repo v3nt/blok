@@ -308,45 +308,65 @@ def descriptions(categories, warnings):
 
 CLUBS_CACHE = HERE / "thirdspace-clubs.json"
 
-def club_hours(warnings):
-    """{club: 'Mon-Fri 05:30-22:00 / Sat-Sun 08:00-20:00'} from each club's page.
+def _clean(x):
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", x))).strip()
+
+def club_facilities(page):
+    """The titled sections of a club page's facilities list: Train, Swim, Cycle..."""
+    out = []
+    for m in re.finditer(r'class="Accordion__Title[^"]*">(.*?)</div>.*?'
+                         r'class="Accordion__Post_Grid__content', page, re.S):
+        title = _clean(m.group(1))
+        if title and title not in out:
+            out.append(title)
+    return out
+
+def club_info(warnings):
+    """({club: 'WD 5:30-22:00, WE 8:00-20:00'}, {club: [facility, ...]}) from each club's page.
 
     Cached, like the descriptions: a club page that cannot be read costs us
-    the hours, never the schedule.
+    the hours and facilities, never the schedule.
     """
     try:
         cached = json.loads(CLUBS_CACHE.read_text(encoding="utf-8"))
     except Exception:
         cached = {}
-    out = {}
+    hours, facs = {}, {}
     for _, club, _ in CLUBS:
         slug = club.lower().replace(" ", "-")
+        old = cached.get(club)
+        old = old if isinstance(old, dict) else {"hours": old or ""}
         try:
-            nodes = page_nodes(get("%s/clubs/%s/" % (BASE, slug)))
-            lines = [x for x in nodes if re.match(r"^(Monday|Saturday)\b.*\d\d:\d\d\s*[\u2013-]\s*\d\d:\d\d$", x)]
+            page = get("%s/clubs/%s/" % (BASE, slug))
             parts = []
-            for x in lines:
-                m = re.match(r"^(\w+)\s*[\u2013-]\s*(\w+)\s+(\d\d:\d\d)\s*[\u2013-]\s*(\d\d:\d\d)$", x)
+            for x in page_nodes(page):
+                m = re.match(r"^(Monday|Saturday)\s*[\u2013-]\s*(\w+)\s+(\d\d:\d\d)\s*[\u2013-]\s*(\d\d:\d\d)$", x)
                 if m:
-                    days = (m.group(1)[:3], m.group(2)[:3])
-                    label = {("Mon", "Fri"): "WD", ("Sat", "Sun"): "WK"}.get(
-                        days, "%s\u2013%s" % days)          # WD weekdays, WK weekend
+                    label = "WD" if m.group(1) == "Monday" else "WE"      # weekdays / weekend
                     parts.append("%s %s\u2013%s" % (label, m.group(3).lstrip("0"),
                                                     m.group(4).lstrip("0")))
             if parts:
-                out[club] = " \u00b7 ".join(parts)
-                continue
-            warnings.append("%s: no opening hours found on the club page" % club)
+                hours[club] = ", ".join(parts)
+            else:
+                warnings.append("%s: no opening hours found on the club page" % club)
+            f = club_facilities(page)
+            if f:
+                facs[club] = f
+            else:
+                warnings.append("%s: no facilities found on the club page" % club)
         except Exception as e:
             warnings.append("%s club page: %s" % (club, e))
-        if cached.get(club):
-            out[club] = cached[club]
-    if out:
-        try:
-            CLUBS_CACHE.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
-        except Exception as e:
-            warnings.append("could not cache the club hours: %s" % e)
-    return out
+        if club not in hours and old.get("hours"):
+            hours[club] = old["hours"]
+        if club not in facs and old.get("facilities"):
+            facs[club] = old["facilities"]
+    try:
+        CLUBS_CACHE.write_text(json.dumps(
+            {c: {"hours": hours.get(c, ""), "facilities": facs.get(c, [])}
+             for _, c, _ in CLUBS}, ensure_ascii=False, indent=1), encoding="utf-8")
+    except Exception as e:
+        warnings.append("could not cache the club info: %s" % e)
+    return hours, facs
 
 # What the site's own categories are called here. Per-class overrides ("type" in
 # thirdspace-focus.json) beat this, because the site files Pulse under Mind & Body
@@ -468,7 +488,15 @@ def main():
     desc, cat_by_name, tagtext, keyof = descriptions(cats, warnings)
     focus = focus_tags(cats, tagtext, keyof, warnings)
     types = type_tags(cats, cat_by_name, keyof, warnings)
-    hours = club_hours(warnings)
+    hours, facilities = club_info(warnings)
+    # Clubs with the most facilities first, then the most classes on the timetable.
+    n_classes = {}
+    for r in rows:
+        n_classes[r[6]] = n_classes.get(r[6], 0) + 1
+    loc_order = sorted((club for _, club, _ in CLUBS),
+                       key=lambda c: (-len(facilities.get(c, [])), -n_classes.get(c, 0), c))
+    log("  locations, most facilities first: " + ", ".join(
+        "%s (%d/%d)" % (c, len(facilities.get(c, [])), n_classes.get(c, 0)) for c in loc_order))
     palette = {c: CAT_COLOUR.get(cat_by_name.get(c, ""), GREY) for c in cats}
 
     # ONE set of class filters covering all three clubs, with the clubs
@@ -486,11 +514,9 @@ def main():
         title="Class schedule — Third Space",
         # Third Space: teal "3S", so the two tabs never look alike.
         icon=refresh.favicon("3S", "#0f6e6e", size=30),
-        locations=[club for _, club, _ in CLUBS], focus=focus, location_info=hours, types=types,
-        sub_html=('<p class="sub">Third Space · '
-                  + " &amp; ".join(club for _, club, _ in CLUBS)
-                  + ' · %d classes · auto-updated every 2 hours · '
-                    'refreshed %s</p>'))
+        locations=loc_order, focus=focus, location_info=hours, location_facilities=facilities, types=types,
+        sub_html='<p class="sub"></p>',   # empty on purpose: the title carries "updated N minutes ago"
+        built_ms=int(datetime.datetime.now().timestamp() * 1000))
     pathlib.Path(args.out).write_text(html_out, encoding="utf-8")
     log("  wrote %s (%d bytes, %d classes)" % (args.out, len(html_out.encode()), len(rows)))
     if args.dump:

@@ -180,6 +180,18 @@ with sync_playwright() as p:
     page.evaluate("() => document.getElementById('reset').click()")
     page.wait_for_timeout(300)
     check("Reset filters clears Legs only", rows() == n_all, "%d vs %d" % (rows(), n_all))
+    check("hours are written WD ..., WE ...",
+          page.evaluate("() => [...document.querySelectorAll('#locs label')]"
+                        ".every(l => /WD \\d+:\\d\\d.\\d+:\\d\\d, WE \\d+:\\d\\d.\\d+:\\d\\d/.test(l.textContent))"))
+    act("hover a location", lambda: page.hover("#locs label >> nth=0"))
+    page.wait_for_timeout(250)
+    check("a location's tooltip lists its main facilities as bullets",
+          page.evaluate("() => { const t = document.getElementById('tip').textContent;"
+                        " return t.indexOf('Main facilities') > -1 && (t.match(/\\u2022/g) || []).length >= 3 }"))
+    page.mouse.move(5, 5)
+    check("locations are ordered by facilities, most first",
+          page.evaluate("() => { const n = [...document.querySelectorAll('#locs label')].map(l => (l.getAttribute('data-desc') || '').split('\\u2022').length);"
+                        " return n.every((v, i) => i === 0 || n[i - 1] >= v) }"))
     check("each club shows its opening hours next to its name",
           page.evaluate("() => [...document.querySelectorAll('#locs label')]"
                         ".every(l => /\\d\\d:\\d\\d/.test(l.textContent))"))
@@ -299,6 +311,10 @@ with sync_playwright() as p:
     check("their ticks survive the round trip",
           page.evaluate("() => [...document.querySelectorAll('input[data-c]')].every(i => i.checked)"))
 
+    check("the header is just the title with a human-friendly update time",
+          page.evaluate("() => { const h = document.querySelector('header');"
+                        " return !((h.querySelector('p.sub') || {textContent: ''}).textContent.trim()) && /updated (just now|\\d+ (minute|hour|day)s? ago)/.test(h.querySelector('h1').textContent)"
+                        " && !/In the timetable/.test(h.textContent) }"))
     check("mobile menu is present",
           page.evaluate("() => !!document.getElementById('drawer') && !!document.getElementById('mnu')"))
     check("no JavaScript errors", not errors, "; ".join(errors[:3]))
