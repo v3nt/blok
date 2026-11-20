@@ -21,6 +21,9 @@ Needs playwright (same dependency as refresh.py). If it is missing this exits
 """
 import sys, json, pathlib
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import ui_checks      # checks shared with the Third Space page - see ui_checks.py
+
 PATH = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "index.html").resolve()
 # Venues are read from the page: this suite must keep working whichever
 # gyms are configured, not assume BLOK + Mission E1 forever.
@@ -666,6 +669,8 @@ def main():
         page.wait_for_timeout(300)
         check("clearing the search restores the schedule",
               page.evaluate("() => document.querySelectorAll('#tb tr[data-cat]').length") == n_before)
+        page.reload(); page.wait_for_timeout(700)
+        ui_checks.run(page, check, act)          # the same checks Third Space must pass
         check("no JavaScript errors", not errors, "; ".join(errors[:3]))
         browser.close()
 

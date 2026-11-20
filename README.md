@@ -128,5 +128,28 @@ parameterised:
 | booking status | live from ClassPass | "In the timetable" |
 
 Both are checked before publishing: `scraper/test-baseline.py` (index.html)
-and `scraper/test-thirdspace.py` (3rdspace.html). A shared feature gets a
-check in both suites.
+and `scraper/test-thirdspace.py` (3rdspace.html).
+
+### Keeping the two pages in sync
+
+Everything about filters, finders, tooltips and disabled filters lives in the
+template, so both pages get it automatically. What differs is the *content*
+each page hands to the template:
+
+| Content | BLOK (`index.html`) | Third Space (`3rdspace.html`) |
+| --- | --- | --- |
+| Where it is built | `refresh.py` -> `page_extras()` | `thirdspace.py` `main()` |
+| Body focus + workout type | `scraper/blok-focus.json` | `scraper/thirdspace-focus.json` |
+| Locations | the studios in the schedule | the clubs in `CLUBS` |
+| Facilities per location | bloklondon.com studio pages (`blok-studios.json`) | thirdspace.london club pages (`thirdspace-clubs.json`) |
+| Opening hours | none published, so none shown | club pages |
+| "updated N minutes ago" | set by the scrape, kept by `--rebuild` | set by each refresh |
+
+The focus/type tagging and location ordering are ONE implementation,
+`scraper/classinfo.py`, used by both pages. A hand-kept focus file always wins;
+`"focus": "Untagged"` records "reviewed, no single body focus".
+
+**To add a shared feature:** change the template in `refresh.py`, then add ONE
+check to `scraper/ui_checks.py`. Both test suites call it, so the feature is
+asserted on both pages and cannot silently exist on only one. Only put
+something in a page's own suite if it is genuinely page-specific.

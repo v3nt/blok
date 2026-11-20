@@ -8,6 +8,9 @@ Exit 0 all good, 1 a check failed, 2 the page does not exist yet.
 import pathlib, sys
 from playwright.sync_api import sync_playwright
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import ui_checks      # the checks BLOK's page must pass too - see ui_checks.py
+
 PATH = pathlib.Path(sys.argv[1] if len(sys.argv) > 1
                     else pathlib.Path(__file__).resolve().parent.parent / "3rdspace.html")
 if not PATH.exists():
@@ -208,6 +211,21 @@ with sync_playwright() as p:
           page.evaluate("""() => [...document.querySelectorAll('#locs label')].every(l => {
             const n = l.querySelector('span').getBoundingClientRect(), h = l.querySelector('.n').getBoundingClientRect();
             return h.top > n.bottom - 2 })"""))
+    check("Locations has an all toggle on its title",
+          page.evaluate("() => { const m = document.getElementById('allLoc');"
+                        " return !!m && !!m.closest('h3') && /Locations/.test(m.closest('h3').textContent) && m.checked }"))
+    n_loc = rows()
+    page.evaluate("() => { const m = document.getElementById('allLoc'); m.checked = false; m.dispatchEvent(new Event('change', {bubbles: true})) }")
+    page.wait_for_timeout(300)
+    check("unticking all switches every location off", rows() == 0
+          and page.evaluate("() => [...document.querySelectorAll('input[data-loc]')].every(i => !i.checked)"), rows())
+    page.evaluate("() => { const i = document.querySelector('input[data-loc]'); i.checked = true; i.dispatchEvent(new Event('change', {bubbles: true})) }")
+    page.wait_for_timeout(250)
+    check("one location on makes the all toggle indeterminate",
+          page.evaluate("() => { const m = document.getElementById('allLoc'); return m.indeterminate && !m.checked }"))
+    page.evaluate("() => { const m = document.getElementById('allLoc'); m.checked = true; m.dispatchEvent(new Event('change', {bubbles: true})) }")
+    page.wait_for_timeout(300)
+    check("ticking all brings every location back", rows() == n_loc and page.evaluate("() => !document.getElementById('allLoc').indeterminate"), "%d vs %d" % (rows(), n_loc))
     check("each club shows its opening hours next to its name",
           page.evaluate("() => [...document.querySelectorAll('#locs label')]"
                         ".every(l => /\\d\\d:\\d\\d/.test(l.textContent))"))
@@ -236,7 +254,8 @@ with sync_playwright() as p:
     page.hover("#cats" + codes[0] + " input[data-desc]")
     page.wait_for_timeout(200)
     check("the tooltip gives the class length",
-          page.evaluate("() => /Length: \\d+/.test(document.getElementById('tip').textContent)"))
+          page.evaluate("() => /\\d+( \\/ \\d+|\\u2013\\d+)? min/.test(document.getElementById('tip').textContent)"
+                        " && document.getElementById('tip').textContent.indexOf('Length') === -1"))
     check("the tooltip says which clubs run the class",
           page.evaluate("() => /Islington|Moorgate|City|Canary Wharf|Tower Bridge|Soho/.test(document.getElementById('tip').textContent) && document.getElementById('tip').textContent.indexOf('At: ') === -1"))
     page.mouse.move(5, 5)
@@ -300,7 +319,7 @@ with sync_playwright() as p:
     tip_txt = lambda: page.evaluate("() => document.getElementById('tip').textContent")
     label_tip = tip_txt()
     check("an unavailable item's tooltip has no description, just the top line and reason",
-          "Not available: Legs only" in label_tip and "Soho" in label_tip and "Length: " in label_tip
+          "Not available: Legs only" in label_tip and "Soho" in label_tip and " min" in label_tip and "Length" not in label_tip
           and len(label_tip) < 220, label_tip[:120])
     check("the 'Not available' reason is the second thing on the card, right after the title",
           page.evaluate("() => { const c = document.getElementById('tip').children;"
@@ -324,9 +343,6 @@ with sync_playwright() as p:
                         ".some(l => /LGA/.test(l.textContent))"))
     check("no class type is lost between the lists",
           page.evaluate("() => document.querySelectorAll('input[data-c]').length") == n_cats)
-    page.evaluate("() => { const l = document.getElementById('legs'); l.checked = false;"
-                  " l.dispatchEvent(new Event('change', {bubbles: true})) }")
-    page.wait_for_timeout(300)
     # a starred class that becomes unavailable stays in the favourites row, AND is listed again below
     star = lambda where: ("() => { const b = [...document.querySelectorAll('%s .star')].find(s => /Lift/.test(s.title)); b.click() }" % where)
     page.evaluate(star("#disrow"))                       # Lift is unavailable under Legs only: star it
@@ -344,6 +360,9 @@ with sync_playwright() as p:
     check("un-starring it moves it down, with no duplicate left behind",
           page.evaluate("() => ![...document.querySelectorAll('#fav' + VENUES[0] + ' > .chip')].some(c => /Lift/.test(c.textContent))"
                         " && [...document.querySelectorAll('#disrow > .chip')].filter(c => /Lift/.test(c.textContent)).length === 1"))
+    page.evaluate("() => { const l = document.getElementById('legs'); l.checked = false;"
+                  " l.dispatchEvent(new Event('change', {bubbles: true})) }")
+    page.wait_for_timeout(300)
     check("clearing the filter brings them back and hides the section",
           page.evaluate("() => document.getElementById('dis').style.display === 'none'"
                         " && document.querySelectorAll('#disrow input[data-c]').length === 0"))
@@ -354,6 +373,32 @@ with sync_playwright() as p:
           page.evaluate("() => { const h = document.querySelector('header');"
                         " return !((h.querySelector('p.sub') || {textContent: ''}).textContent.trim()) && /updated (just now|\\d+ (minute|hour|day)s? ago)/.test(h.querySelector('h1').textContent)"
                         " && !/In the timetable/.test(h.textContent) }"))
+    # hovering a class shows what runs just before / straight after it at the same club
+    page.evaluate("() => document.getElementById('reset').click()")
+    page.wait_for_timeout(250)
+    page.mouse.move(5, 5)
+    page.evaluate("() => document.getElementById('q').value = ''")
+    pick = page.evaluate("""() => { const rows = [...document.querySelectorAll('#tb tr[data-cat]')];
+      for (const tr of rows) { const st = +tr.dataset.mins, du = +tr.dataset.dur, club = tr.dataset.club, d = tr.dataset.d;
+        const nx = D.filter(r => r[0] === d && r[6] === club && r[1] >= st + du && r[1] <= st + du + 90);
+        const pv = D.filter(r => r[0] === d && r[6] === club && r[1] + r[3] <= st && r[1] + r[3] >= st - 90);
+        if (nx.length && pv.length) return [rows.indexOf(tr), nx.length, pv.length]; } return null }""")
+    check("there is a class with something both before and after it to test with", bool(pick), pick)
+    if pick:
+        page.hover("#tb tr[data-cat] .pill >> nth=%d" % pick[0])
+        page.wait_for_timeout(300)
+        tiptxt = page.evaluate("() => document.getElementById('tip').textContent")
+        check("hovering a class lists what runs straight after it at that club",
+              "Straight after" in tiptxt and ("gap" in tiptxt or "back to back" in tiptxt), tiptxt[:140])
+        check("...and what ran just before it", "Just before" in tiptxt, tiptxt[:140])
+        check("before comes above after, both at the bottom of the card",
+              tiptxt.index("Just before") < tiptxt.index("Straight after")
+              and page.evaluate("() => document.getElementById('tip').lastElementChild.classList.contains('ttn')"), tiptxt[-160:])
+        check("the neighbours ignore the current filters",
+              page.evaluate("() => document.querySelectorAll('#tip .ttn div').length") >= 2)
+        page.mouse.move(5, 5)
+    page.reload(); page.wait_for_timeout(600)
+    ui_checks.run(page, check, act)          # shared with the BLOK page
     check("mobile menu is present",
           page.evaluate("() => !!document.getElementById('drawer') && !!document.getElementById('mnu')"))
     check("no JavaScript errors", not errors, "; ".join(errors[:3]))

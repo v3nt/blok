@@ -2,7 +2,7 @@
 
 _Session: **blok-d4** · started 2026-11-20 08:48 · opened with "we added a file yesterday about improving this for the third space file"_
 _Link: (bridge link not available)_
-_Relative times as of 2026-11-20 10:05 (Europe/London)._
+_Relative times as of 2026-11-20 11:35 (Europe/London)._
 
 - **Third Space: descriptions, Legs filter, more clubs** · _over an hour ago_
   - Found yesterday's brief in the alpaca-trader scratchpad and worked from it.
@@ -14,3 +14,8 @@ _Relative times as of 2026-11-20 10:05 (Europe/London)._
   - Keyword search, 7-column filter grid, coloured checkboxes with tooltips, locations on top. (refresh.py template)
   - Filters your other filters make useless move to a "Not available" section with the reason. (refresh.py template)
   - Not started: Third Space email bookings (no real confirmation email to copy yet).
+  - Locations: 6-col grid, hours on a new line, facilities badge, "all" toggle, ordered by facilities. (refresh.py, thirdspace.py)
+  - Hover a class: what runs straight after / just before it at that club. (refresh.py)
+  - Unavailable favourites stay starred and repeat in "Not available". (refresh.py)
+  - BLOK adopts it all: shared classinfo.py, blok-focus.json, studio amenities, page_extras(). (classinfo.py, refresh.py)
+  - One shared UI check set run by both suites to keep them in sync. (ui_checks.py)
