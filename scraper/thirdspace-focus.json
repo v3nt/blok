@@ -6,27 +6,33 @@
  },
  "pulse": {
   "focus": "Legs",
-  "why": "description: 'targets and strengthens the lower body and core'"
+  "why": "description: 'targets and strengthens the lower body and core'",
+  "type": "Barre"
  },
  "lift": {
   "focus": "Full body",
-  "why": "barbell lifting; quote says squat, press, lunge - whole body, not leg-only"
+  "why": "barbell lifting; quote says squat, press, lunge - whole body, not leg-only",
+  "type": "Strength"
  },
  "force": {
   "focus": "Full body",
-  "why": "'fatigue the whole body'"
+  "why": "'fatigue the whole body'",
+  "type": "Strength"
  },
  "metaburn": {
   "focus": "Full body",
-  "why": "'full body metabolic conditioning'"
+  "why": "'full body metabolic conditioning'",
+  "type": "Conditioning"
  },
  "kettlebells": {
   "focus": "Full body",
-  "why": "'full-body workout'"
+  "why": "'full-body workout'",
+  "type": "Strength"
  },
  "the method": {
   "focus": "Full body",
-  "why": "'barre-based full-body workout'"
+  "why": "'barre-based full-body workout'",
+  "type": "Barre"
  },
  "traditional reformer pilates": {
   "focus": "Full body",
@@ -42,31 +48,38 @@
  },
  "formula 3": {
   "focus": "Full body",
-  "why": "rower + kettlebells + bodyweight"
+  "why": "rower + kettlebells + bodyweight",
+  "type": "Conditioning"
  },
  "the wod": {
   "focus": "Full body",
-  "why": "cross-training WOD"
+  "why": "cross-training WOD",
+  "type": "Conditioning"
  },
  "yard wod": {
   "focus": "Full body",
-  "why": "cross-training WOD"
+  "why": "cross-training WOD",
+  "type": "Conditioning"
  },
  "yard strong": {
   "focus": "Full body",
-  "why": "strongman circuit"
+  "why": "strongman circuit",
+  "type": "Strength"
  },
  "yard weightlifting": {
   "focus": "Full body",
-  "why": "strongman circuit"
+  "why": "strongman circuit",
+  "type": "Strength"
  },
  "yard gymnastics": {
   "focus": "Full body",
-  "why": "strongman circuit"
+  "why": "strongman circuit",
+  "type": "Strength"
  },
  "yard circuit": {
   "focus": "Full body",
-  "why": "from the name only - no page on the site"
+  "why": "from the name only - no page on the site",
+  "type": "Strength"
  },
  "hyrox 90": {
   "focus": "Full body",
@@ -130,7 +143,8 @@
  },
  "core": {
   "focus": "Core",
-  "why": "'engage your core ... shaping your abdominals'"
+  "why": "'engage your core ... shaping your abdominals'",
+  "type": "Strength"
  },
  "just ride": {
   "focus": "Cardio",
@@ -142,55 +156,68 @@
  },
  "afterburner": {
   "focus": "Cardio",
-  "why": "high-intensity circuit, EPOC"
+  "why": "high-intensity circuit, EPOC",
+  "type": "Conditioning"
  },
  "sweat x": {
   "focus": "Cardio",
-  "why": "treadmill running + strength"
+  "why": "treadmill running + strength",
+  "type": "Conditioning"
  },
  "hyrox run": {
   "focus": "Cardio",
-  "why": "treadmill intervals"
+  "why": "treadmill intervals",
+  "type": "Running"
  },
  "speed fiends": {
   "focus": "Cardio",
-  "why": "treadmill intervals"
+  "why": "treadmill intervals",
+  "type": "Running"
  },
  "run club": {
   "focus": "Cardio",
-  "why": "running"
+  "why": "running",
+  "type": "Running"
  },
  "engine endurance": {
   "focus": "Cardio",
-  "why": "bikes, ski ergs, rowers"
+  "why": "bikes, ski ergs, rowers",
+  "type": "Conditioning"
  },
  "engine intervals": {
   "focus": "Cardio",
-  "why": "bikes, ski ergs, rowers"
+  "why": "bikes, ski ergs, rowers",
+  "type": "Conditioning"
  },
  "skills drills": {
   "focus": "Cardio",
-  "why": "swimming"
+  "why": "swimming",
+  "type": "Swimming"
  },
  "triathlon swim training": {
   "focus": "Cardio",
-  "why": "swimming"
+  "why": "swimming",
+  "type": "Swimming"
  },
  "dance fit": {
   "focus": "Cardio",
-  "why": "from the name only - no page on the site"
+  "why": "from the name only - no page on the site",
+  "type": "Dance"
  },
  "dance fit dual teach": {
   "focus": "Cardio",
-  "why": "from the name only - no page on the site"
+  "why": "from the name only - no page on the site",
+  "type": "Dance"
  },
  "step": {
   "focus": "Cardio",
-  "why": "from the name only - no page on the site"
+  "why": "from the name only - no page on the site",
+  "type": "Cardio"
  },
  "aqua fit": {
   "focus": "Cardio",
-  "why": "from the name only - no page on the site"
+  "why": "from the name only - no page on the site",
+  "type": "Cardio"
  },
  "hatha yoga": {
   "focus": "Mobility-Recovery",
@@ -214,15 +241,18 @@
  },
  "mat pilates fundamentals": {
   "focus": "Mobility-Recovery",
-  "why": "alignment and posture"
+  "why": "alignment and posture",
+  "type": "Pilates"
  },
  "sound bath": {
   "focus": "Mobility-Recovery",
-  "why": "relaxation"
+  "why": "relaxation",
+  "type": "Recovery"
  },
  "contrast therapy": {
   "focus": "Mobility-Recovery",
-  "why": "sauna and cold plunge"
+  "why": "sauna and cold plunge",
+  "type": "Recovery"
  },
  "hot flexibility flow": {
   "focus": "Mobility-Recovery",
@@ -231,5 +261,17 @@
  "yoga workshop": {
   "focus": "Mobility-Recovery",
   "why": "from the name only - no page on the site"
+ },
+ "trx": {
+  "type": "Strength",
+  "why": "type set by hand; body focus not decided"
+ },
+ "strong": {
+  "type": "Strength",
+  "why": "type set by hand; body focus not decided"
+ },
+ "dynamic mat pilates": {
+  "type": "Pilates",
+  "why": "type set by hand; body focus not decided"
  }
 }

@@ -1,7 +1,7 @@
 {
- "Islington": "Mon–Fri 05:30–22:00 · Sat–Sun 07:00–21:00",
- "Moorgate": "Mon–Fri 05:30–22:00 · Sat–Sun 08:00–20:00",
- "City": "Mon–Fri 05:30–22:00 · Sat–Sun 08:00–20:00",
- "Canary Wharf": "Mon–Fri 05:30–22:30 · Sat–Sun 08:00–20:00",
- "Tower Bridge": "Mon–Fri 05:30–22:00 · Sat–Sun 08:00–20:00"
+ "Islington": "WD 5:30–22:00 · WK 7:00–21:00",
+ "Moorgate": "WD 5:30–22:00 · WK 8:00–20:00",
+ "City": "WD 5:30–22:00 · WK 8:00–20:00",
+ "Canary Wharf": "WD 5:30–22:30 · WK 8:00–20:00",
+ "Tower Bridge": "WD 5:30–22:00 · WK 8:00–20:00"
 }

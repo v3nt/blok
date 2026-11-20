@@ -656,6 +656,7 @@ def main():
             " l.checked = false; l.dispatchEvent(new Event('change', {bubbles: true})) }"))
         page.wait_for_timeout(300)
 
+        check("filter chips carry an info icon", page.evaluate("() => document.querySelectorAll('.chip .info[data-desc]').length") > 0)
         check("no JavaScript errors", not errors, "; ".join(errors[:3]))
         browser.close()
 

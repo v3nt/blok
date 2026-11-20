@@ -184,6 +184,15 @@ with sync_playwright() as p:
           page.evaluate("() => [...document.querySelectorAll('#locs label')]"
                         ".every(l => /\\d\\d:\\d\\d/.test(l.textContent))"))
 
+    check("a class-type filter has an info icon with its description",
+          page.evaluate("() => { const i = document.querySelector('#cats' + VENUES[0] + ' .info, #fav' + VENUES[0] + ' .info');"
+                        " return !!i && !!i.getAttribute('data-desc') }"))
+    act("hovering an info icon shows the description", lambda: page.hover("%s .info" % ("#cats" + codes[0])))
+    page.wait_for_timeout(200)
+    check("the tooltip shows the description",
+          page.evaluate("() => { const t = document.getElementById('tip');"
+                        " return t.style.display === 'block' && t.textContent.length > 20 }"))
+    page.mouse.move(5, 5)
     check("mobile menu is present",
           page.evaluate("() => !!document.getElementById('drawer') && !!document.getElementById('mnu')"))
     check("no JavaScript errors", not errors, "; ".join(errors[:3]))

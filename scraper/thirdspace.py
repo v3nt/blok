@@ -198,10 +198,10 @@ def page_text(page):
     # intro first, then feature blocks as "Heading. text" pairs; cap at a sentence
     text = out[0] if out else ""
     for j in range(1, len(out) - 1, 2):
-        text += " " + out[j].rstrip(".") + ". " + out[j + 1]
+        text += "\n" + out[j].rstrip(".:") + ": " + out[j + 1]
     if len(text) > 650:
-        cut = text.rfind(". ", 0, 650)
-        text = text[:cut + 1] if cut > 200 else text[:650].rstrip() + "…"
+        cut = max(text.rfind("\n", 0, 650), text.rfind(". ", 0, 650) + 1)
+        text = text[:cut].rstrip() if cut > 200 else text[:650].rstrip() + "…"
     return text
 
 def descriptions(categories, warnings):
@@ -318,8 +318,11 @@ def club_hours(warnings):
             for x in lines:
                 m = re.match(r"^(\w+)\s*[\u2013-]\s*(\w+)\s+(\d\d:\d\d)\s*[\u2013-]\s*(\d\d:\d\d)$", x)
                 if m:
-                    parts.append("%s\u2013%s %s\u2013%s" % (m.group(1)[:3], m.group(2)[:3],
-                                                          m.group(3), m.group(4)))
+                    days = (m.group(1)[:3], m.group(2)[:3])
+                    label = {("Mon", "Fri"): "WD", ("Sat", "Sun"): "WK"}.get(
+                        days, "%s\u2013%s" % days)          # WD weekdays, WK weekend
+                    parts.append("%s %s\u2013%s" % (label, m.group(3).lstrip("0"),
+                                                    m.group(4).lstrip("0")))
             if parts:
                 out[club] = " \u00b7 ".join(parts)
                 continue
@@ -333,6 +336,30 @@ def club_hours(warnings):
             CLUBS_CACHE.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
         except Exception as e:
             warnings.append("could not cache the club hours: %s" % e)
+    return out
+
+# What the site's own categories are called here. Per-class overrides ("type" in
+# thirdspace-focus.json) beat this, because the site files Pulse under Mind & Body
+# and Kettlebells under Sports & Performance.
+SITE_TYPE = {"Strength & Conditioning": "Strength", "Sports & Performance": "Conditioning",
+             "Mind & Body": "Yoga / mind", "Pilates": "Pilates", "Combat": "Combat",
+             "Cycle": "Cycling", "Recovery": "Recovery", "Barre": "Barre",
+             "Dance": "Dance", "Running": "Running", "HYROX": "Conditioning"}
+
+def type_tags(categories, cat_of, keyof, warnings):
+    """{category: short workout type}: the focus file's "type", else from the site category."""
+    hand = load_focus()
+    out, unknown = {}, []
+    for c in categories:
+        entry = hand.get(norm(c)) or hand.get(keyof.get(c, ""))
+        t = entry.get("type") if isinstance(entry, dict) else None
+        t = t or SITE_TYPE.get(cat_of.get(c, ""))
+        if t:
+            out[c] = t
+        else:
+            unknown.append(c)
+    if unknown:
+        log("  no workout type for: %s" % ", ".join(sorted(unknown)))
     return out
 
 def load_focus():
@@ -392,7 +419,7 @@ def to_rows(code, club, classes):
             continue
         mins = hh * 60 + mm
         dur = int(c.get("duration_hours") or 0) * 60 + int(c.get("duration_minutes") or 0)
-        disp = "%d:%02d%s" % ((hh % 12) or 12, mm, "PM" if hh >= 12 else "AM")
+        disp = "%02d:%02d" % (hh, mm)                 # 24-hour, shorter than 7:20AM
         rows.append([iso, mins, disp, dur, category(title),
                      (c.get("trainer_name") or "").strip() or "-", club,
                      "open", "In the timetable", date.weekday(), code])
@@ -430,6 +457,7 @@ def main():
     cats = sorted({r[4] for r in rows})
     desc, cat_by_name, tagtext, keyof = descriptions(cats, warnings)
     focus = focus_tags(cats, tagtext, keyof, warnings)
+    types = type_tags(cats, cat_by_name, keyof, warnings)
     hours = club_hours(warnings)
     palette = {c: CAT_COLOUR.get(cat_by_name.get(c, ""), GREY) for c in cats}
 
@@ -448,7 +476,7 @@ def main():
         title="Class schedule — Third Space",
         # Third Space: teal "3S", so the two tabs never look alike.
         icon=refresh.favicon("3S", "#0f6e6e", size=30),
-        locations=[club for _, club, _ in CLUBS], focus=focus, location_info=hours,
+        locations=[club for _, club, _ in CLUBS], focus=focus, location_info=hours, types=types,
         sub_html=('<p class="sub">Third Space · '
                   + " &amp; ".join(club for _, club, _ in CLUBS)
                   + ' · %d classes · auto-updated every 2 hours · '
