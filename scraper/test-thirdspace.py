@@ -46,12 +46,12 @@ with sync_playwright() as p:
     # One list of class types covering every club, and the clubs switched on
     # and off separately - not a filter group per club.
     check("one set of class filters", len(codes) == 1, codes)
-    check("a switch for each club", sorted(locs) == ["Canary Wharf", "City", "Islington", "Moorgate", "Tower Bridge"], locs)
+    check("a switch for each club", sorted(locs) == ["Canary Wharf", "City", "Islington", "Moorgate", "Soho", "Tower Bridge"], locs)
     for el in ("fav", "cats", "allFav", "allCat", "col"):
         check("the class list has #%s%s" % (el, codes[0]),
               page.evaluate("() => !!document.getElementById('%s%s')" % (el, codes[0])))
     check("the location switches are on the page",
-          page.evaluate("() => document.querySelectorAll('#locs input[data-loc]').length") == 5)
+          page.evaluate("() => document.querySelectorAll('#locs input[data-loc]').length") == 6)
     check("classes are listed", rows() > 20, rows())
     check("all three clubs are in the one list",
           page.evaluate("() => new Set(D.map(r => r[6])).size === LOCS.length"))
@@ -207,6 +207,8 @@ with sync_playwright() as p:
           page.evaluate("() => document.getElementById('tip').style.display !== 'block'"))
     page.hover("#cats" + codes[0] + " input[data-desc]")
     page.wait_for_timeout(200)
+    check("the tooltip gives the class length",
+          page.evaluate("() => /Length: \\d+/.test(document.getElementById('tip').textContent)"))
     check("the tooltip says which clubs run the class",
           page.evaluate("() => document.getElementById('tip').textContent.indexOf('At: ') > -1"))
     page.mouse.move(5, 5)
@@ -267,6 +269,17 @@ with sync_playwright() as p:
     check("hovering a disabled one shows why",
           page.evaluate("() => { const t = document.getElementById('tip');"
                         " return t.style.display === 'block' && t.textContent.indexOf('Not available: Legs only') > -1 }"))
+    tip_txt = lambda: page.evaluate("() => document.getElementById('tip').textContent")
+    label_tip = tip_txt()
+    check("an unavailable item's tooltip has no description, just the top line and reason",
+          "Not available: Legs only" in label_tip and "At: " in label_tip and "Length: " in label_tip
+          and len(label_tip) < 220, label_tip[:120])
+    page.evaluate("() => document.getElementById('tip').style.display = 'none'")
+    page.evaluate("""() => { const i = document.querySelector('#disrow input[data-c]');
+        i.dispatchEvent(new MouseEvent('mouseover', {bubbles: true, clientX: 50, clientY: 50})) }""")
+    page.wait_for_timeout(150)
+    check("hovering its checkbox shows the same tooltip as its label", tip_txt() == label_tip,
+          tip_txt()[:120])
     page.mouse.move(5, 5)
     check("the heading is not bold",
           page.evaluate("() => parseInt(getComputedStyle(document.getElementById('disbtn')).fontWeight) < 600"))

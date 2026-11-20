@@ -40,6 +40,7 @@ CLUBS = [
     ("C", "City",       43),
     ("W", "Canary Wharf", 39),
     ("B", "Tower Bridge", 63),
+    ("S", "Soho", 52),
 ]
 CHUNK = 4          # days per request - the site's own step
 DAYS = 14
@@ -196,9 +197,18 @@ def page_text(page):
         out.append(x)
         i += 1
     # intro first, then feature blocks as "Heading. text" pairs; cap at a sentence
+    # A short line with no full stop is a feature heading and owns the line after
+    # it; anything else is a paragraph of its own (some pages open with two).
     text = out[0] if out else ""
-    for j in range(1, len(out) - 1, 2):
-        text += "\n" + out[j].rstrip(".:") + ": " + out[j + 1]
+    j = 1
+    while j < len(out):
+        x = out[j]
+        if j + 1 < len(out) and len(x) <= 36 and not x.endswith((".", "!", "?")):
+            text += "\n" + x.rstrip(":") + ": " + out[j + 1]
+            j += 2
+        else:
+            text += "\n" + x
+            j += 1
     if len(text) > 650:
         cut = max(text.rfind("\n", 0, 650), text.rfind(". ", 0, 650) + 1)
         text = text[:cut].rstrip() if cut > 200 else text[:650].rstrip() + "…"

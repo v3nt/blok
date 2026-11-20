@@ -273,5 +273,15 @@
  "dynamic mat pilates": {
   "type": "Pilates",
   "why": "type set by hand; body focus not decided"
+ },
+ "hyrox social": {
+  "focus": "Full body",
+  "type": "Conditioning",
+  "why": "from the name only - no page on the site"
+ },
+ "women s boxing": {
+  "focus": "Full body",
+  "type": "Combat",
+  "why": "from the name only - no page on the site"
  }
 }

@@ -111,7 +111,7 @@ Known failure modes, all of which now report rather than fail silently:
 ## Two pages, one UI
 
 `index.html` (BLOK + Mission E1, via ClassPass) and `3rdspace.html` (Third
-Space Islington / Moorgate / City / Canary Wharf / Tower Bridge) are built from the SAME template in
+Space Islington / Moorgate / City / Canary Wharf / Tower Bridge / Soho) are built from the SAME template in
 `scraper/refresh.py`. `thirdspace.py` imports it.
 
 **A UI improvement that could apply to both should be made once, in the
