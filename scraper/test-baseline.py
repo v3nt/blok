@@ -657,6 +657,16 @@ def main():
         page.wait_for_timeout(300)
 
         check("filter chips carry an info icon", page.evaluate("() => document.querySelectorAll('.chip .info[data-desc]').length") > 0)
+        check("the keyword search box exists", page.evaluate("() => !!document.getElementById('q')"))
+        n_before = page.evaluate("() => document.querySelectorAll('#tb tr[data-cat]').length")
+        act("type a search that matches nothing", lambda: page.fill("#q", "zzzznothing"))
+        page.wait_for_timeout(300)
+        check("a search with no match shows nothing",
+              page.evaluate("() => document.querySelectorAll('#tb tr[data-cat]').length") == 0)
+        act("clear the search", lambda: page.fill("#q", ""))
+        page.wait_for_timeout(300)
+        check("clearing the search restores the schedule",
+              page.evaluate("() => document.querySelectorAll('#tb tr[data-cat]').length") == n_before)
         check("no JavaScript errors", not errors, "; ".join(errors[:3]))
         browser.close()
 

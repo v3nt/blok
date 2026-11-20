@@ -193,6 +193,30 @@ with sync_playwright() as p:
           page.evaluate("() => { const t = document.getElementById('tip');"
                         " return t.style.display === 'block' && t.textContent.length > 20 }"))
     page.mouse.move(5, 5)
+    # --- keyword search: name, type, focus and description text ---------------
+    n0 = rows()
+    page.fill("#q", "lower body")
+    page.wait_for_timeout(300)
+    n1 = rows()
+    check("searching the descriptions narrows the schedule", 0 < n1 < n0, "%d -> %d" % (n0, n1))
+    check("every class left matches the words",
+          page.evaluate("() => [...document.querySelectorAll('#tb tr[data-cat]')].every(r => qmatch(r.dataset.cat))"))
+    check("the class-type filters narrow too",
+          page.evaluate("() => { const c = [...document.querySelectorAll('#cats' + VENUES[0] + ' .chip, #fav' + VENUES[0] + ' .chip')];"
+                        " return c.some(x => x.style.display === 'none') && c.some(x => x.style.display !== 'none') }"))
+    page.fill("#q", "zzzznothing")
+    page.wait_for_timeout(250)
+    check("a search with no match shows nothing", rows() == 0, rows())
+    page.fill("#q", "")
+    page.wait_for_timeout(250)
+    check("clearing the search brings everything back", rows() == n0, "%d vs %d" % (rows(), n0))
+    page.fill("#q", "squat")
+    page.wait_for_timeout(250)
+    page.evaluate("() => document.getElementById('reset').click()")
+    page.wait_for_timeout(250)
+    check("Reset filters clears the search",
+          page.evaluate("() => document.getElementById('q').value") == "" and rows() == n0)
+
     check("mobile menu is present",
           page.evaluate("() => !!document.getElementById('drawer') && !!document.getElementById('mnu')"))
     check("no JavaScript errors", not errors, "; ".join(errors[:3]))

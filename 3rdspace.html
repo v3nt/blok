@@ -72,6 +72,23 @@ tbody tr[data-state="full"] td:not(:last-child){opacity:.55}
 #tip b{display:block;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#a9a9b4;margin-bottom:4px}
 .typ{margin-left:6px;font-size:10.5px;font-weight:600;color:#8a8a93;white-space:nowrap}
 #tip i.tt{display:block;font-style:normal;font-size:11px;color:#8fd0b0;margin:-2px 0 5px}
+/* Class-type filters in a grid: --cols columns on a wide screen, wrapping onto the next line.
+   Phones keep the drawer layout. Wider screens get more columns (8, then 10); a long name wraps onto a second line and the row grows to fit. */
+.bar{--cols:6}
+@media(min-width:1500px){.bar{--cols:8}}
+@media(min-width:1900px){.bar{--cols:10}}
+@media(min-width:641px){
+.grp .row.fav.on,.grp .row:not(.locs):not(.fav){display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:6px 10px;align-items:center}
+.grp .row .chip{min-width:0}
+.grp .row label.chip>.dot,.grp .row label.chip>.n,.grp .row label.chip>input{flex:none}
+.grp .row .chip{white-space:normal}
+.grp .row label.chip{min-width:0;gap:4px;align-items:flex-start;line-height:1.25}
+.grp .row label.chip>span:not(.dot):not(.n){min-width:0;overflow-wrap:anywhere}
+.grp .row label.chip>.dot{margin-top:4px}
+}
+@media(min-width:641px) and (max-width:1000px){.bar{--cols:4}}
+#q{font:inherit;font-size:13px;padding:5px 10px;border:1px solid var(--bd);border-radius:7px;min-width:230px;background:#fff}
+#q:focus{outline:2px solid #1f7fd1;outline-offset:-1px}
 .legsb{display:inline-block;margin-left:5px;padding:1px 5px;border-radius:5px;background:#16161a;color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.05em;vertical-align:middle}
 .pill{display:inline-block;padding:2px 8px;border-radius:99px;color:#fff;font-size:11.5px;font-weight:600;white-space:nowrap}
 .t{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
@@ -152,10 +169,11 @@ body.locked{overflow:hidden}
 </style></head><body>
 <div id="topbar"><h1>Class schedule — Third Space</h1><button id="mnu" type="button" aria-label="Filters and details" aria-expanded="false" aria-controls="drawer">&#9776;</button><nav class="dnav" aria-label="Jump to a day"></nav></div>
 <header><h1>Class schedule — Third Space</h1>
-<p class="sub">Third Space · Islington &amp; Moorgate &amp; City &amp; Canary Wharf &amp; Tower Bridge · 3080 classes · auto-updated every 2 hours · refreshed Fri 20 Nov 2026, 09:05 GMT</p>
+<p class="sub">Third Space · Islington &amp; Moorgate &amp; City &amp; Canary Wharf &amp; Tower Bridge · 3080 classes · auto-updated every 2 hours · refreshed Fri 20 Nov 2026, 09:17 GMT</p>
 <div id="lg"></div></header>
 <div class="bar" id="filters">
 <div class="top">
+<input type="search" id="q" placeholder="Search classes, types, descriptions…" aria-label="Search class names and descriptions" autocomplete="off">
 <label><input type="checkbox" id="av"> Bookable now only</label>
 <label><input type="checkbox" id="hf"> Hide full</label>
 <label><input type="checkbox" id="hw"> Hide weekday 8:00am–5:15pm</label>
@@ -203,6 +221,10 @@ var av=document.getElementById('av'),hf=document.getElementById('hf'),hw=documen
 var HASLEGS=Object.keys(FOCUS).some(function(c){return FOCUS[c]==='Legs'});
 document.getElementById('legsl').style.display=HASLEGS?'':'none';
 legsEl.checked=HASLEGS&&!!g(LS.l,false);
+var qEl=document.getElementById('q'),QT=[],QC={};
+function qmatch(c){if(!QT.length)return true;var h=QC[c];if(h===undefined){h=QC[c]=[c,TYPES[c]||'',FOCUS[c]||'',DESC[c]||''].join(' ').toLowerCase()}return QT.every(function(t){return h.indexOf(t)>-1})}
+function paintQ(){QT=qEl.value.toLowerCase().split(' ').filter(Boolean);VENUES.forEach(function(v){CHIPS[v].forEach(function(ch){ch.el.style.display=qmatch(ch.cat)?'':'none'})})}
+qEl.addEventListener('input',function(){paintQ();draw()});
 av.checked=!!g(LS.a,false);hf.checked=!!g(LS.f,false);hw.checked=!!g(LS.w,false);
 var ROWS=[];VENUES.forEach(function(v){ROWS.push(['allFav'+v,'fav'+v,v]);ROWS.push(['allCat'+v,'cats'+v,v])});
 function boxesIn(rowId){return [].slice.call(document.getElementById(rowId).querySelectorAll('input[data-c]'))}
@@ -265,7 +287,7 @@ var LOCON={};
 var CHIPS={};VENUES.forEach(function(v){CHIPS[v]=[]});
 function build(wrapId,order,sel,venue){
  order.forEach(function(c){
-  var l=document.createElement('label');l.className='chip';
+  var l=document.createElement('label');l.className='chip';l.title=c;
   var i=document.createElement('input');i.type='checkbox';i.checked=sel.indexOf(c)>-1;i.dataset.c=c;
   i.addEventListener('change',function(){sync(venue)});
   var d=document.createElement('span');d.className='dot';d.style.background=PC[c];
@@ -325,7 +347,7 @@ document.getElementById('resetFav').addEventListener('click',function(){
  draw();
 });
 document.getElementById('reset').addEventListener('click',function(){
- av.checked=false;hf.checked=false;hw.checked=false;legsEl.checked=false;
+ av.checked=false;hf.checked=false;hw.checked=false;legsEl.checked=false;qEl.value='';paintQ();
  s(LS.a,false);s(LS.f,false);s(LS.w,false);s(LS.l,false);
  // Reset also restores the default favourites. Without this there is no way
  // back to them once a saved list exists - which reads as "the defaults are
@@ -443,6 +465,7 @@ function draw(){
   var sel=SEL[r[10]];
   if(sel.indexOf(r[4])<0)return;
   if(legsEl.checked&&FOCUS[r[4]]!=='Legs')return;
+  if(QT.length&&!qmatch(r[4]))return;
   // A class you have BOOKED is never hidden by the convenience
   // toggles. 'Bookable now only' means 'nothing I cannot take' - and
   // a booked class is not bookable, so it vanished from the schedule,
