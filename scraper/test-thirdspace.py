@@ -183,14 +183,23 @@ with sync_playwright() as p:
     check("hours are written WD ..., WE ...",
           page.evaluate("() => [...document.querySelectorAll('#locs label')]"
                         ".every(l => /WD \\d+:\\d\\d.\\d+:\\d\\d, WE \\d+:\\d\\d.\\d+:\\d\\d/.test(l.textContent))"))
-    act("hover a location", lambda: page.hover("#locs label >> nth=0"))
+    act("hover a location's name", lambda: page.hover("#locs label > span >> nth=0"))
     page.wait_for_timeout(250)
-    check("a location's tooltip lists its main facilities as bullets",
+    check("hovering a location's name shows no tooltip",
+          page.evaluate("() => document.getElementById('tip').style.display !== 'block'"))
+    check("each location carries a badge with its number of facilities",
+          page.evaluate("() => [...document.querySelectorAll('#locs label')].every(l => /^\\d+$/.test(((l.querySelector('.fbadge') || {}).textContent || '')))"))
+    act("hover the facilities badge", lambda: page.hover("#locs .fbadge >> nth=0"))
+    page.wait_for_timeout(250)
+    check("hovering the badge lists the facilities as bullets",
           page.evaluate("() => { const t = document.getElementById('tip').textContent;"
-                        " return t.indexOf('Main facilities') > -1 && (t.match(/\\u2022/g) || []).length >= 3 }"))
+                        " return (t.match(/\\u2022/g) || []).length >= 3 }"))
+    check("the badge number matches the bullets",
+          page.evaluate("() => { const b = document.querySelector('#locs .fbadge');"
+                        " return +b.textContent === (document.getElementById('tip').textContent.match(/\\u2022/g) || []).length }"))
     page.mouse.move(5, 5)
     check("locations are ordered by facilities, most first",
-          page.evaluate("() => { const n = [...document.querySelectorAll('#locs label')].map(l => (l.getAttribute('data-desc') || '').split('\\u2022').length);"
+          page.evaluate("() => { const n = [...document.querySelectorAll('#locs .fbadge')].map(b => +b.textContent);"
                         " return n.every((v, i) => i === 0 || n[i - 1] >= v) }"))
     check("each club shows its opening hours next to its name",
           page.evaluate("() => [...document.querySelectorAll('#locs label')]"
@@ -286,6 +295,12 @@ with sync_playwright() as p:
     check("an unavailable item's tooltip has no description, just the top line and reason",
           "Not available: Legs only" in label_tip and "Soho" in label_tip and "Length: " in label_tip
           and len(label_tip) < 220, label_tip[:120])
+    check("the 'Not available' reason is the second thing on the card, right after the title",
+          page.evaluate("() => { const c = document.getElementById('tip').children;"
+                        " return c.length > 1 && c[0].tagName === 'B' && c[1].classList.contains('wy') }"))
+    check("the 'Not available' reason has a line of its own",
+          page.evaluate("() => { const w = document.querySelector('#tip i.tt.wy');"
+                        " return !!w && w.parentNode.id === 'tip' && getComputedStyle(w).display === 'block' }"))
     page.evaluate("() => document.getElementById('tip').style.display = 'none'")
     page.evaluate("""() => { const i = document.querySelector('#disrow input[data-c]');
         i.dispatchEvent(new MouseEvent('mouseover', {bubbles: true, clientX: 50, clientY: 50})) }""")
