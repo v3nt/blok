@@ -38,8 +38,6 @@ header a{color:#c8c8d4}
 .grp .row.fav{display:none;padding:5px 8px 6px;margin-bottom:6px;background:#fffaeb;border:1px solid #f0dfa8;border-radius:8px}
 .grp .row.fav.on{display:flex}
 .grp .row.fav::before{content:"★";color:#e8a90c;font-size:12px;align-self:center;margin-right:2px}
-.info{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;border:1px solid #b5b5bf;color:#6b6b76;font:italic 700 9.5px/1 Georgia,serif;cursor:help;margin-left:-2px}
-.info:hover,.info:focus{background:#16161a;border-color:#16161a;color:#fff;outline:0}
 .chip{display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
 .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
 .star{border:0;background:none;cursor:pointer;font-size:14px;line-height:1;padding:0 2px;color:#c9c9d1}
@@ -71,6 +69,7 @@ tbody tr[data-state="full"] td:not(:last-child){opacity:.55}
 #tip{white-space:pre-line;position:fixed;z-index:50;max-width:340px;background:#16161a;color:#fff;padding:9px 11px;border-radius:8px;font-size:12.5px;line-height:1.45;box-shadow:0 6px 24px rgba(0,0,0,.28);pointer-events:none;display:none}
 #tip b{display:block;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#a9a9b4;margin-bottom:4px}
 .typ{margin-left:6px;font-size:10.5px;font-weight:600;color:#8a8a93;white-space:nowrap}
+#tip i.tt.lc{color:#9ec5ff;margin-top:-3px}
 #tip i.tt{display:block;font-style:normal;font-size:11px;color:#8fd0b0;margin:-2px 0 5px}
 /* Class-type filters in a grid: --cols columns on a wide screen, wrapping onto the next line.
    Phones keep the drawer layout. Wider screens get more columns (8, then 10); a long name wraps onto a second line and the row grows to fit. */
@@ -78,13 +77,19 @@ tbody tr[data-state="full"] td:not(:last-child){opacity:.55}
 @media(min-width:1500px){.bar{--cols:8}}
 @media(min-width:1900px){.bar{--cols:10}}
 @media(min-width:641px){
-.grp .row.fav.on,.grp .row:not(.locs):not(.fav){display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:6px 10px;align-items:center}
-.grp .row .chip{min-width:0}
-.grp .row label.chip>.dot,.grp .row label.chip>.n,.grp .row label.chip>input{flex:none}
+.grp .row.fav.on,.grp .row:not(.locs):not(.fav){display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:6px 10px;align-items:start}
+.grp .row .chip{min-width:0;align-items:flex-start}
+.grp .row label.chip .star{margin:0 0 0 .2em;padding:0;vertical-align:baseline;white-space:nowrap}
+.grp .row .col{grid-column:1/2;justify-self:start;text-align:left}
+.grp .row .all{grid-column:2/-1;justify-self:start}
+.grp .row label.chip[data-desc]{cursor:help}
+.grp .row label.chip>input[data-c]{-webkit-appearance:none;appearance:none;width:15px;height:15px;margin:1px 0 0;border:2px solid var(--c,#8a8a8f);border-radius:4px;background:#fff;cursor:pointer}
+.grp .row label.chip>input[data-c]:checked{background:var(--c,#8a8a8f) url(data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Cpath fill=none stroke=white stroke-width=2.6 d=%27M3 8.5l3.2 3.2L13 5%27/%3E%3C/svg%3E) center/11px no-repeat}
+.grp .row label.chip>input[data-c]:focus-visible{outline:2px solid #1f7fd1;outline-offset:2px}
+.grp .row label.chip>input{flex:none}
 .grp .row .chip{white-space:normal}
 .grp .row label.chip{min-width:0;gap:4px;align-items:flex-start;line-height:1.25}
-.grp .row label.chip>span:not(.dot):not(.n){min-width:0;overflow-wrap:anywhere}
-.grp .row label.chip>.dot{margin-top:4px}
+.grp .row label.chip>span:not(.n){min-width:0;overflow-wrap:anywhere}
 }
 @media(min-width:641px) and (max-width:1000px){.bar{--cols:4}}
 #q{font:inherit;font-size:13px;padding:5px 10px;border:1px solid var(--bd);border-radius:7px;min-width:230px;background:#fff}
@@ -169,7 +174,7 @@ body.locked{overflow:hidden}
 </style></head><body>
 <div id="topbar"><h1>Class schedule — Third Space</h1><button id="mnu" type="button" aria-label="Filters and details" aria-expanded="false" aria-controls="drawer">&#9776;</button><nav class="dnav" aria-label="Jump to a day"></nav></div>
 <header><h1>Class schedule — Third Space</h1>
-<p class="sub">Third Space · Islington &amp; Moorgate &amp; City &amp; Canary Wharf &amp; Tower Bridge · 3080 classes · auto-updated every 2 hours · refreshed Fri 20 Nov 2026, 09:17 GMT</p>
+<p class="sub">Third Space · Islington &amp; Moorgate &amp; City &amp; Canary Wharf &amp; Tower Bridge · 3080 classes · auto-updated every 2 hours · refreshed Fri 20 Nov 2026, 09:29 GMT</p>
 <div id="lg"></div></header>
 <div class="bar" id="filters">
 <div class="top">
@@ -287,13 +292,15 @@ var LOCON={};
 var CHIPS={};VENUES.forEach(function(v){CHIPS[v]=[]});
 function build(wrapId,order,sel,venue){
  order.forEach(function(c){
-  var l=document.createElement('label');l.className='chip';l.title=c;
+  var l=document.createElement('label');l.className='chip';
   var i=document.createElement('input');i.type='checkbox';i.checked=sel.indexOf(c)>-1;i.dataset.c=c;
   i.addEventListener('change',function(){sync(venue)});
-  var d=document.createElement('span');d.className='dot';d.style.background=PC[c];
+  if(DESC[c]){l.setAttribute('data-name',c);l.setAttribute('data-desc',DESC[c])}
+  i.style.setProperty('--c',PC[c]);
   var t=document.createElement('span');t.textContent=c;
   var n=document.createElement('span');n.className='n';n.textContent=(CATS[venue]&&CATS[venue][c])||0;
-  l.appendChild(i);l.appendChild(d);l.appendChild(t);l.appendChild(n);
+  t.appendChild(document.createTextNode(' '));t.appendChild(n);   // count flows inline after the name
+  l.appendChild(i);l.appendChild(t);
   var b=document.createElement('button');b.className='star';b.type='button';
   var key=venue+'|'+c,on=favs.indexOf(key)>-1;
   b.setAttribute('aria-pressed',on?'true':'false');
@@ -307,8 +314,7 @@ function build(wrapId,order,sel,venue){
   });
   var chip=document.createElement('span');chip.className='chip';
   chip.appendChild(l);
-  if(DESC[c]){var inf=document.createElement('span');inf.className='info';inf.tabIndex=0;inf.textContent='i';inf.setAttribute('data-name',c);inf.setAttribute('data-desc',DESC[c]);inf.setAttribute('aria-label','About '+c);chip.appendChild(inf)}
-  chip.appendChild(b);
+  t.appendChild(b);          // star flows inline after the count
   CHIPS[venue].push({cat:c,key:key,el:chip,star:b});
  });
  place(venue);
@@ -432,6 +438,9 @@ function addRow(tb,r,cur){
   if(TYPES[nm])tl.push(TYPES[nm]);
   if(FOCUS[nm]&&FOCUS[nm]!=='Untagged')tl.push(FOCUS[nm]);
   if(tl.length){var ty=document.createElement('i');ty.className='tt';ty.textContent=tl.join(' \u00b7 ');tip.appendChild(ty)}
+  if(!window.LOCOF){window.LOCOF={};D.forEach(function(r){var o=window.LOCOF[r[4]]||(window.LOCOF[r[4]]={});o[r[6]]=1})}
+  var lo=window.LOCOF[nm];
+  if(lo){var li=document.createElement('i');li.className='tt lc';li.textContent='At: '+Object.keys(lo).sort().join(', ');tip.appendChild(li)}
   tip.appendChild(document.createTextNode(d));
   tip.style.display='block';
   var w=tip.offsetWidth, ht=tip.offsetHeight;
@@ -440,7 +449,7 @@ function addRow(tb,r,cur){
   tip.style.top=top+'px'; cur=el;
  }
  function hide(){tip.style.display='none';cur=null;}
- function pill(e){return e.target&&e.target.closest?e.target.closest('.pill[data-desc],.info[data-desc]'):null;}
+ function pill(e){return e.target&&e.target.closest?e.target.closest('.pill[data-desc],label.chip[data-desc]'):null;}
  document.addEventListener('mouseover',function(e){var el=pill(e);if(el)show(el,e.clientX,e.clientY);else if(cur)hide();});
  document.addEventListener('mousemove',function(e){var el=pill(e);if(cur&&el===cur)show(cur,e.clientX,e.clientY);});
  document.addEventListener('focusin',function(e){var el=pill(e);if(el){var r=el.getBoundingClientRect();show(el,r.left,r.bottom-8);}});

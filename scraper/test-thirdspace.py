@@ -184,14 +184,24 @@ with sync_playwright() as p:
           page.evaluate("() => [...document.querySelectorAll('#locs label')]"
                         ".every(l => /\\d\\d:\\d\\d/.test(l.textContent))"))
 
-    check("a class-type filter has an info icon with its description",
-          page.evaluate("() => { const i = document.querySelector('#cats' + VENUES[0] + ' .info, #fav' + VENUES[0] + ' .info');"
+    check("a class-type filter shows its description on hover",
+          page.evaluate("() => { const i = document.querySelector('#cats' + VENUES[0] + ' label.chip[data-desc], #fav' + VENUES[0] + ' label.chip[data-desc]');"
                         " return !!i && !!i.getAttribute('data-desc') }"))
-    act("hovering an info icon shows the description", lambda: page.hover("%s .info" % ("#cats" + codes[0])))
+    act("hovering a filter shows the description", lambda: page.hover("%s label.chip[data-desc]" % ("#cats" + codes[0])))
     page.wait_for_timeout(200)
     check("the tooltip shows the description",
           page.evaluate("() => { const t = document.getElementById('tip');"
                         " return t.style.display === 'block' && t.textContent.length > 20 }"))
+    check("'more' and 'all' sit on their own line above the chips",
+          page.evaluate("""() => { const row = document.getElementById('cats' + VENUES[0]);
+            const col = row.querySelector('.col').getBoundingClientRect(), all = row.querySelector('.all').getBoundingClientRect();
+            const first = row.querySelector('.chip').getBoundingClientRect();
+            return Math.abs(col.top - all.top) < 4 && first.top > all.bottom - 2 }"""))
+    check("the filter checkboxes carry the class colour and there are no colour dots",
+          page.evaluate("() => { const i = document.querySelector('#cats' + VENUES[0] + ' input[data-c]');"
+                        " return !!i.style.getPropertyValue('--c') && !document.querySelector('.grp .chip .dot') }"))
+    check("the tooltip says which clubs run the class",
+          page.evaluate("() => document.getElementById('tip').textContent.indexOf('At: ') > -1"))
     page.mouse.move(5, 5)
     # --- keyword search: name, type, focus and description text ---------------
     n0 = rows()
